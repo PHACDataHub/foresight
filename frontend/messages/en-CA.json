@@ -1,5 +1,10 @@
 {
     "App": {
         "title": "Foresight"
+    },
+    "TimeTravel": {
+        "chooseDate": "Choose a day",
+        "currentDate": "current",
+        "travelText": "Time travel to"
     }
 }

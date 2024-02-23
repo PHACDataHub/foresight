@@ -1,5 +1,10 @@
 {
     "App": {
         "title": "Sérum"
+    },
+    "TimeTravel": {
+        "chooseDate": "Choisissez un jour",
+        "currentDate": "actuelle",
+        "travelText": "Voyage dans le temps vers"
     }
 }
