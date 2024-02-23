@@ -42,6 +42,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "20"
+          cache-dependency-path: "frontend"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
       - name: Restore cache
         uses: actions/cache@v3
