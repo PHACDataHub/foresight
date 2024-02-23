@@ -5,6 +5,13 @@ name: Check NextJs build
 on:
   # Runs on pushes
   push:
+    branches:
+      - main      
+
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches:
+      - main      
     paths:
       - 'frontend'
     
