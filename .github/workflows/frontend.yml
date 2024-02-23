@@ -12,8 +12,8 @@ on:
     types: [ opened, synchronize, reopened ]
     branches:
       - main      
-    paths:
-      - 'frontend'
+    # paths:
+    #   - 'frontend'
     
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
