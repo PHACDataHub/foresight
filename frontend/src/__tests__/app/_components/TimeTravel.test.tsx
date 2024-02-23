@@ -10,8 +10,17 @@ import { useParams } from "next/navigation";
 import TimeTravel from "~/app/_components/TimeTravel";
 
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>;
+const onError = (e: ErrorEvent) => {
+  e.preventDefault();
+};
 
 describe("TimeTravel [component]", () => {
+  beforeEach(() => {
+    window.addEventListener("error", onError);
+  });
+  afterEach(() => {
+    window.removeEventListener("error", onError);
+  });
   it("renders", () => {
     mockUseParams.mockReturnValue({ locale: "en-CA" });
     render(<TimeTravel />);
