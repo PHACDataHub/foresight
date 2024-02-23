@@ -1,6 +1,6 @@
 # To get started with Next.js see: https://nextjs.org/docs/getting-started
 #
-name: Check NextJs build
+name: Frontend CI/CD
 
 defaults:
   run:
@@ -23,8 +23,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Build job
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -65,9 +64,12 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('frontend/**/package-lock.json', 'frontend/**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+      - name: Perform linting
+        run: |
+          npm run lint
+
       - name: Run unit tests
         run: |
           cp .env.example .env
           npm run test
-      - name: Build with Next.js
-        run: npm run build
+          rm .env
