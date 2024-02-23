@@ -2,6 +2,10 @@
 #
 name: Check NextJs build
 
+defaults:
+  run:
+    working-directory: ./frontend
+
 on:
   # Runs on pushes
   push:
@@ -26,6 +30,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Detect package manager
+      
         id: detect-package-manager
         run: |
           if [ -f "${{ github.workspace }}/frontend/yarn.lock" ]; then
