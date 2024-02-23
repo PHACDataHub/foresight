@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { useParams } from "next/navigation";
 
 import TimeTravel from "~/app/_components/TimeTravel";
@@ -19,14 +25,19 @@ describe("TimeTravel [component]", () => {
     const d1 = new Date(2020, 1, 12);
     const d2 = new Date(2019, 11, 31);
 
-    expect(() => render(<TimeTravel startDate={e} endDate={s} />)).toThrow();
-    expect(() => render(<TimeTravel startDate={s} endDate={l} />)).toThrow();
-    expect(() =>
-      render(<TimeTravel startDate={s} endDate={e} date={d2} />),
-    ).toThrow();
-    expect(() =>
-      render(<TimeTravel startDate={s} endDate={e} date={d1} />),
-    ).not.toThrow();
+    render(<TimeTravel startDate={e} endDate={s} />);
+    expect(screen.getByTestId("errorboundary")).toBeVisible();
+    cleanup();
+    render(<TimeTravel startDate={s} endDate={l} />);
+    expect(screen.getByTestId("errorboundary")).toBeVisible();
+    cleanup();
+    render(<TimeTravel startDate={s} endDate={e} date={d2} />);
+    expect(screen.getByTestId("errorboundary")).toBeVisible();
+    cleanup();
+    render(<TimeTravel startDate={s} endDate={e} date={d1} />);
+    expect(() => screen.getByTestId("errorboundary")).toThrow(
+      "Unable to find an element",
+    );
   });
 
   it("can use the en-CA locale", async () => {

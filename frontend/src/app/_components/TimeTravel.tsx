@@ -4,22 +4,26 @@
  * Component used to display dates between `startDate` and `endDate` for
  * the user to select.
  */
-import { useParams } from "next/navigation";
+import React from "react";
 import { useCallback, useMemo } from "react";
+import { useParams } from "next/navigation";
+import { ErrorBoundary } from "react-error-boundary";
 
-export default function TimeTravel({
-  date = new Date(2019, 11, 1),
-  startDate = new Date(2019, 11, 1),
-  endDate = new Date(2020, 0, 31),
-  messages,
-  onChange,
-}: {
+type TimeTravelProps = {
   date?: Date;
   startDate?: Date;
   endDate?: Date;
   messages?: { chooseDate?: string; travelText?: string; currentDate?: string };
   onChange?: (date: Date) => void;
-}) {
+};
+
+function TimeTravelComponent({
+  date = new Date(2019, 11, 1),
+  startDate = new Date(2019, 11, 1),
+  endDate = new Date(2020, 0, 31),
+  messages,
+  onChange,
+}: TimeTravelProps) {
   if (endDate < startDate)
     throw new Error("endDate must occur after startDate");
   if (!(date >= startDate && date <= endDate))
@@ -100,5 +104,13 @@ export default function TimeTravel({
         ))}
       </ul>
     </nav>
+  );
+}
+
+export default function TimeTravel(props: TimeTravelProps) {
+  return (
+    <ErrorBoundary fallback={<div data-testid="errorboundary">Error</div>}>
+      <TimeTravelComponent {...props} />
+    </ErrorBoundary>
   );
 }
