@@ -21,7 +21,7 @@ def retrieve_documents(in_path, start_date, end_date):
                 for item in item_list:
                     pub_date = item['publicationdate'][:10]
                     if pub_date >= start_date and pub_date <= end_date:
-                        documents[item['id']] = {k: v for k, v in item.items() if k in ['id', 'title', 'pub_date', 'publicationname', 'originallanguage', 'originalfilename', 'factivatopicfolder', 'state', 'genre']}
+                        documents[item['id']] = {k: v for k, v in item.items() if k in ['id', 'title', 'publicationdate', 'publicationname', 'originallanguage', 'originalfilename', 'factivatopicfolder', 'state', 'genre']}
         count = increase_count(count, '.')
     return documents
 
