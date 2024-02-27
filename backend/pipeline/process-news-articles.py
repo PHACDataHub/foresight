@@ -118,6 +118,7 @@ if __name__ == '__main__':
     print(f"Created LLM tools.")
     
     count = 0 if len(sys.argv) < 7 else int(sys.argv[6])
+    ignore = 0
     limit = 10000 if len(sys.argv) < 8 else int(sys.argv[7])
     doc_dict = dict()
     with open(in_file_name, 'rt') as in_file:
@@ -133,6 +134,8 @@ if __name__ == '__main__':
             body = document['body']['EN']
             if len(body['contents']) > limit:
                 print(f"""[{count}] {doc['id']}\n--- {body['title']}\n--- {len(body['contents'])}\n""")
+                ignore += 1
+                count += 1
                 continue
             
             full_text = '\n\n'.join([body[e] for e in ['title', 'contents'] if e in body])
@@ -177,11 +180,11 @@ if __name__ == '__main__':
             
             if doc['topics']:
                 if 'answers' in doc:
-                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+                    print(f"""[{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
                 else:
-                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+                    print(f"""[{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
             else:
-                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
+                print(f"""[{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
             count += 1
             
             if pub_date not in doc_dict:
