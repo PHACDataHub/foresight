@@ -198,7 +198,7 @@ if __name__ == '__main__':
             if (count+ignore) % 10 == 0:            
                 end_time = datetime.now()
                 seconds = (end_time - start_time).total_seconds()
-                print(f"Total {count} documents in {seconds} seconds: {seconds/(count+ignore)} seconds per document.", flush=True)
+                print(f"Total {count+ignore} documents in {seconds} seconds: {seconds/(count+ignore)} seconds per document.", flush=True)
 
     print(f"\nProcessed {count} articles.\n")
     
