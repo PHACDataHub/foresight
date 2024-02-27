@@ -140,7 +140,7 @@ if __name__ == '__main__':
     country_dict = load_country_codes(country_file_name)
     
     llm = Ollama(model="mistral")
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2')
+    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2', model_kwargs = {'device': 'cuda'})
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=384, chunk_overlap=0)
     summarize_chain = load_summarize_chain(llm=llm, chain_type='map_reduce') 
     output_parser = NumberedListOutputParser()
