@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=0)
-    devices = [0, 0, 0, 0]
+    devices = ['mps' for i in range(0, 4)]
     if device == 'cuda':
         devices = [0, 1, 2, 3]
     sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=devices[0])
