@@ -2,14 +2,9 @@ import csv
 import json
 import sys
 
-from langchain.chains.llm import LLMChain
-from langchain.chains.summarize import load_summarize_chain
-from langchain.output_parsers.list import NumberedListOutputParser
-from langchain.prompts.prompt import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-from langchain_community.llms import Ollama
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer
+from transformers import pipeline, AutoTokenizer
 
 
 def increase_count(count, character):
@@ -68,72 +63,41 @@ TOPIC_LIST = [
     'Atypical health incidents'
 ]
 
-CLASSIFICATION_TEMPLATE = """
-Return ONLY the topic classifications listed below
-TOPICS:{topics}
-
-that best matches the article delimited by triple backquotes (```)
-ARTICLE:```{article}```
-
-If there is no such topic classification, then return No match as result.
-RESULT:{format_instructions}"""
-
-
-FILTER_TEMPLATE = """'Does the article delimited by triple backquotes (```) below describe an actual event and not an academic study?
-Answer Yes or No. Do not explain.
-
-ARTICLE:```{article}```
-
-ANSWERS:{format_instructions}:"""
-
-
-QA_TEMPLATE = """Provide a short and concise answer for each of the following questions using ONLY information found in the article delimited by triple backquotes (```).
-Do not explain.
-QUESTIONS:{questions}
-
-ARTICLE:```{article}```
-
-ANSWERS:{format_instructions}:"""
-
 QUESTION_LIST = [
     'What disease is it or is it an unknown disease?',
     'What is the possible source of this disease?',
     'How does this disease spread?',
-    'What are the countries effected by the disease?',
+    'What countries does the disease spread?',
     'When did the disease start?',
     'Is the disease still spreading or did it stop?',
 ]    
 
 
-MAPPING_TEMPLATE = """Return the ISO 3166 Alpha 2 two-letter country code for each of the country names found in the content .
-Do not explain.
-CONTENT:{content}
-
-CODE:{format_instructions}:"""
-
-
-def extract_topics(output_parser, output):
-    topics = []
-    for predicted_topic in output_parser.parse(output):
-        for topic in TOPIC_LIST:
-            if topic in predicted_topic:
-                topics.append(topic)
-                break
-    return topics
+def increase_count(count, character):
+    count += 1
+    print(character, end="", flush=True)
+    return count
 
 
-def mapping_country_codes(mapping_chain, content):
-    output = mapping_chain.invoke({'content': content})['text']
-    return [e for e in output_parser.parse(output) if e != '-' ]
+def create_out_file_name(in_file_name):
+    in_file_splits = in_file_name.split('/')
+    out_file_name = '/'.join(in_file_splits[:-1]) + '/' + 'processed-' + in_file_splits[-1]
+    return out_file_name
 
 
-def filter_if_actual_event(filter_chain, content):
-    output = filter_chain.invoke({'questions': [], 'article': content})['text']
-    for e in output_parser.parse(output):
-        if e.startswith('Yes'):
-            return True
-    return False
-    
+def load_country_codes(file_name):
+    country_dict = dict()
+    with open(file_name, 'rt') as csv_file:
+        csv_reader = csv.DictReader(csv_file, delimiter='\t')
+        for row in csv_reader:
+            country_dict[row['name']] = row["code"]
+    print(f"Read {len(country_dict)} countries.\n")
+    return country_dict
+
+
+def extract_country(text, country_dict):
+    return [country_dict[country_name] for country_name in country_dict if country_name in text]
+
 
 if __name__ == '__main__':
     in_file_name, country_file_name, start_date, end_date = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
@@ -141,36 +105,15 @@ if __name__ == '__main__':
 
     country_dict = load_country_codes(country_file_name)
     
-    llm = Ollama(model="mistral:instruct")
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2', model_kwargs = {'device': device})
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=384, chunk_overlap=0)
-    summarize_chain = load_summarize_chain(llm=llm, chain_type='map_reduce') 
-    output_parser = NumberedListOutputParser()
-    format_instructions = output_parser.get_format_instructions()
-
-    filter_prompt = PromptTemplate(
-        input_variables=["article"], 
-        partial_variables={"format_instructions": format_instructions}, 
-        template=FILTER_TEMPLATE)
-    filter_chain = LLMChain(llm=llm, prompt=filter_prompt)
-
-    classify_prompt = PromptTemplate(
-        input_variables=["topics", "article"], 
-        partial_variables={"format_instructions": format_instructions}, 
-        template=CLASSIFICATION_TEMPLATE)
-    classify_chain = LLMChain(llm=llm, prompt=classify_prompt)
-    
-    qa_prompt = PromptTemplate(
-        input_variables=["questions", "article"], 
-        partial_variables={"format_instructions": format_instructions}, 
-        template=QA_TEMPLATE)
-    qa_chain = LLMChain(llm=llm, prompt=qa_prompt)
-
-    mapping_prompt = PromptTemplate(
-        input_variables=["content"], 
-        partial_variables={"format_instructions": format_instructions}, 
-        template=MAPPING_TEMPLATE)
-    mapping_chain = LLMChain(llm=llm, prompt=mapping_prompt)
+    tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=0)
+    devices = ['mps' for i in range(0, 4)]
+    if device == 'cuda':
+        devices = [0, 1, 2, 3]
+    sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=devices[0])
+    summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=devices[1])
+    answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2",  device=devices[2])
+    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli",  device=devices[3])
     
     print(f"Created LLM tools.")
     
@@ -192,44 +135,53 @@ if __name__ == '__main__':
                 print(f"""[{count}] {doc['id']}\n--- {body['title']}\n--- {len(body['contents'])}\n""")
                 continue
             
-            # print(f"\n----- {document['id']}")
             full_text = '\n\n'.join([body[e] for e in ['title', 'contents'] if e in body])
-            chunks = text_splitter.create_documents([full_text])
-            document['chunks'] = [c.page_content for c in chunks]
-            document['summary'] = summarize_chain.invoke(chunks)['output_text']
+            document['chunks'] = [c.page_content for c in text_splitter.create_documents([full_text])]
+            
+            summary_texts = [chunk if len(tokenizer(chunk)) < 143 else None for chunk in document['chunks']]
+            long_texts = [chunk for chunk in document['chunks'] if len(tokenizer(chunk)) > 142]
+            
+            summarized_texts = [e['summary_text'] for e in summarizer(long_texts, min_length=142)]
+            j = 0
+            for i in range(0, len(document['chunks'])):
+                if summary_texts[i] is None:
+                    summary_texts[i] = summarized_texts[j]
+                    j += 1
+            
+            document['summary'] = '\n\n'.join(summary_texts)
+            if len(tokenizer(document['summary'])) > 1024:
+                document['summary'] = summarizer(document['summary'], min_length=142)[0]['summary_text']
 
-            # document['is_event'] = filter_if_actual_event(filter_chain, full_text)
-            document['is_event'] = filter_if_actual_event(filter_chain, document['summary'])
-            if document['is_event']:
-                topics = extract_topics(output_parser, classify_chain.invoke({'topics': TOPIC_LIST, 'article': document['summary']})['text'])
+            result = classifier(document['summary'], TOPIC_LIST, multi_label=True)
+            document['topics'] = {topic: score for topic, score in zip(result['labels'], result['scores']) if score > 0.9}
 
-                if topics:
-                    document['topics'] = topics
-                #     document['answers'] = []
-                #     for i, question in enumerate(QUESTION_LIST):
-                #         output = qa_chain.invoke({'questions': [question], 'article': full_text})['text']
-                #         document['answers'].append([question, [e for e in output_parser.parse(output) if e != '-' ]])
-                #     document['countries'] = list(set([e for e in mapping_country_codes(mapping_chain, document['answers'][3][1]) if e in country_dict]))
+            if document['topics']:
+                document['answers'] = []
+                for i, question in enumerate(QUESTION_LIST):
+                    result = answerer({'question': question, 'context': full_text})
+                    document['answers'].append({'question': question, 'score': result['score'], 'answer': result['answer']})
+                    if question == 'What countries does the disease spread?':
+                        document['countries'] = extract_country(result['answer'], country_dict)
 
-                document['embeddings'] = embeddings.embed_documents(document['chunks'])
+                document['embeddings'] = sentence_transformer.encode(document['chunks']).tolist()
             
             doc = {
                 k: v for k, v in document.items()
                 if k in [
                     'id', 'publicationdate', 'publicationname', 'originallanguage', 'originalfilename', 'factivatopicfolder', 'state',
-                    'chunks', 'embeddings', 'summary', 'topics', 'answers', 'countries', 'score', 'is_event'
+                    'chunks', 'embeddings', 'summary', 'topics', 'answers', 'countries', 'score'
                 ]
             }
             doc['title'] = body['title']
             doc['content'] = body['contents']
             
-            if 'topics' in doc:
+            if doc['topics']:
                 if 'answers' in doc:
-                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
                 else:
-                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
             else:
-                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
+                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
             count += 1
             
             if pub_date not in doc_dict:
