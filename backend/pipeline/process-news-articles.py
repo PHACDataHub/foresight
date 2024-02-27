@@ -138,7 +138,6 @@ if __name__ == '__main__':
             if len(body['contents']) > limit:
                 print(f"""[{useful}/{count}/{count+ignore}] {doc['id']}--- {body['title']}--- {len(body['contents'])}\n""", flush=True)
                 ignore += 1
-                count += 1
                 continue
             
             full_text = '\n\n'.join([body[e] for e in ['title', 'contents'] if e in body])
