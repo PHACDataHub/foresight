@@ -224,7 +224,10 @@ if __name__ == '__main__':
             doc['content'] = body['contents']
             
             if 'topics' in doc:
-                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+                if 'answers' in doc:
+                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+                else:
+                    print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
             else:
                 print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
             count += 1
