@@ -10,10 +10,10 @@ sudo update-alternatives --config g++
 gcc --version
 g++ --version
 
-wget "https://us.download.nvidia.com/tesla/525.85.12/NVIDIA-Linux-x86_64-525.85.12.run"
-chmod +x NVIDIA-Linux-x86_64-525.85.12.run
-sudo ./NVIDIA-Linux-x86_64-525.85.12.run
-rm NVIDIA-Linux-x86_64-525.85.12.run
+wget "https://us.download.nvidia.com/tesla/550.54.14/NVIDIA-Linux-x86_64-550.54.14.run"
+chmod +x NVIDIA-Linux-x86_64-550.54.14.run
+sudo ./NVIDIA-Linux-x86_64-550.54.14.run
+rm NVIDIA-Linux-x86_64-550.54.14.run
 
 nvidia-smi
 
@@ -26,10 +26,10 @@ sudo apt-get update
 sudo apt-get install -y nvidia-docker2
 sudo systemctl restart docker
 
-docker run --rm --gpus all nvidia/cuda:11.7.1-base-ubuntu22.04 nvidia-smi
+docker run --rm --gpus all nvidia/cuda:12.3.1-base-ubuntu22.04 nvidia-smi
 
 # docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm nvcr.io/nvidia/pytorch:23.01-py3
 
 docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
-  -it -v ./src/tests:/tests \
-  --rm nvcr.io/nvidia/pytorch:23.01-py3 python /tests/mnist.py
+  -it -v ./tests:/tests \
+  --rm nvcr.io/nvidia/pytorch:24.01-py3 python /tests/mnist.py

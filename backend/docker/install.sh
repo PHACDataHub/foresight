@@ -8,7 +8,7 @@ fi
 
 # Check if Docker Compose CLI Plugin version is given as argument
 if [ -z "$1" ]; then
-    COMPOSE_VERSION=v2.20.3
+    COMPOSE_VERSION=v2.24.6
 else
   COMPOSE_VERSION=$1
 fi

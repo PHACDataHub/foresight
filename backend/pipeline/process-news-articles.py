@@ -173,18 +173,24 @@ if __name__ == '__main__':
     print(f"Created LLM tools.")
     
     count = 0 if len(sys.argv) < 6 else int(sys.argv[5])
+    limit = 20000 0 if len(sys.argv) < 7 else int(sys.argv[6])
     doc_dict = dict()
     with open(in_file_name, 'rt') as in_file:
-        for line in in_file.readlines()[count:]:
+        lines = in_file.readlines()
+        print(f"Read {len(lines)} documents.")
+        
+        for line in lines[count:]:
             document = json.loads(line.strip())
             pub_date = document['publicationdate'][:10]
             if pub_date < start_date or pub_date > end_date or 'EN' not in document['body']:
                 continue
             
             body = document['body']['EN']
-            if len(body['contents']) > 50000:
+            if len(body['contents']) > limit:
                 print(f"""[{count}] {doc['id']}\n--- {body['title']}\n--- {body['contents']}\n""")
                 continue
+            
+            print(f"{doc['id']}")
             
             full_text = '\n\n'.join([body[e] for e in ['title', 'contents'] if e in body])
             chunks = text_splitter.create_documents([full_text])

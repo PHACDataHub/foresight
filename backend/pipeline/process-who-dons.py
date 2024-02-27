@@ -189,7 +189,7 @@ if __name__ == '__main__':
 
     with open(create_out_file_name(in_file_name), 'wt') as out_file:
         count = 0
-        for document in [documents[15], documents[16]]:
+        for document in documents:
             document = pipeline.create_embeddings(document)
             document = pipeline.create_summary(document)
             document = pipeline.classify(document)
