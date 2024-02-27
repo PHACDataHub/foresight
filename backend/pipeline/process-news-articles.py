@@ -212,7 +212,10 @@ def classify_text_task(worker_id, device, document_list, queue):
         result = classifier(document['summary'], TOPIC_LIST, multi_label=True)
         document['topics'] = {topic: score for topic, score in zip(result['labels'], result['scores']) if score > 0.9}
         
-        print('.', end="", flush=True)
+        if document['topics']:
+            print('.', end="", flush=True)
+        else:
+            print(' ', end="", flush=True)
         queue.put(document)
         
 
@@ -414,7 +417,7 @@ if __name__ == '__main__':
             doc_dict[pub_date] = []
         doc_dict[pub_date].append(doc)
 
-    print(f"\nProcessed {len(doc_dict)} articles.\n")
+    print(f"\nProcessed {len(doc_dict)} days.\n")
     
     for pub_date in sorted(doc_dict.keys()):
         with open(create_out_file_name(in_file_name, pub_date), 'wt') as out_file:
