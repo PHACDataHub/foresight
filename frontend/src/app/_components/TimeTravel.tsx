@@ -56,6 +56,7 @@ function TimeTravelComponent({
       c.scrollIntoView({
         behavior: "auto",
         inline: "center",
+        block: "end"
       });
     }
   }, [selectedDate]);
