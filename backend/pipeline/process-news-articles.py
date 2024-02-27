@@ -137,10 +137,12 @@ def filter_if_actual_event(filter_chain, content):
 
 if __name__ == '__main__':
     in_file_name, country_file_name, start_date, end_date = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    device = sys.argv[5] if len(sys.argv) > 6 else 'cuda'
+
     country_dict = load_country_codes(country_file_name)
     
     llm = Ollama(model="mistral:instruct")
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2', model_kwargs = {'device': 'cuda'})
+    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2', model_kwargs = {'device': device})
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=384, chunk_overlap=0)
     summarize_chain = load_summarize_chain(llm=llm, chain_type='map_reduce') 
     output_parser = NumberedListOutputParser()
@@ -172,8 +174,8 @@ if __name__ == '__main__':
     
     print(f"Created LLM tools.")
     
-    count = 0 if len(sys.argv) < 6 else int(sys.argv[5])
-    limit = 10000 if len(sys.argv) < 7 else int(sys.argv[6])
+    count = 0 if len(sys.argv) < 7 else int(sys.argv[6])
+    limit = 10000 if len(sys.argv) < 8 else int(sys.argv[7])
     doc_dict = dict()
     with open(in_file_name, 'rt') as in_file:
         lines = in_file.readlines()
