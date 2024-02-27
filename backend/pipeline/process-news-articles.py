@@ -136,7 +136,7 @@ if __name__ == '__main__':
             
             body = document['body']['EN']
             if len(body['contents']) > limit:
-                print(f"""[{count}] {doc['id']}\n--- {body['title']}\n--- {len(body['contents'])}\n""", flush=True)
+                print(f"""[{useful}/{count}/{count+ignore}] {doc['id']}\n--- {body['title']}\n--- {len(body['contents'])}\n""", flush=True)
                 ignore += 1
                 count += 1
                 continue
@@ -184,11 +184,11 @@ if __name__ == '__main__':
             
             if doc['topics']:
                 if 'answers' in doc:
-                    print(f"""[{useful}/{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""", flush=True)
+                    print(f"""\n[{useful}/{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""", flush=True)
                 else:
-                    print(f"""[{useful}/{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""", flush=True)
+                    print(f"""\n[{useful}/{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- {[(len(tokenizer(e)), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""", flush=True)
             else:
-                print(f"""[{useful}/{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""", flush=True)
+                print(f"""\n[{useful}/{count}/{count+ignore}] {doc['id']}\n--- {doc['summary']}\n--- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""", flush=True)
             count += 1
             
             if pub_date not in doc_dict:
