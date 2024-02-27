@@ -345,7 +345,7 @@ if __name__ == '__main__':
     in_file_name, country_file_name, start_date, end_date = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     device = sys.argv[5] if len(sys.argv) > 6 else 'cuda'
     count = 0 if len(sys.argv) < 7 else int(sys.argv[6])
-    limit = 10000 if len(sys.argv) < 8 else int(sys.argv[7])
+    limit = 20000 if len(sys.argv) < 8 else int(sys.argv[7])
 
     country_dict = load_country_codes(country_file_name)
     
@@ -375,11 +375,13 @@ if __name__ == '__main__':
     seconds = (end_time - start_time).total_seconds()
     print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
-    irrelevant_documents = [d for d in documents if not d['topics']]
-    print(f"\nTotal {len(documents)} IRrelevant documents", flush=True)
-    
-    relevant_documents = [d for d in documents if d['topics']]
-    print(f"\nTotal {len(relevant_documents)} RELEVANT documents", flush=True)
+    relevant_documents, irrelevant_documents = [], []
+    for d in documents:
+        if d['topics']:
+            relevant_documents.append(d)
+        else:
+            irrelevant_documents.append(d)
+    print(f"\nTotal {len(relevant_documents)} RELEVANT, {len(irrelevant_documents)} IRRELEVANT documents", flush=True)
 
     start_time = datetime.now()
     documents = answer_text(n_workers, relevant_documents, device)
@@ -394,7 +396,7 @@ if __name__ == '__main__':
     print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
     doc_dict = dict()
-    for document in documents:
+    for document in documents + irrelevant_documents:
         doc = {
             k: v for k, v in document.items()
             if k in [
@@ -412,7 +414,7 @@ if __name__ == '__main__':
             doc_dict[pub_date] = []
         doc_dict[pub_date].append(doc)
 
-    print(f"\nProcessed {count} articles.\n")
+    print(f"\nProcessed {len(doc_dict)} articles.\n")
     
     for pub_date in sorted(doc_dict.keys()):
         with open(create_out_file_name(in_file_name, pub_date), 'wt') as out_file:
