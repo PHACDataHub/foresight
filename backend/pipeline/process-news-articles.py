@@ -179,7 +179,7 @@ if __name__ == '__main__':
     doc_dict = dict()
     with open(in_file_name, 'rt') as in_file:
         lines = in_file.readlines()
-        print(f"Read {len(lines)} documents.")
+        print(f"Read {len(lines)} documents.\n")
         
         for line in lines[count:]:
             document = json.loads(line.strip())
@@ -189,7 +189,7 @@ if __name__ == '__main__':
             
             body = document['body']['EN']
             if len(body['contents']) > limit:
-                print(f"""[{count}] {doc['id']}\n--- {body['title']}\n--- {body['contents']}\n""")
+                print(f"""[{count}] {doc['id']}\n--- {body['title']}\n--- {len(body['contents'])}\n""")
                 continue
             
             # print(f"\n----- {document['id']}")
@@ -201,10 +201,10 @@ if __name__ == '__main__':
             # document['is_event'] = filter_if_actual_event(filter_chain, full_text)
             document['is_event'] = filter_if_actual_event(filter_chain, document['summary'])
             if document['is_event']:
-                # topics = extract_topics(output_parser, classify_chain.invoke({'topics': TOPIC_LIST, 'article': document['summary']})['text'])
+                topics = extract_topics(output_parser, classify_chain.invoke({'topics': TOPIC_LIST, 'article': document['summary']})['text'])
 
-                # if topics:
-                #     document['topics'] = topics
+                if topics:
+                    document['topics'] = topics
                 #     document['answers'] = []
                 #     for i, question in enumerate(QUESTION_LIST):
                 #         output = qa_chain.invoke({'questions': [question], 'article': full_text})['text']
@@ -223,15 +223,10 @@ if __name__ == '__main__':
             doc['title'] = body['title']
             doc['content'] = body['contents']
             
-            # if 'topics' in doc:
-            #     print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
-            # else:
-            #     print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
-            
-            if document['is_event']:
-                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']} --- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}""")
+            if 'topics' in doc:
+                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
             else:
-                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}""")
+                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
             count += 1
             
             if pub_date not in doc_dict:
