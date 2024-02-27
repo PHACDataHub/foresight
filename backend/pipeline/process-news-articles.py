@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 import json
 import sys
 
@@ -121,6 +122,8 @@ if __name__ == '__main__':
     useful, ignore = 0, 0
     limit = 10000 if len(sys.argv) < 8 else int(sys.argv[7])
     doc_dict = dict()
+    start_time = datetime.now()
+    
     with open(in_file_name, 'rt') as in_file:
         lines = in_file.readlines()
         print(f"Read {len(lines)} documents.\n")
@@ -191,6 +194,11 @@ if __name__ == '__main__':
             if pub_date not in doc_dict:
                 doc_dict[pub_date] = []
             doc_dict[pub_date].append(doc)
+
+            if (count+ignore) % 10 == 0:            
+                end_time = datetime.now()
+                seconds = (end_time - start_time).total_seconds()
+                print(f"Total {count} documents in {seconds} seconds: {seconds/(count+ignore)} seconds per document.")
 
     print(f"\nProcessed {count} articles.\n")
     
