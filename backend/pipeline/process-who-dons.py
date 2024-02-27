@@ -113,9 +113,9 @@ def load_country_codes(file_name):
 
 class Pipeline(object):
     
-    def __init__(self) -> None:
-        self.llm = Ollama(model="mistral")
-        self.embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2')
+    def __init__(self, device) -> None:
+        self.llm = Ollama(model="mistral:instruct")
+        self.embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2', model_kwargs = {'device': device})
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=384, chunk_overlap=0)
         self.summarize_chain = load_summarize_chain(llm=self.llm, chain_type='map_reduce') 
         
@@ -185,7 +185,8 @@ if __name__ == '__main__':
         documents = [json.loads(line.strip()) for line in in_file.readlines()]
     print(f"Read {len(documents)} articles.\n")
 
-    pipeline = Pipeline()
+    device = sys.argv[3] if len(sys.argv) > 3 else 'cuda'
+    pipeline = Pipeline(device)
 
     with open(create_out_file_name(in_file_name), 'wt') as out_file:
         count = 0
