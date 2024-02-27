@@ -8,8 +8,8 @@ export default function SplashScreen() {
       <SplashTemplate
         nameEng="Foresight"
         nameFra="Sérum"
-        indexEng="/en-CA"
-        indexFra="/fr-CA"
+        indexEng="/en-CA/1"
+        indexFra="/fr-CA/1"
       />
     </>
   );

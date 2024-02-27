@@ -3,8 +3,12 @@
         "title": "Foresight"
     },
     "TimeTravel": {
-        "chooseDate": "Choose a day",
+        "chooseDate": "Today is",
         "currentDate": "current",
-        "travelText": "Time travel to"
+        "travelText": "Time travel to",
+        "startButton": "Start",
+        "nextButton": "Next",
+        "lastButton": "Last",
+        "previousButton": "Previous"
     }
 }

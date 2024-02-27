@@ -1,8 +1,8 @@
 "use client";
 
-import { WetProvider } from "@arcnovus/wet-boew-react";
 import React, { useEffect } from "react";
-import useWetLang from "../_hooks/useWetLang";
+import { WetProvider } from "@arcnovus/wet-boew-react";
+import useWetLang from "~/app/_hooks/useWetLang";
 
 declare global {
   interface Window {
