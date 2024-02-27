@@ -173,7 +173,7 @@ if __name__ == '__main__':
     print(f"Created LLM tools.")
     
     count = 0 if len(sys.argv) < 6 else int(sys.argv[5])
-    limit = 20000 0 if len(sys.argv) < 7 else int(sys.argv[6])
+    limit = 10000 if len(sys.argv) < 7 else int(sys.argv[6])
     doc_dict = dict()
     with open(in_file_name, 'rt') as in_file:
         lines = in_file.readlines()
@@ -190,25 +190,26 @@ if __name__ == '__main__':
                 print(f"""[{count}] {doc['id']}\n--- {body['title']}\n--- {body['contents']}\n""")
                 continue
             
-            print(f"{doc['id']}")
-            
+            # print(f"\n----- {document['id']}")
             full_text = '\n\n'.join([body[e] for e in ['title', 'contents'] if e in body])
             chunks = text_splitter.create_documents([full_text])
             document['chunks'] = [c.page_content for c in chunks]
             document['summary'] = summarize_chain.invoke(chunks)['output_text']
 
-            document['is_event'] = filter_if_actual_event(filter_chain, full_text)
+            # document['is_event'] = filter_if_actual_event(filter_chain, full_text)
+            document['is_event'] = filter_if_actual_event(filter_chain, document['summary'])
             if document['is_event']:
-                topics = extract_topics(output_parser, classify_chain.invoke({'topics': TOPIC_LIST, 'article': document['summary']})['text'])
+                # topics = extract_topics(output_parser, classify_chain.invoke({'topics': TOPIC_LIST, 'article': document['summary']})['text'])
 
-                if topics:
-                    document['topics'] = topics
-                    document['answers'] = []
-                    for i, question in enumerate(QUESTION_LIST):
-                        output = qa_chain.invoke({'questions': [question], 'article': full_text})['text']
-                        document['answers'].append([question, [e for e in output_parser.parse(output) if e != '-' ]])
-                    document['countries'] = list(set([e for e in mapping_country_codes(mapping_chain, document['answers'][3][1]) if e in country_dict]))
-                    document['embeddings'] = embeddings.embed_documents(document['chunks'])
+                # if topics:
+                #     document['topics'] = topics
+                #     document['answers'] = []
+                #     for i, question in enumerate(QUESTION_LIST):
+                #         output = qa_chain.invoke({'questions': [question], 'article': full_text})['text']
+                #         document['answers'].append([question, [e for e in output_parser.parse(output) if e != '-' ]])
+                #     document['countries'] = list(set([e for e in mapping_country_codes(mapping_chain, document['answers'][3][1]) if e in country_dict]))
+
+                document['embeddings'] = embeddings.embed_documents(document['chunks'])
             
             doc = {
                 k: v for k, v in document.items()
@@ -220,10 +221,15 @@ if __name__ == '__main__':
             doc['title'] = body['title']
             doc['content'] = body['contents']
             
-            if 'topics' in doc:
-                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+            # if 'topics' in doc:
+            #     print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['state']} --- {doc['score']}\n--- [{len(doc['topics'])}] {doc['topics']}\n--- [{len(doc['answers'])}] {doc['answers']}\n--- {doc['countries']}\n--- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}\n""")
+            # else:
+            #     print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
+            
+            if document['is_event']:
+                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']} --- {[(llm.get_num_tokens(e), len(doc['embeddings'][i])) for i, e in enumerate(document['chunks'])]}""")
             else:
-                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}\n""")
+                print(f"""[{count}] {doc['id']}\n--- {doc['summary']}\n--- {doc['is_event']} --- {doc['factivatopicfolder']} --- {doc['state']} --- {doc['score']}""")
             count += 1
             
             if pub_date not in doc_dict:
