@@ -6,7 +6,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline, AutoTokenizer
 
-
 TOPIC_LIST = [
     'Outbreaks of known infectious diseases',
     'Emerging infectious diseases or novel pathogens',
@@ -90,18 +89,18 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=0)
-    sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=device)
-    summarizer = pipeline("summarization", model="facebook/bart-large-cnn", device=device)
-    answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2", device=device)
-    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", device=device)
+    devices = [0, 0, 0, 0]
+    if device == 'cuda':
+        devices = [0, 1, 2, 3]
+    sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=devices[0])
+    summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=devices[1])
+    answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2",  device=devices[2])
+    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli",  device=devices[3])
 
     with open(create_out_file_name(in_file_name), 'wt') as out_file:
         count = 0
         for document in documents:
             full_text = '\n\n'.join([document[e] for e in ['title', 'content'] if e in document])
-
-            result = classifier(full_text, TOPIC_LIST, multi_label=True)
-            document['topics'] = {topic: score for topic, score in zip(result['labels'], result['scores']) if score > 0.9}
 
             document['chunks'] = [c.page_content for c in text_splitter.create_documents([full_text])]
             
@@ -115,8 +114,11 @@ if __name__ == '__main__':
                     j += 1
             
             document['summary'] = '\n\n'.join(summary_texts)
-            if len(document['summary']) > 1024:
+            if len(tokenizer(document['summary'])) > 1024:
                 document['summary'] = summarizer(document['summary'])[0]['summary_text']
+
+            result = classifier(document['summary'], TOPIC_LIST, multi_label=True)
+            document['topics'] = {topic: score for topic, score in zip(result['labels'], result['scores']) if score > 0.9}
 
             document['answers'] = []
             for i, question in enumerate(QUESTION_LIST):
