@@ -315,7 +315,7 @@ def embed_text_task(worker_id, device, document_list, queue):
     sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=device_id)
     
     for document in document_list:
-        document['embeddings'] = sentence_transformer.encode(document['chunks']).tolist()
+        document['embeddings'] = sentence_transformer.encode(document['chunks'])
 
         print('.', end="", flush=True)
         queue.put(document)

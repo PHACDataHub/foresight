@@ -3,6 +3,15 @@ from json import JSONEncoder
 import numpy
 import sys
 
+from umap import UMAP
+from hdbscan import HDBSCAN
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+
+from bertopic import BERTopic
+from bertopic.representation import KeyBERTInspired
+from bertopic.vectorizers import ClassTfidfTransformer
+
 
 class NumpyArrayEncoder(JSONEncoder):
     def default(self, obj):
