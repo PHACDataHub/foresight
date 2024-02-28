@@ -348,7 +348,7 @@ if __name__ == '__main__':
     in_file_name, country_file_name, start_date, end_date = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     device = sys.argv[5] if len(sys.argv) > 6 else 'cuda'
     count = 0 if len(sys.argv) < 7 else int(sys.argv[6])
-    limit = 20000 if len(sys.argv) < 8 else int(sys.argv[7])
+    limit = 100000 if len(sys.argv) < 8 else int(sys.argv[7])
 
     country_dict = load_country_codes(country_file_name)
     
@@ -372,25 +372,25 @@ if __name__ == '__main__':
     seconds = (end_time - start_time).total_seconds()
     print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
-    start_time = datetime.now()
-    documents = classify_text(n_workers, documents, device)
-    end_time = datetime.now()
-    seconds = (end_time - start_time).total_seconds()
-    print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
+    # start_time = datetime.now()
+    # documents = classify_text(n_workers, documents, device)
+    # end_time = datetime.now()
+    # seconds = (end_time - start_time).total_seconds()
+    # print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
-    relevant_documents, irrelevant_documents = [], []
-    for d in documents:
-        if d['topics']:
-            relevant_documents.append(d)
-        else:
-            irrelevant_documents.append(d)
-    print(f"\nTotal {len(relevant_documents)} RELEVANT, {len(irrelevant_documents)} IRRELEVANT documents", flush=True)
+    # relevant_documents, irrelevant_documents = [], []
+    # for d in documents:
+    #     if d['topics']:
+    #         relevant_documents.append(d)
+    #     else:
+    #         irrelevant_documents.append(d)
+    # print(f"\nTotal {len(relevant_documents)} RELEVANT, {len(irrelevant_documents)} IRRELEVANT documents", flush=True)
 
-    start_time = datetime.now()
-    documents = answer_text(n_workers, relevant_documents, device)
-    end_time = datetime.now()
-    seconds = (end_time - start_time).total_seconds()
-    print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
+    # start_time = datetime.now()
+    # documents = answer_text(n_workers, relevant_documents, device)
+    # end_time = datetime.now()
+    # seconds = (end_time - start_time).total_seconds()
+    # print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
     start_time = datetime.now()
     documents = embed_text(n_workers, documents, device)
@@ -399,7 +399,8 @@ if __name__ == '__main__':
     print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
     doc_dict = dict()
-    for document in documents + irrelevant_documents:
+    # for document in documents + irrelevant_documents:
+    for document in documents:
         doc = {
             k: v for k, v in document.items()
             if k in [
