@@ -130,8 +130,8 @@ if __name__ == '__main__':
         texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in doc_dict[pub_date]]
         embeddings = embedding_model.encode(texts, show_progress_bar=True)
         
-        if device == 'cuda':
-            embeddings = normalize(embeddings)
+        # if device == 'cuda':
+        #     embeddings = normalize(embeddings)
             
         topics, probs = topic_model.fit_transform(texts, embeddings)
         print(topic_model.get_topic_info())
