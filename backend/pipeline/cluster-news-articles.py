@@ -160,15 +160,35 @@ if __name__ == '__main__':
         topic_model.set_topic_labels(label_dict)
         print(topic_model.get_topic_info())
         
+        grouped_topics = {
+            topic: { 'id_list': [], 'label': label_dict[i], 'summary': summary_dict[i] } 
+            for topic in set(topics)
+        }
+        for index, topic in enumerate(topics):
+            grouped_topics[topic]['id_list'].append(doc_dict[pub_date][index]['id'])
+            
+        count = 0
+        for topic in sorted(grouped_topics.keys()):
+            print(topic, len(grouped_topics[topic]))
+            count += len(grouped_topics[topic]['id_list'])
+        print(count, len(doc_dict[pub_date]))
+        assert count == len(doc_dict[pub_date])
+        
+        cluster_file_name = 'datasets/' + pub_date + '-clusters.jsonl'
+        with open(cluster_file_name, 'wt') as out_file:
+            out_file.write(f"{json.dumps(grouped_topics)}\n")
+        print(f"\nWritten {cluster_file_name}.\n")
+        
         viz_hie_arch = topic_model.visualize_hierarchy(custom_labels=True)
         viz_hie_arch.write_html("viz/" + pub_date + '-hie.html')
 
         # Reduce dimensionality of embeddings, this step is optional but much faster to perform iteratively:
         reduced_embeddings = UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine').fit_transform(embeddings)
-        viz_docs = topic_model.visualize_documents(texts, reduced_embeddings=reduced_embeddings, width=1024, height=768, custom_labels=True)
+        viz_docs = topic_model.visualize_documents(texts, reduced_embeddings=reduced_embeddings, width=2048, height=1536, custom_labels=True)
         viz_docs.write_html("viz/" + pub_date + '-cls.html')
         
-        embedding_model.stop_multi_process_pool(pool)
+        if device == 'cuda':
+            embedding_model.stop_multi_process_pool(pool)
         
         end_time = datetime.now()
         seconds = (end_time - start_time).total_seconds()
