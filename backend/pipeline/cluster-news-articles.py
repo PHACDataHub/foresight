@@ -127,7 +127,6 @@ if __name__ == '__main__':
         if device == 'cuda':
             pool = embedding_model.start_multi_process_pool()
             embeddings = embedding_model.encode_multi_process(texts, pool)
-            embedding_model.stop_multi_process_pool(pool)
         else:
             embeddings = embedding_model.encode(texts, show_progress_bar=True)
         
@@ -162,14 +161,15 @@ if __name__ == '__main__':
         print(topic_model.get_topic_info())
         
         viz_hie_arch = topic_model.visualize_hierarchy(custom_labels=True)
-        viz_hie_arch.write_html("viz/" + pub_date + '-hie-1.html')
+        viz_hie_arch.write_html("viz/" + pub_date + '-hie.html')
 
         # Reduce dimensionality of embeddings, this step is optional but much faster to perform iteratively:
         reduced_embeddings = UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine').fit_transform(embeddings)
         viz_docs = topic_model.visualize_documents(texts, reduced_embeddings=reduced_embeddings, width=1024, height=768, custom_labels=True)
-        viz_docs.write_html("viz/" + pub_date + '-cls-1.html')
+        viz_docs.write_html("viz/" + pub_date + '-cls.html')
+        
+        embedding_model.stop_multi_process_pool(pool)
         
         end_time = datetime.now()
         seconds = (end_time - start_time).total_seconds()
         print(f"\nTotal {len(doc_dict[pub_date])} documents in {seconds} seconds: {seconds*1000/(len(doc_dict[pub_date])):0.3f} seconds per 1K documents.", flush=True)
-        
