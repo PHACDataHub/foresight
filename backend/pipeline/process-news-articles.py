@@ -1,6 +1,8 @@
 import csv
 from datetime import datetime
 import json
+from json import JSONEncoder
+import numpy
 from queue import Queue
 from threading import Thread
 import sys
@@ -54,6 +56,13 @@ QUESTION_LIST = [
 ]    
 
 
+class NumpyArrayEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        return JSONEncoder.default(self, obj)
+    
+    
 def increase_count(count, character):
     count += 1
     print(character, end="", flush=True)
@@ -251,7 +260,7 @@ def classify_text(n_workers, input_documents, device):
     return output_documents
 
 
-def answer_text_task(worker_id, device, document_list, queue):
+def answer_text_task(worker_id, device, country_dict, document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
     answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2",  device=device_id)
     
@@ -346,7 +355,7 @@ def embed_text(n_workers, input_documents, device):
 
 if __name__ == '__main__':
     in_file_name, country_file_name, start_date, end_date = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
-    device = sys.argv[5] if len(sys.argv) > 6 else 'cuda'
+    device = sys.argv[5] if len(sys.argv) > 5 else 'cuda'
     count = 0 if len(sys.argv) < 7 else int(sys.argv[6])
     limit = 100000 if len(sys.argv) < 8 else int(sys.argv[7])
 
@@ -387,7 +396,7 @@ if __name__ == '__main__':
     # print(f"\nTotal {len(relevant_documents)} RELEVANT, {len(irrelevant_documents)} IRRELEVANT documents", flush=True)
 
     # start_time = datetime.now()
-    # documents = answer_text(n_workers, relevant_documents, device)
+    # documents = answer_text(n_workers, country_dict, relevant_documents, device)
     # end_time = datetime.now()
     # seconds = (end_time - start_time).total_seconds()
     # print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
@@ -424,7 +433,7 @@ if __name__ == '__main__':
         with open(create_out_file_name(in_file_name, pub_date), 'wt') as out_file:
             count = 0
             for doc in doc_dict[pub_date]:
-                out_file.write(f"{json.dumps(doc)}\n")
+                out_file.write(f"{json.dumps(doc, cls=NumpyArrayEncoder)}\n")
                 count = increase_count(count, '.')
             print(f"\n[{pub_date}] Written {count} articles.")
         
