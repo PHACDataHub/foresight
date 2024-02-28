@@ -5,6 +5,8 @@ import sys
 from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 
+from umap import UMAP
+from hdbscan import HDBSCAN
 from bertopic import BERTopic
 from bertopic.representation import KeyBERTInspired
 from bertopic.vectorizers import ClassTfidfTransformer
@@ -25,13 +27,13 @@ if __name__ == '__main__':
     path, country_file_name, single_date = sys.argv[1], sys.argv[2], sys.argv[3]
 
     device = sys.argv[4] if len(sys.argv) > 4 else 'cuda'
-    if device == 'cuda':
-        from cuml.cluster import HDBSCAN
-        from cuml.manifold import UMAP
-        from cuml.preprocessing import normalize
-    else:
-        from umap import UMAP
-        from hdbscan import HDBSCAN
+    # if device == 'cuda':
+    #     from cuml.cluster import HDBSCAN
+    #     from cuml.manifold import UMAP
+    #     from cuml.preprocessing import normalize
+    # else:
+    #     from umap import UMAP
+    #     from hdbscan import HDBSCAN
 
     doc_dict = dict()
     for file in sorted(os.listdir(path)):
