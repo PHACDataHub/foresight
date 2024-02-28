@@ -1,8 +1,6 @@
 import csv
 from datetime import datetime
 import json
-from json import JSONEncoder
-import numpy
 from queue import Queue
 from threading import Thread
 import sys
@@ -56,21 +54,16 @@ QUESTION_LIST = [
 ]    
 
 
-class NumpyArrayEncoder(JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, numpy.ndarray):
-            return obj.tolist()
-        return JSONEncoder.default(self, obj)
-    
-    
 def increase_count(count, character):
     count += 1
     print(character, end="", flush=True)
     return count
 
 
-def create_out_file_name(in_file_name, pub_date):
+def create_out_file_name(in_file_name, pub_date, ext='.jsonl'):
     in_file_splits = in_file_name.split('/')
+    if ext != '.jsonl':
+        in_file_splits[-1] = in_file_splits[-1].replace('.jsonl', ext)
     out_file_name = '/'.join(in_file_splits[:-1]) + '/' + 'processed-' + pub_date + '-' + in_file_splits[-1]
     return out_file_name
 
@@ -315,7 +308,7 @@ def embed_text_task(worker_id, device, document_list, queue):
     sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=device_id)
     
     for document in document_list:
-        document['embeddings'] = sentence_transformer.encode(document['chunks'])
+        document['embeddings'] = sentence_transformer.encode(document['chunks']).tolist()
 
         print('.', end="", flush=True)
         queue.put(document)
@@ -433,7 +426,6 @@ if __name__ == '__main__':
         with open(create_out_file_name(in_file_name, pub_date), 'wt') as out_file:
             count = 0
             for doc in doc_dict[pub_date]:
-                out_file.write(f"{json.dumps(doc, cls=NumpyArrayEncoder)}\n")
+                out_file.write(f"{json.dumps(doc)}\n")
                 count = increase_count(count, '.')
             print(f"\n[{pub_date}] Written {count} articles.")
-        

@@ -1,6 +1,6 @@
 import json
-from json import JSONEncoder
-import numpy
+import os
+import pickle
 import sys
 
 from umap import UMAP
@@ -11,13 +11,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from bertopic import BERTopic
 from bertopic.representation import KeyBERTInspired
 from bertopic.vectorizers import ClassTfidfTransformer
-
-
-class NumpyArrayEncoder(JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, numpy.ndarray):
-            return obj.tolist()
-        return JSONEncoder.default(self, obj)
 
 
 def increase_count(count, character):
@@ -33,19 +26,23 @@ if __name__ == '__main__':
     doc_dict = dict()
     for file in sorted(os.listdir(path)):
         file_name = os.path.join(path, file)
-        if not os.path.isfile(file_name) or not file.startswith('processed-') or not file.endswith('-news-articles.jsonl'):
+        if not os.path.isfile(file_name) \
+            or not file.startswith('processed-') \
+            or not file.endswith('-news-articles.jsonl'):
             continue
         
         pub_date = file[10:20]
-        documents = []
-        with open(file_name, 'rt') as in_file:
-            for line in in_file.readlines():
-                document = json.loads(line.strip())
-                document['embeddings'] = numpy.asarray(document['embeddings'])
-                count = increase_count(count, '.')
-
-        doc_dict[pub_date] = documents
-        print(f"\n[{pub_date}] Read {count} articles.\n")
+        if file.endswith('.jsonl'):
+            count = 0
+            documents = []
+            with open(file_name, 'rt') as in_file:
+                for line in in_file.readlines():
+                    document = json.loads(line.strip())
+                    # document['embeddings'] = numpy.asarray(document['embeddings'])
+                    documents.append(document)
+                    count = increase_count(count, '.')
+            doc_dict[pub_date] = documents
+            print(f"\n[{pub_date}] Read {count} articles.\n")
 
     # Step 1 - Extract embeddings
     # device_id = 'mps' if device == 'mps' else worker_id
@@ -79,11 +76,9 @@ if __name__ == '__main__':
     )
 
     for pub_date in sorted(doc_dict.keys())[0:1]:
-        documents = doc_dict[pub_date]
-        
-        embeddings = [document['embeddings'] for document in documents]
-        document_ids = [document['title'] for document in documents]
-        topics, probs = topic_model.fit_transform(documents, embeddings)
+        texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in doc_dict[pub_date]]
+        embeddings = embedding_model.encode(texts, show_progress_bar=True)
+        topics, probs = topic_model.fit_transform(texts, embeddings)
         
         print(topic_model.get_topic_info())
         
@@ -94,10 +89,10 @@ if __name__ == '__main__':
         viz_hie_arch.show()
 
         # Run the visualization with the original embeddings
-        topic_model.visualize_documents(documents, embeddings=embeddings)
+        topic_model.visualize_documents(texts, embeddings=embeddings)
 
         # Reduce dimensionality of embeddings, this step is optional but much faster to perform iteratively:
         reduced_embeddings = UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine').fit_transform(embeddings)
-        viz_docs = topic_model.visualize_documents(documents, reduced_embeddings=reduced_embeddings, width=2880, height=1620, custom_labels=True)
+        viz_docs = topic_model.visualize_documents(texts, reduced_embeddings=reduced_embeddings, width=2880, height=1620, custom_labels=True)
         viz_docs.show()
         
