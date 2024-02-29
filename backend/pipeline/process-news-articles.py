@@ -152,23 +152,15 @@ def split_text(n_workers, input_documents):
     
 def summarize_text_task(worker_id, device, document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
-    tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=device_id)
     
     for document in document_list:
-        summary_texts = [chunk if len(tokenizer(chunk)) < 143 else None for chunk in document['chunks']]
-        long_texts = [chunk for chunk in document['chunks'] if len(tokenizer(chunk)) > 142]
-        
-        summarized_texts = [e['summary_text'] for e in summarizer(long_texts, min_length=142)]
-        j = 0
-        for i in range(0, len(document['chunks'])):
-            if summary_texts[i] is None:
-                summary_texts[i] = summarized_texts[j]
-                j += 1
-        
-        document['summary'] = '\n\n'.join(summary_texts)
-        if len(tokenizer(document['summary'])) > 1024:
-            document['summary'] = summarizer(document['summary'], min_length=142)[0]['summary_text']
+        summary = ''
+        for i, chunk in enumerate(document['chunks']):
+            summary = summarizer(summary + '\n\n' + chunk, max_length=128)[0]['summary_text']
+        if len(summary) > 1024:
+            summary = summarizer(summary, max_length=128)[0]['summary_text']
+        document['summary'] = summary
 
         print('.', end="", flush=True)
         queue.put(document)
