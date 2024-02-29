@@ -3,6 +3,7 @@ import json
 import os
 from queue import Queue
 from threading import Thread
+from time import sleep
 import sys
 
 from wordcloud import WordCloud
@@ -18,6 +19,12 @@ from bertopic.representation import KeyBERTInspired, MaximalMarginalRelevance
 from bertopic.vectorizers import ClassTfidfTransformer
 
 from transformers import pipeline, AutoTokenizer
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+from langchain.chains.llm import LLMChain
+from langchain_community.llms import Ollama
+from langchain.output_parsers.list import NumberedListOutputParser
+from langchain.prompts.prompt import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
@@ -64,11 +71,19 @@ def increase_count(count, character):
 
 def summarize_text_task(worker_id, device, document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=0)
+    tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=device_id)
-    
+
     for document in document_list:
-        summary = summarizer(document, max_length=130, min_length=30, do_sample=False)[0]['summary_text']
-        print('+', end="", flush=True)
+        chunks = [c.page_content for c in text_splitter.create_documents([document])]
+        summary = ''
+        for chunk in chunks:
+            summary = summary + '\n\n' + chunk
+            if len(tokenizer(summary)) > 128:
+                summary = summarizer(summary, max_length=128)[0]['summary_text']
+       
+        print('.', end="", flush=True)
         queue.put(summary)
         
 
@@ -152,7 +167,7 @@ def classify_text(n_workers, input_documents, device):
 if __name__ == '__main__':
     path, single_date = sys.argv[1], sys.argv[2]
     device = sys.argv[3] if len(sys.argv) > 3 else None
-
+    
     doc_dict = dict()
     for file in sorted(os.listdir(path)):
         file_name = os.path.join(path, file)
@@ -170,49 +185,42 @@ if __name__ == '__main__':
 
         count = 0
         documents = []
+        document_map = dict()
         with open(file_name, 'rt') as in_file:
             for line in in_file.readlines():
                 document = json.loads(line.strip())
                 documents.append(document)
                 count = increase_count(count, '.')
+                document_map[document['title']] = document['summary']
+                
         doc_dict[pub_date] = documents
         print(f"\n[{pub_date}] Read {count} articles.\n")
 
-        # # System prompt describes information given to all conversations
-        # LABELING_PROMPT_TEMPLATE = """
-        # You are a helpful, respectful and honest assistant for labeling topics.
+        # System prompt describes information given to all conversations
+        LABELING_PROMPT_TEMPLATE = """
+        You are a helpful, respectful and honest assistant for labeling topics.
 
-        # I have a topic that contains the following documents delimited by triple backquotes (```). 
-        # ```{documents}```
+        I have a topic that contains the following documents delimited by triple backquotes (```). 
+        ```{documents}```
         
-        # The topic is described by the following keywords delimited by triple backquotes (```):
-        # ```{keywords}```
+        The topic is described by the following keywords delimited by triple backquotes (```):
+        ```{keywords}```
 
-        # Create a concise label of this topic, which should not exceed 32 characters.
-        # If there are more than one possible labels, return the shortest one and nothing more.
+        Create a concise label of this topic, which should not exceed 32 characters.
+        If there are more than one possible labels, return the shortest one and nothing more.
         
-        # {format_instructions}
-        # """
+        {format_instructions}
+        """
         
-        # llm = Ollama(model="mistral:instruct")
-        # output_parser = NumberedListOutputParser()
-        # format_instructions = output_parser.get_format_instructions()
+        llm = Ollama(model="mistral:instruct")
+        output_parser = NumberedListOutputParser()
+        format_instructions = output_parser.get_format_instructions()
 
-        # labeling_prompt = PromptTemplate(
-        #     input_variables=["documents", "keywords"], 
-        #     partial_variables={"format_instructions": format_instructions}, 
-        #     template=LABELING_PROMPT_TEMPLATE)
-        # labeling_llm_chain = LLMChain(llm=llm, prompt=labeling_prompt)
-
-        # SUMMARY_PROMPT_TEMPLATE = """Write a concise summary for all following documents delimited by triple backquotes (```).
-        # ```{documents}```
-
-        # {format_instructions}"""
-        # summary_prompt = PromptTemplate(
-        #     input_variables=["documents"], 
-        #     partial_variables={"format_instructions": format_instructions},
-        #     template=SUMMARY_PROMPT_TEMPLATE)
-        # summary_llm_chain = LLMChain(llm=llm, prompt=summary_prompt)
+        labeling_prompt = PromptTemplate(
+            input_variables=["documents", "keywords"], 
+            partial_variables={"format_instructions": format_instructions}, 
+            template=LABELING_PROMPT_TEMPLATE)
+        labeling_llm_chain = LLMChain(llm=llm, prompt=labeling_prompt)
 
         # Step 1 - Extract embeddings
         device_id = 'mps' if device == 'mps' else 0
@@ -246,18 +254,18 @@ if __name__ == '__main__':
             calculate_probabilities=True,
         )
         
-        classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", device=device_id)
-       
         print('Compute embeddings ...')
         texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in doc_dict[pub_date]]
         if device == 'cuda':
-            pool = embedding_model.start_multi_process_pool()
+            pool = embedding_model.start_multi_process_pool(target_devices=['cuda:0', 'cuda:1', 'cuda:2', 'cuda:3'])
             embeddings = embedding_model.encode_multi_process(texts, pool)
+            embedding_model.stop_multi_process_pool(pool)
         else:
             embeddings = embedding_model.encode(texts, show_progress_bar=True)
-        
+    
         print('Start fit_transform ...')
         topics, probs = topic_model.fit_transform(texts, embeddings)
+        topic_set = set(topics)
         print(topic_model.get_topic_info())
         
         # Reduce outliers
@@ -266,52 +274,35 @@ if __name__ == '__main__':
         topic_model.update_topics(texts, topics=new_topics)
         print(topic_model.get_topic_info())
         
-        # print(topic_model.topic_aspects_)
-        topic_labels = topic_model.generate_topic_labels(nr_words=5, topic_prefix=False, word_length=10, separator=", ")
-        topic_model.set_topic_labels(topic_labels)
-        print(topic_model.get_topic_info())
-        
-        topic_set = set(topics)
-        label_dict = dict()
-        for topic in topic_set:
-            if topic != -1:
-                label_dict[topic] = topic_model.topic_labels_[topic]
-                print(f"[{topic}] {label_dict[topic]}")
-               
-        input_documents = [topic_model.representative_docs_[topic][0] for topic in topic_set if topic != -1]
+        label_dict, summary_dict = dict(), dict()
+        for i in range(-1, len(topic_model.get_topic_info())-1):
+            if i == -1:
+                label_dict[i] = 'Outlier Topic'
+            else:
+                # keywords = topic_model.topic_labels_[i].split('_')[1:]
+                # doc_summary = document_map[topic_model.representative_docs_[topic][0].split('\n\n')[0]]
+                # output = labeling_llm_chain.invoke({'documents': doc_summary, 'keywords': keywords})['text']
+                # label_dict[i] = output_parser.parse(output)[0]
+                label_dict[i] = topic_model.topic_labels_[i]
+            print(f"[{i}] {label_dict[i]}")
 
+        topic_model.set_topic_labels(label_dict)
+        print(topic_model.get_topic_info())
+               
         n_workers = 4
-        classified_topics_list = classify_text(n_workers, input_documents, device)
-        for topic, classified_topics in enumerate(classified_topics_list):
-            print(f"[{topic}] --- {classified_topics}")
+        input_documents = [document_map[topic_model.representative_docs_[topic][0].split('\n\n')[0]] for topic in topic_set if topic != -1]
         
         summaries = summarize_text(n_workers, input_documents, device)
         for topic, summary in enumerate(summaries):
             print(f"[{topic}] --- {summary}")
 
-        # label_dict, summary_dict = dict(), dict()
-        # for i in range(-1, len(topic_model.get_topic_info())-1):
-        #     if i == -1:
-        #         label_dict[i] = 'Outlier Topic'
-        #         summary_dict[i] = ''
-                
-        #     else:
-        #         keywords = topic_model.topic_labels_[i].split('_')[1:]
-        #         representative_docs = topic_model.representative_docs_[i]
-        #         # output = labeling_llm_chain.invoke({'documents': representative_docs[0], 'keywords': keywords})['text']
-        #         label_dict[i] = output_parser.parse(output)[0]
-                
-        #         output = summary_llm_chain.invoke({'documents': representative_docs[0]})['text']
-        #         summary_dict[i] = sorted(output_parser.parse(output), reverse=True)[0]
-                
-        #         print(f"[{i}] {label_dict[i]} --- {summary_dict[i]}")
+        classified_topics_list = classify_text(n_workers, input_documents, device)
+        for topic, classified_topics in enumerate(classified_topics_list):
+            print(f"[{topic}] --- {classified_topics}")
 
-        # topic_model.set_topic_labels(label_dict)
-        # print(topic_model.get_topic_info())
-        
         grouped_topics = {
             topic: { 
-                'id_list': [], 'label': label_dict[topic] if topic != -1 else "Outliers", 
+                'id_list': [], 'label': label_dict[topic], 
                 'summary': summaries[topic] if topic != -1 else '', 
                 'threats': classified_topics_list[topic] if topic != -1 else ''
             } 
@@ -347,9 +338,6 @@ if __name__ == '__main__':
         reduced_embeddings = UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine').fit_transform(embeddings)
         viz_docs = topic_model.visualize_documents(texts, reduced_embeddings=reduced_embeddings, width=2048, height=1536, custom_labels=True)
         viz_docs.write_html("viz/" + pub_date + '-cls.html')
-        
-        if device == 'cuda':
-            embedding_model.stop_multi_process_pool(pool)
         
         end_time = datetime.now()
         seconds = (end_time - start_time).total_seconds()

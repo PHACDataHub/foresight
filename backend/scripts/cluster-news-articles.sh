@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python pipeline/cluster-news-articles.py datasets 2019-12-01 cuda
+# python pipeline/cluster-news-articles.py datasets 2019-12-01 cuda
 python pipeline/cluster-news-articles.py datasets 2019-12-02 cuda
 python pipeline/cluster-news-articles.py datasets 2019-12-03 cuda
 python pipeline/cluster-news-articles.py datasets 2019-12-04 cuda
