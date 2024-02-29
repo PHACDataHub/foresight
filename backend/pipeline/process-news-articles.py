@@ -150,151 +150,6 @@ def split_text(n_workers, input_documents):
     return output_documents
     
     
-def summarize_text_task(worker_id, device, document_list, queue):
-    device_id = 'mps' if device == 'mps' else worker_id
-    summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=device_id)
-    
-    for document in document_list:
-        summary = ''
-        for i, chunk in enumerate(document['chunks']):
-            summary = summary + '\n\n' + chunk
-            if len(summary) > 1024:
-                summary = summarizer(summary, max_length=128)[0]['summary_text']
-        document['summary'] = summary
-
-        print('.', end="", flush=True)
-        queue.put(document)
-        
-
-def summarize_text(n_workers, input_documents, device):
-    batch_size = len(input_documents) // n_workers
-
-    sub_lists = []
-    for i in range(0, n_workers-1):
-        sub_lists.append(input_documents[i * batch_size: (i+1) * batch_size])
-    sub_lists.append(input_documents[(n_workers - 1) * batch_size:])
-
-    output_queue = Queue()
-    workers = []
-    for i in range(0, n_workers):
-        workers.append(Thread(target=summarize_text_task, args=(i, device, sub_lists[i], output_queue,)))
-        
-    for i in range(0, n_workers):
-        workers[i].start()
-    
-    for i in range(0, n_workers):
-        workers[i].join()
-        
-    output_documents = []
-    while True:
-        document = output_queue.get()
-        if document is None:
-            break
-        
-        assert document['summary'] is not None
-        output_documents.append(document)
-        if len(output_documents) == len(input_documents):
-            break
-    return output_documents
-
-
-def classify_text_task(worker_id, device, document_list, queue):
-    device_id = 'mps' if device == 'mps' else worker_id
-    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli",  device=device_id)
-    
-    for document in document_list:
-        result = classifier(document['summary'], TOPIC_LIST, multi_label=True)
-        document['topics'] = {topic: score for topic, score in zip(result['labels'], result['scores']) if score > 0.9}
-        
-        if document['topics']:
-            print('.', end="", flush=True)
-        else:
-            print(' ', end="", flush=True)
-        queue.put(document)
-        
-
-def classify_text(n_workers, input_documents, device):
-    batch_size = len(input_documents) // n_workers
-
-    sub_lists = []
-    for i in range(0, n_workers-1):
-        sub_lists.append(input_documents[i * batch_size: (i+1) * batch_size])
-    sub_lists.append(input_documents[(n_workers - 1) * batch_size:])
-
-    output_queue = Queue()
-    workers = []
-    for i in range(0, n_workers):
-        workers.append(Thread(target=classify_text_task, args=(i, device, sub_lists[i], output_queue,)))
-        
-    for i in range(0, n_workers):
-        workers[i].start()
-    
-    for i in range(0, n_workers):
-        workers[i].join()
-        
-    output_documents = []
-    while True:
-        document = output_queue.get()
-        if document is None:
-            break
-        
-        assert document['topics'] is not None
-        output_documents.append(document)
-        if len(output_documents) == len(input_documents):
-            break
-    return output_documents
-
-
-def answer_text_task(worker_id, device, country_dict, document_list, queue):
-    device_id = 'mps' if device == 'mps' else worker_id
-    answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2",  device=device_id)
-    
-    for document in document_list:
-        document['answers'] = []
-        for question in QUESTION_LIST:
-            body = document['body']['EN']
-            full_text = '\n\n'.join([body[e] for e in ['title', 'contents'] if e in body])
-            result = answerer({'question': question, 'context': full_text})
-            document['answers'].append({'question': question, 'score': result['score'], 'answer': result['answer']})
-            if question == 'What countries does the disease spread?':
-                document['countries'] = extract_country(result['answer'], country_dict)
-
-        print('.', end="", flush=True)
-        queue.put(document)
-        
-
-def answer_text(n_workers, input_documents, device):
-    batch_size = len(input_documents) // n_workers
-
-    sub_lists = []
-    for i in range(0, n_workers-1):
-        sub_lists.append(input_documents[i * batch_size: (i+1) * batch_size])
-    sub_lists.append(input_documents[(n_workers - 1) * batch_size:])
-
-    output_queue = Queue()
-    workers = []
-    for i in range(0, n_workers):
-        workers.append(Thread(target=answer_text_task, args=(i, device, sub_lists[i], output_queue,)))
-        
-    for i in range(0, n_workers):
-        workers[i].start()
-    
-    for i in range(0, n_workers):
-        workers[i].join()
-        
-    output_documents = []
-    while True:
-        document = output_queue.get()
-        if document is None:
-            break
-        
-        assert document['answers'] is not None
-        output_documents.append(document)
-        if len(output_documents) == len(input_documents):
-            break
-    return output_documents
-
-
 def embed_text_task(worker_id, device, document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
     sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=device_id)
@@ -361,32 +216,6 @@ if __name__ == '__main__':
     seconds = (end_time - start_time).total_seconds()
     print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
-    # start_time = datetime.now()
-    # documents = summarize_text(n_workers, documents, device)
-    # end_time = datetime.now()
-    # seconds = (end_time - start_time).total_seconds()
-    # print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
-
-    # start_time = datetime.now()
-    # documents = classify_text(n_workers, documents, device)
-    # end_time = datetime.now()
-    # seconds = (end_time - start_time).total_seconds()
-    # print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
-
-    # relevant_documents, irrelevant_documents = [], []
-    # for d in documents:
-    #     if d['topics']:
-    #         relevant_documents.append(d)
-    #     else:
-    #         irrelevant_documents.append(d)
-    # print(f"\nTotal {len(relevant_documents)} RELEVANT, {len(irrelevant_documents)} IRRELEVANT documents", flush=True)
-
-    # start_time = datetime.now()
-    # documents = answer_text(n_workers, country_dict, relevant_documents, device)
-    # end_time = datetime.now()
-    # seconds = (end_time - start_time).total_seconds()
-    # print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
-
     start_time = datetime.now()
     documents = embed_text(n_workers, documents, device)
     end_time = datetime.now()
@@ -394,7 +223,6 @@ if __name__ == '__main__':
     print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
     doc_dict = dict()
-    # for document in documents + irrelevant_documents:
     for document in documents:
         doc = {
             k: v for k, v in document.items()
