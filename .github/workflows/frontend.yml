@@ -89,7 +89,15 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: northamerica-northeast1-docker.pkg.dev/phx-01hnapr4ab4/foresight/foresight-frontend:latest
+          tags: northamerica-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/foresight/foresight-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
+      
+      - name: Configure kubectl
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+      
+      - name: Rollout new image
+        run: |
+          kubectl set image deployment/frontend foresight-frontend=northamerica-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/foresight/foresight-frontend:${{ github.sha }} -n=frontend
+          kubectl rollout status deployment/frontend -n=frontend
