@@ -15,11 +15,10 @@ from sklearn.feature_extraction.text import CountVectorizer
 from umap import UMAP
 from hdbscan import HDBSCAN
 from bertopic import BERTopic
-from bertopic.representation import KeyBERTInspired, MaximalMarginalRelevance
+from bertopic.representation import KeyBERTInspired
 from bertopic.vectorizers import ClassTfidfTransformer
 
-from transformers import pipeline, AutoTokenizer
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from transformers import pipeline
 
 from langchain.chains.llm import LLMChain
 from langchain_community.llms import Ollama
