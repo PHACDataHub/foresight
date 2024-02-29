@@ -344,6 +344,7 @@ if __name__ == '__main__':
     count = 0 if len(sys.argv) < 7 else int(sys.argv[6])
     limit = 100000 if len(sys.argv) < 8 else int(sys.argv[7])
 
+    initial_time = datetime.now()
     country_dict = load_country_codes(country_file_name)
     
     n_workers = 4
@@ -421,3 +422,7 @@ if __name__ == '__main__':
                 out_file.write(f"{json.dumps(doc)}\n")
                 count = increase_count(count, '.')
             print(f"\n[{pub_date}] Written {count} articles.")
+
+    end_time = datetime.now()
+    seconds = (end_time - initial_time).total_seconds()
+    print(f"\nTotal {len(documents)+ignored} documents in {seconds} seconds: {seconds*1000/(len(documents)+ignored):0.3f} seconds per 1K documents.", flush=True)

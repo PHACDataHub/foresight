@@ -1,3 +1,4 @@
+import csv
 from datetime import datetime
 import json
 import os
@@ -79,7 +80,7 @@ def summarize_text_task(worker_id, device, document_list, queue):
         for chunk in chunks:
             summary = summary + '\n\n' + chunk
             if len(summary) > 768:
-                summary = summarizer(summary, max_length=256)[0]['summary_text']
+                summary = summarizer(summary, max_length=128)[0]['summary_text']
 
         summary = summary.strip('\n\n').strip()
         print('.', end="", flush=True)
@@ -131,6 +132,78 @@ def classify_text_task(worker_id, device, document_list, queue):
             print(' ', end="", flush=True)
         queue.put(topics)
         
+        
+QUESTION_LIST = [
+    'What disease is it or is it an unknown disease?',
+    'What is the possible source of this disease?',
+    'How does this disease spread?',
+    'What countries does the disease spread?',
+    'When did the disease start?',
+    'Is the disease still spreading or did it stop?',
+]    
+
+
+def load_country_codes(file_name):
+    country_dict = dict()
+    with open(file_name, 'rt') as csv_file:
+        csv_reader = csv.DictReader(csv_file, delimiter='\t')
+        for row in csv_reader:
+            country_dict[row['name']] = row["code"]
+    print(f"Read {len(country_dict)} countries.\n")
+    return country_dict
+
+
+def extract_country(text, country_dict):
+    return [country_dict[country_name] for country_name in country_dict if country_name in text]
+
+
+def answer_text_task(worker_id, device, country_dict, document_list, queue):
+    device_id = 'mps' if device == 'mps' else worker_id
+    answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2",  device=device_id)
+    
+    for documents in document_list:
+        answers = []
+        for question in QUESTION_LIST:
+            result = answerer({'question': question, 'context': '\n\n'.join(documents)})
+            answer = {'question': question, 'score': result['score'], 'answer': result['answer']}
+            if question == 'What countries does the disease spread?':
+                answer['countries'] =  extract_country(result['answer'], country_dict)
+            answers.append(answer)
+
+        print('.', end="", flush=True)
+        queue.put(answers)
+        
+
+def answer_text(n_workers, input_documents, country_dict, device):
+    batch_size = len(input_documents) // n_workers
+
+    sub_lists = []
+    for i in range(0, n_workers-1):
+        sub_lists.append(input_documents[i * batch_size: (i+1) * batch_size])
+    sub_lists.append(input_documents[(n_workers - 1) * batch_size:])
+
+    output_queue = Queue()
+    workers = []
+    for i in range(0, n_workers):
+        workers.append(Thread(target=answer_text_task, args=(i, device, country_dict, sub_lists[i], output_queue,)))
+        
+    for i in range(0, n_workers):
+        workers[i].start()
+    
+    for i in range(0, n_workers):
+        workers[i].join()
+        
+    output_documents = []
+    while True:
+        document = output_queue.get()
+        if document is None:
+            break
+        
+        output_documents.append(document)
+        if len(output_documents) == len(input_documents):
+            break
+    return output_documents
+        
 
 def classify_text(n_workers, input_documents, device):
     batch_size = len(input_documents) // n_workers
@@ -164,8 +237,10 @@ def classify_text(n_workers, input_documents, device):
 
 
 if __name__ == '__main__':
-    path, single_date = sys.argv[1], sys.argv[2]
-    device = sys.argv[3] if len(sys.argv) > 3 else None
+    path, country_file_name, single_date = sys.argv[1], sys.argv[2], sys.argv[3]
+    device = sys.argv[4] if len(sys.argv) > 4 else None
+    
+    country_dict = load_country_codes(country_file_name)
     
     doc_dict = dict()
     for file in sorted(os.listdir(path)):
@@ -273,10 +348,10 @@ if __name__ == '__main__':
         topic_model.update_topics(texts, topics=new_topics)
         print(topic_model.get_topic_info())
         
-        print('Summarize clusters ...')
         n_workers = 4
-        input_documents = [topic_model.representative_docs_[topic][0] for topic in topic_set if topic != -1]
-        summaries = summarize_text(n_workers, input_documents, device)
+
+        print('Summarize clusters ...')
+        summaries = summarize_text(n_workers, [topic_model.representative_docs_[topic][0] for topic in topic_set if topic != -1], device)
         summary_dict = dict()
         for topic in topic_set:
             if topic == -1:
@@ -304,17 +379,36 @@ if __name__ == '__main__':
         print(topic_model.get_topic_info())
 
         print('Classify clusters ...')
-        classified_topics_list = classify_text(n_workers, input_documents, device)
+        classified_topics_list = classify_text(n_workers, [topic_model.representative_docs_[topic][0] for topic in topic_set if topic != -1], device)
         classified_topic_dict = dict()
         for topic in topic_set:
             if topic == -1:
                 classified_topic_dict[topic] = {}
             else:
                 classified_topic_dict[topic] = classified_topics_list[topic]
+            print(f"[{topic}] --- CLS --- {classified_topic_dict[topic]}")
+
+        print('Answering questions ...')
+        relevant_docs_list = []
+        for topic in sorted(topic_set):
+            if topic != -1 and classified_topic_dict[topic]:
+                relevant_docs_list.append([topic, topic_model.representative_docs_[topic]])
+                
+        answers = answer_text(n_workers, [docs for _, docs in relevant_docs_list], country_dict, device)
+        answers_dict = {topic: [] for topic in topic_set}
+        for i, answer in enumerate(answers):
+            topic = relevant_docs_list[i][0]
+            answers_dict[topic] = answer
+
+        for topic in topic_set:
+            print(f"[{topic}] --- ANS --- {answers_dict[topic]}")
 
         print('Gathering stats ...')
         grouped_topics = {
-            topic: { 'id_list': [], 'label': label_dict[topic], 'summary': summary_dict[topic], 'threats': classified_topic_dict[topic] } for topic in topic_set
+            topic: { 
+                'id_list': [], 'label': label_dict[topic], 'summary': summary_dict[topic], 
+                'threats': classified_topic_dict[topic], 'answers': answers_dict[topic], 
+            } for topic in topic_set
         }
         for index, topic in enumerate(topics):
             grouped_topics[topic]['id_list'].append(doc_dict[pub_date][index]['id'])
