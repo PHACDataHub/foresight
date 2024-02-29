@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main      
+      - simardeep1792-k8s-patch
     paths:
       - 'frontend'
       - '.github/workflows/frontend.yml'
@@ -19,6 +20,7 @@ on:
     types: [ opened, synchronize, reopened ]
     branches:
       - main      
+      - simardeep1792-k8s-patch
     paths:
       - 'frontend'
       - '.github/workflows/frontend.yml'
