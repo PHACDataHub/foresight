@@ -92,7 +92,12 @@ jobs:
           tags: northamerica-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/foresight/foresight-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
+      - name: Install gcloud components
+        run: |
+          gcloud components update
+          gcloud components install gke-gcloud-auth-plugin
+          
       - name: Configure kubectl
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
