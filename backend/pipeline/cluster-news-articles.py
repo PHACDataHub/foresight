@@ -70,7 +70,7 @@ def increase_count(count, character):
 
 def summarize_text_task(worker_id, device, document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=0)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=768, chunk_overlap=0)
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=device_id)
     
     for document in document_list:
@@ -78,7 +78,7 @@ def summarize_text_task(worker_id, device, document_list, queue):
         chunks = [c.page_content for c in text_splitter.create_documents([document])]
         for chunk in chunks:
             summary = summary + '\n\n' + chunk
-            if len(summary) > 2048:
+            if len(summary) > 768:
                 summary = summarizer(summary, max_length=256)[0]['summary_text']
 
         summary = summary.strip('\n\n').strip()
@@ -267,12 +267,13 @@ if __name__ == '__main__':
         topic_set = set(topics)
         print(topic_model.get_topic_info())
         
-        # Reduce outliers
+        print('Reduce outliers ...')
         new_topics = topic_model.reduce_outliers(texts, topics, probabilities=probs, strategy="probabilities")
         new_topics = topic_model.reduce_outliers(texts, topics, strategy="embeddings", embeddings=embeddings)
         topic_model.update_topics(texts, topics=new_topics)
         print(topic_model.get_topic_info())
         
+        print('Summarize clusters ...')
         n_workers = 4
         input_documents = [topic_model.representative_docs_[topic][0] for topic in topic_set if topic != -1]
         summaries = summarize_text(n_workers, input_documents, device)
@@ -284,6 +285,7 @@ if __name__ == '__main__':
                 summary_dict[topic] = summaries[topic]
             print(f"[{topic}] --- SUM --- {summary_dict[topic]}")
 
+        print('Label clusters ...')
         label_dict = dict()
         for topic in topic_set:
             if topic == -1:
@@ -301,6 +303,7 @@ if __name__ == '__main__':
         topic_model.set_topic_labels(label_dict)
         print(topic_model.get_topic_info())
 
+        print('Classify clusters ...')
         classified_topics_list = classify_text(n_workers, input_documents, device)
         classified_topic_dict = dict()
         for topic in topic_set:
@@ -309,6 +312,7 @@ if __name__ == '__main__':
             else:
                 classified_topic_dict[topic] = classified_topics_list[topic]
 
+        print('Gathering stats ...')
         grouped_topics = {
             topic: { 'id_list': [], 'label': label_dict[topic], 'summary': summary_dict[topic], 'threats': classified_topic_dict[topic] } for topic in topic_set
         }
@@ -335,6 +339,7 @@ if __name__ == '__main__':
             out_file.write(f"{json.dumps(grouped_topics)}\n")
         print(f"\nWritten {cluster_file_name}.\n")
         
+        print('Generating viz ...')
         viz_hie_arch = topic_model.visualize_hierarchy(custom_labels=True)
         viz_hie_arch.write_html("viz/" + pub_date + '-hie.html')
 
