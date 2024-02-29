@@ -157,9 +157,9 @@ def summarize_text_task(worker_id, device, document_list, queue):
     for document in document_list:
         summary = ''
         for i, chunk in enumerate(document['chunks']):
-            summary = summarizer(summary + '\n\n' + chunk, max_length=128)[0]['summary_text']
-        if len(summary) > 1024:
-            summary = summarizer(summary, max_length=128)[0]['summary_text']
+            summary = summary + '\n\n' + chunk
+            if len(summary) > 1024:
+                summary = summarizer(summary, max_length=128)[0]['summary_text']
         document['summary'] = summary
 
         print('.', end="", flush=True)
