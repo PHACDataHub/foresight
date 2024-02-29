@@ -360,11 +360,11 @@ if __name__ == '__main__':
     seconds = (end_time - start_time).total_seconds()
     print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
-    start_time = datetime.now()
-    documents = summarize_text(n_workers, documents, device)
-    end_time = datetime.now()
-    seconds = (end_time - start_time).total_seconds()
-    print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
+    # start_time = datetime.now()
+    # documents = summarize_text(n_workers, documents, device)
+    # end_time = datetime.now()
+    # seconds = (end_time - start_time).total_seconds()
+    # print(f"\nTotal {len(documents)} documents in {seconds} seconds: {seconds*1000/(len(documents)):0.3f} seconds per 1K documents.", flush=True)
 
     # start_time = datetime.now()
     # documents = classify_text(n_workers, documents, device)

@@ -71,17 +71,17 @@ def increase_count(count, character):
 def summarize_text_task(worker_id, device, document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=0)
-    tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=device_id)
-
+    
     for document in document_list:
-        chunks = [c.page_content for c in text_splitter.create_documents([document])]
         summary = ''
+        chunks = [c.page_content for c in text_splitter.create_documents([document])]
         for chunk in chunks:
             summary = summary + '\n\n' + chunk
-            if len(tokenizer(summary)) > 128:
-                summary = summarizer(summary, max_length=128)[0]['summary_text']
-       
+            if len(summary) > 2048:
+                summary = summarizer(summary, max_length=256)[0]['summary_text']
+
+        summary = summary.strip('\n\n').strip()
         print('.', end="", flush=True)
         queue.put(summary)
         
@@ -184,13 +184,13 @@ if __name__ == '__main__':
 
         count = 0
         documents = []
-        document_map = dict()
+        # document_map = dict()
         with open(file_name, 'rt') as in_file:
             for line in in_file.readlines():
                 document = json.loads(line.strip())
                 documents.append(document)
                 count = increase_count(count, '.')
-                document_map[document['title']] = document['summary']
+                # document_map[document['title']] = document['summary']
                 
         doc_dict[pub_date] = documents
         print(f"\n[{pub_date}] Read {count} articles.\n")
@@ -273,39 +273,44 @@ if __name__ == '__main__':
         topic_model.update_topics(texts, topics=new_topics)
         print(topic_model.get_topic_info())
         
-        label_dict, summary_dict = dict(), dict()
-        for i in range(-1, len(topic_model.get_topic_info())-1):
-            if i == -1:
-                label_dict[i] = 'Outlier Topic'
+        n_workers = 4
+        input_documents = [topic_model.representative_docs_[topic][0] for topic in topic_set if topic != -1]
+        summaries = summarize_text(n_workers, input_documents, device)
+        summary_dict = dict()
+        for topic in topic_set:
+            if topic == -1:
+                summary_dict[topic] = ''
             else:
-                # keywords = topic_model.topic_labels_[i].split('_')[1:]
-                # doc_summary = document_map[topic_model.representative_docs_[topic][0].split('\n\n')[0]]
-                # output = labeling_llm_chain.invoke({'documents': doc_summary, 'keywords': keywords})['text']
-                # label_dict[i] = output_parser.parse(output)[0]
-                label_dict[i] = topic_model.topic_labels_[i]
-            print(f"[{i}] {label_dict[i]}")
+                summary_dict[topic] = summaries[topic]
+            print(f"[{topic}] --- SUM --- {summary_dict[topic]}")
+
+        label_dict = dict()
+        for topic in topic_set:
+            if topic == -1:
+                label_dict[topic] = 'Outlier Topic'
+            else:
+                keywords = topic_model.topic_labels_[topic].split('_')[1:]
+                output = labeling_llm_chain.invoke({'documents': summary_dict[topic], 'keywords': keywords})['text']
+                result = output_parser.parse(output)
+                if result and len(result) > 0:
+                    label_dict[topic] = result[0]
+                else:
+                    label_dict[topic] = topic_model.topic_labels_[topic]
+            print(f"[{topic}] --- LBL --- {label_dict[topic]}")
 
         topic_model.set_topic_labels(label_dict)
         print(topic_model.get_topic_info())
-               
-        n_workers = 4
-        input_documents = [document_map[topic_model.representative_docs_[topic][0].split('\n\n')[0]] for topic in topic_set if topic != -1]
-        
-        summaries = summarize_text(n_workers, input_documents, device)
-        for topic, summary in enumerate(summaries):
-            print(f"[{topic}] --- {summary}")
 
         classified_topics_list = classify_text(n_workers, input_documents, device)
-        for topic, classified_topics in enumerate(classified_topics_list):
-            print(f"[{topic}] --- {classified_topics}")
+        classified_topic_dict = dict()
+        for topic in topic_set:
+            if topic == -1:
+                classified_topic_dict[topic] = {}
+            else:
+                classified_topic_dict[topic] = classified_topics_list[topic]
 
         grouped_topics = {
-            topic: { 
-                'id_list': [], 'label': label_dict[topic], 
-                'summary': summaries[topic] if topic != -1 else '', 
-                'threats': classified_topics_list[topic] if topic != -1 else ''
-            } 
-            for topic in topic_set
+            topic: { 'id_list': [], 'label': label_dict[topic], 'summary': summary_dict[topic], 'threats': classified_topic_dict[topic] } for topic in topic_set
         }
         for index, topic in enumerate(topics):
             grouped_topics[topic]['id_list'].append(doc_dict[pub_date][index]['id'])
@@ -316,14 +321,14 @@ if __name__ == '__main__':
         print(count, len(doc_dict[pub_date]))
         assert count == len(doc_dict[pub_date])
         
-        for topic in topic_set:
-            if topic != -1:
-                text = {word: value for word, value in topic_model.get_topic(topic)}
-                wc = WordCloud(background_color="white", max_words=1000)
-                wc.generate_from_frequencies(text)
-                plt.imshow(wc, interpolation="bilinear")
-                plt.axis("off")
-                plt.savefig('viz/' + pub_date + '-' + str(topic) + '.png')
+        # for topic in topic_set:
+        #     if topic != -1:
+        #         text = {word: value for word, value in topic_model.get_topic(topic)}
+        #         wc = WordCloud(background_color="white", max_words=1000)
+        #         wc.generate_from_frequencies(text)
+        #         plt.imshow(wc, interpolation="bilinear")
+        #         plt.axis("off")
+        #         plt.savefig('viz/' + pub_date + '-' + str(topic) + '.png')
         
         cluster_file_name = 'datasets/' + pub_date + '-clusters.jsonl'
         with open(cluster_file_name, 'wt') as out_file:
