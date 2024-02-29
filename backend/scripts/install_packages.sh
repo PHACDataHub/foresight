@@ -12,5 +12,5 @@ if [[ $(uname -s) == 'Darwin' ]]; then
     brew list wget &>/dev/null || brew install wget
     brew list grep &>/dev/null || brew install grep
 else
-    sudo apt install jq wget unzip python3 python3.10-venv -y
+    sudo apt install jq wget unzip python3 python3.10-venv python3.10-dev -y
 fi
