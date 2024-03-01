@@ -104,4 +104,3 @@ jobs:
         run: |
           kubectl rollout restart deployment/${{ secrets.DEPLOYMENT_NAME }} -n ${{ secrets.NAMESPACE }}
           kubectl rollout status deployment/${{ secrets.DEPLOYMENT_NAME }} -n ${{ secrets.NAMESPACE }}
-
