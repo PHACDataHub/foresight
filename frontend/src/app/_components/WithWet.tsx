@@ -15,5 +15,10 @@ export default function WithWet({ children }: { children: React.ReactNode }) {
     window.wet = window.wet || {};
   }, []);
   const lang = useWetLang();
+  useEffect(() => {
+    console.log("-- load with wet --");
+  }, []);
+
+
   return <WetProvider language={lang}>{children}</WetProvider>;
 }

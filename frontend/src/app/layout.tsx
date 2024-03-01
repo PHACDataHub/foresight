@@ -1,5 +1,6 @@
 import "~/styles/globals.css";
 
+import { TRPCReactProvider } from "~/trpc/react";
 import WithWet from "./_components/WithWet";
 
 export default function RootLayout({
@@ -10,11 +11,14 @@ export default function RootLayout({
   params: { locale: string };
 }) {
   const lang = locale || "en-CA";
+  
   return (
-    <WithWet>
-      <html className="no-js h-full" lang={lang}>
-        <body className="h-full">{children}</body>
-      </html>
-    </WithWet>
+    <TRPCReactProvider>
+      <WithWet>
+        <html className="no-js h-full" lang={lang}>
+          <body className="h-full">{children}</body>
+        </html>
+      </WithWet>
+    </TRPCReactProvider>
   );
 }
