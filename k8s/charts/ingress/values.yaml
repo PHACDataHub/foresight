@@ -1,0 +1,2 @@
+envSetting: "staging"
+loadBalancerIP: "0.0.0.0"

@@ -1,0 +1,18 @@
+replicaCount: 1
+
+image:
+  repository: northamerica-northeast1-docker.pkg.dev/phx-01hnapr4ab4/foresight/frontend
+  pullPolicy: Always
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+env:
+  DATABASE_URL: "file:/tmp/db.sqlite"
+  NEXTAUTH_SECRET: "demo"
+  NEXTAUTH_URL: "demo"
+  DISCORD_CLIENT_ID: "demo"
+  DISCORD_CLIENT_SECRET: "demo"

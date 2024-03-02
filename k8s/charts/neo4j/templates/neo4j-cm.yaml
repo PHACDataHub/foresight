@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: neo4j-config
+data:
+  create-constraints-and-indexes.cql: |-
+    {{ .Files.Get "files/create-constraints-and-indexes.cql" | nindent 8 }}
+  import-disease-ontology.cql: |-
+    {{ .Files.Get "files/import-disease-ontology.cql" | nindent 8 }}
+  import-who-dons.cql: |-
+    {{ .Files.Get "files/import-who-dons.cql" | nindent 8 }}
+  remove-entities.cql: |-
+    {{ .Files.Get "files/remove-entities.cql" | nindent 8 }}
+  neodash-2.3.5.json: |-
+    {{ .Files.Get "files/neodash-2.3.5.json" | nindent 8 }}
+  neodash-2.4.2.json: |-
+    {{ .Files.Get "files/neodash-2.4.2.json" | nindent 8 }}
