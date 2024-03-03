@@ -280,7 +280,7 @@ def execute_tasks(topic_models, documents, texts, out_name):
     index = 0
     topic_doc_dict = dict()
     for topic, probability  in zip(topics, probabilities):
-        topic, probability = topic, probability[topic].item()
+        topic, probability = topic.item(), probability[topic].item()
         if probability == 0.0:
             index += 1
             continue
