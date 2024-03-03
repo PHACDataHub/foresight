@@ -280,7 +280,7 @@ def execute_tasks(topic_models, documents, texts, out_name):
     index = 0
     topic_doc_dict = dict()
     for topic, probability  in zip(topics, probabilities):
-        topic, probability = topic.item(), probability[topic].item()
+        topic, probability = topic if type(topic) == 'int' else topic.item(), probability[topic].item()
         if probability == 0.0:
             index += 1
             continue
@@ -435,7 +435,6 @@ if __name__ == '__main__':
     text_dict, model_dict  = dict(), dict()
     for pub_date in sorted(document_dict.keys()):
         daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
-        partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
 
         model_file_name = "datasets/" + pub_date + '.pkl'
         if os.path.isfile(model_file_name):
@@ -443,6 +442,7 @@ if __name__ == '__main__':
             topic_model = BERTopic.load(model_file_name)
             print(topic_model.get_topic_info())
         else:
+            partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
             print('Compute model: ' + model_file_name)
             topic_model = topic_model = BERTopic(
                 embedding_model=embedding_model,            # Step 1 - Extract embeddings
