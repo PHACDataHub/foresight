@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 import json
 import os
+import pickle
 from queue import Queue
 from threading import Thread
 from time import sleep
@@ -247,7 +248,7 @@ def execute_tasks(topic_models, documents, texts, out_name):
     index = 0
     topic_doc_dict = dict()
     for topic, probability  in zip(topics, probabilities):
-        topic, probability = topic.item(), probability[topic].item()
+        topic, probability = topic, probability[topic].item()
         if probability == 0.0:
             index += 1
             continue
@@ -342,7 +343,7 @@ if __name__ == '__main__':
     path, country_file_name, device = sys.argv[1], sys.argv[2], sys.argv[3]
     country_dict = load_country_codes(country_file_name)
 
-    date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)]
+    date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)][0:2]
     
     document_dict = dict()
     for pub_date in date_list:
@@ -404,24 +405,34 @@ if __name__ == '__main__':
         daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
         partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
 
-        topic_model = topic_model = BERTopic(
-            embedding_model=embedding_model,            # Step 1 - Extract embeddings
-            umap_model=umap_model,                      # Step 2 - Reduce dimensionality
-            hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
-            vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
-            ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
-            representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
-            calculate_probabilities=True,
-            # nr_topics="auto",
-            verbose=True
-        ).fit(daily_texts, partial_embeddings)
-        print(topic_model.get_topic_info())
+        model_file_name = "datasets/" + pub_date + '.pkl'
+        if os.path.isFile(model_file_name):
+            print('Load model: ' + model_file_name)
+            topic_model = BERTopic.load(model_file_name)
+            print(topic_model.get_topic_info())
+        else:
+            topic_model = topic_model = BERTopic(
+                embedding_model=embedding_model,            # Step 1 - Extract embeddings
+                umap_model=umap_model,                      # Step 2 - Reduce dimensionality
+                hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
+                vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
+                ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
+                representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
+                calculate_probabilities=True,
+                # nr_topics="auto",
+                verbose=True
+            ).fit(daily_texts, partial_embeddings)
+            print(topic_model.get_topic_info())
 
-        print('\nReduce outliers ...')
-        new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
-        new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=topic_model.probabilities_)
-        new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
-        topic_model.update_topics(daily_texts, topics=new_topics)
+            print('Reduce outliers ...')
+            new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
+            new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=topic_model.probabilities_)
+            new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
+            topic_model.update_topics(daily_texts, topics=new_topics)
+            print(topic_model.get_topic_info())
+           
+            print('Save model: ' + "datasets/" + pub_date + '.pkl ... ')
+            topic_model.save("datasets/" + pub_date + '.pkl', serialization="pickle")
 
         text_dict[pub_date] = daily_texts
         model_dict[pub_date] = topic_model
