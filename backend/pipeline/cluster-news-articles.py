@@ -28,6 +28,17 @@ from langchain.prompts.prompt import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
+class NumpyFloatValuesEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.float32):
+            return float(obj)
+        return JSONEncoder.default(self, obj)
+
+
+def to_json_str(o):
+    return json.dumps(o, cls=NumpyFloatValuesEncoder)
+
+
 TOPIC_LIST = [
     'Outbreaks of known infectious diseases',
     'Emerging infectious diseases or novel pathogens',
@@ -61,6 +72,19 @@ TOPIC_LIST = [
     'Unrecognized health risks',
     'Atypical health incidents'
 ]
+
+
+DISEASE_THREATS = {
+    'Outbreaks of known infectious diseases',
+    'Emerging infectious diseases or novel pathogens',
+    'Reports on suspicious disease-related incidents', 
+    'Foodborne illness outbreaks and recalls',
+    'Waterborne diseases and contamination alerts',
+    'Outbreaks linked to vaccine-preventable diseases',
+    'Unusual health patterns',
+    'Emerging pathogens',
+    'Anomalous disease clusters',
+}
 
 
 def increase_count(count, character):
@@ -187,18 +211,19 @@ def extract_country(text, country_dict):
     return [country_dict[country_name] for country_name in country_dict if country_name in text]
 
 
-def answer_text_task(worker_id, device, country_dict, topic_document_list, queue):
+def answer_text_task(worker_id, device, country_dict, topic_threat_document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
     answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2",  device=device_id)
     
-    for topic, documents in topic_document_list:
+    for topic, threats, documents in topic_threat_document_list:
         answers = []
-        for question in QUESTION_LIST:
-            result = answerer({'question': question, 'context': '\n\n'.join(documents)})
-            answer = {'question': question, 'score': result['score'], 'answer': result['answer']}
-            if question == 'What countries does the disease spread?':
-                answer['countries'] =  extract_country(result['answer'], country_dict)
-            answers.append(answer)
+        if threats and set(threats.keys()).intersection(DISEASE_THREATS):
+            for question in QUESTION_LIST:
+                result = answerer({'question': question, 'context': '\n\n'.join(documents)})
+                answer = {'question': question, 'score': result['score'], 'answer': result['answer']}
+                if question == 'What countries does the disease spread?':
+                    answer['countries'] =  extract_country(result['answer'], country_dict)
+                answers.append(answer)
 
         print('.', end="", flush=True)
         queue.put([topic, answers])
@@ -237,7 +262,14 @@ def answer_text(n_workers, input_documents, country_dict, device):
 
 def execute_tasks(topic_models, documents, texts, out_name):
     if len(topic_models) > 1:
-        merged_model = BERTopic.merge_models(topic_models, min_similarity=0.9)
+        model_file_name = "datasets/" + out_name.replace('.jsonl', '.pkl')
+        if os.path.isfile(model_file_name):
+            print('Load model: ' + model_file_name)
+            merged_model = BERTopic.load(model_file_name)
+        else:            
+            merged_model = BERTopic.merge_models(topic_models, min_similarity=0.9)
+            merged_model.save("datasets/" + pub_date + '.pkl', serialization="pickle")
+            print('Saved model: ' + model_file_name)
     else:
         merged_model = topic_models[0]
     print(merged_model.get_topic_info())
@@ -310,7 +342,7 @@ def execute_tasks(topic_models, documents, texts, out_name):
 
     print('Answering questions ...')
     topic_all_repr_doc_list = [ 
-        [topic, [texts[topic_doc_dict[topic]['rp_docs'][i]] for i in range(0, len(topic_doc_dict[topic]['rp_docs']))]] 
+        [topic, topic_threats_dict[topic], [texts[topic_doc_dict[topic]['rp_docs'][i]] for i in range(0, len(topic_doc_dict[topic]['rp_docs']))]] 
         for topic in sorted(topic_doc_dict.keys()) if topic != -1]
             
     topic_answers_list = answer_text(n_workers, topic_all_repr_doc_list, country_dict, device)
@@ -333,7 +365,7 @@ def execute_tasks(topic_models, documents, texts, out_name):
         
     cluster_file_name = 'datasets/' + out_name
     with open(cluster_file_name, 'wt') as out_file:
-        out_file.write(f"{json.dumps(grouped_topics)}\n")
+        out_file.write(f"{to_json_str(grouped_topics)}\n")
     print(f"\nWritten {cluster_file_name}.\n")
 
 
@@ -343,7 +375,7 @@ if __name__ == '__main__':
     path, country_file_name, device = sys.argv[1], sys.argv[2], sys.argv[3]
     country_dict = load_country_codes(country_file_name)
 
-    date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)][0:2]
+    date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)]
     
     document_dict = dict()
     for pub_date in date_list:
@@ -406,11 +438,12 @@ if __name__ == '__main__':
         partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
 
         model_file_name = "datasets/" + pub_date + '.pkl'
-        if os.path.isFile(model_file_name):
+        if os.path.isfile(model_file_name):
             print('Load model: ' + model_file_name)
             topic_model = BERTopic.load(model_file_name)
             print(topic_model.get_topic_info())
         else:
+            print('Compute model: ' + model_file_name)
             topic_model = topic_model = BERTopic(
                 embedding_model=embedding_model,            # Step 1 - Extract embeddings
                 umap_model=umap_model,                      # Step 2 - Reduce dimensionality
@@ -422,7 +455,6 @@ if __name__ == '__main__':
                 # nr_topics="auto",
                 verbose=True
             ).fit(daily_texts, partial_embeddings)
-            print(topic_model.get_topic_info())
 
             print('Reduce outliers ...')
             new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
@@ -431,8 +463,8 @@ if __name__ == '__main__':
             topic_model.update_topics(daily_texts, topics=new_topics)
             print(topic_model.get_topic_info())
            
-            print('Save model: ' + "datasets/" + pub_date + '.pkl ... ')
             topic_model.save("datasets/" + pub_date + '.pkl', serialization="pickle")
+            print('Saved model: ' + "datasets/" + pub_date + '.pkl ... ')
 
         text_dict[pub_date] = daily_texts
         model_dict[pub_date] = topic_model
