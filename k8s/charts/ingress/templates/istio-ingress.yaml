@@ -4,6 +4,7 @@ metadata:
   name: ingress-cert
 spec:
   dnsNames:
+    - "foresight-serum.phac-aspc.alpha.canada.ca"
     - "*.foresight-serum.phac-aspc.alpha.canada.ca"
   issuerRef:
     kind: ClusterIssuer

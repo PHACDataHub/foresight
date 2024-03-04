@@ -9,7 +9,7 @@ frontend:
 ## ------------------------------------------------------
 neo4j:
   enabled: false
-  envSetting: staging
+  envSetting: prod
   storage:
     dataPvcSize: "50Gi"
     importPvcSize: "10Gi"
@@ -27,7 +27,7 @@ neodash:
 ## ------------------------------------------------------
 ingress:
   enabled: true
-  envSetting: staging
+  envSetting: prod
   loadBalancerIP: "34.152.25.128"
 
 ## ------------------------------------------------------
