@@ -470,13 +470,13 @@ if __name__ == '__main__':
     path, country_file_name, device = sys.argv[1], sys.argv[2], sys.argv[3]
     country_dict = load_country_codes(country_file_name)
 
-    date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)][0:3]
+    date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)]
     
     document_dict = dict()
     for pub_date in date_list:
         file_name = os.path.join(path, f"processed-{pub_date}-news-articles.jsonl")
         with open(file_name, 'rt') as in_file:
-            document_dict[pub_date] = [json.loads(line.strip()) for line in in_file.readlines()[0:500]]
+            document_dict[pub_date] = [json.loads(line.strip()) for line in in_file.readlines()]
         print(f"[{pub_date}] Read {len(document_dict[pub_date])} articles.")
 
     # System prompt describes information given to all conversations
@@ -526,37 +526,37 @@ if __name__ == '__main__':
     # a `bertopic.representation` model
     representation_model = KeyBERTInspired()
 
-    # # All steps together
-    # for pub_date in sorted(document_dict.keys()):
-    #     # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
-    #     # if os.path.isfile(cluster_out_name):
-    #     #     continue
+    # All steps together
+    for pub_date in sorted(document_dict.keys()):
+        # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
+        # if os.path.isfile(cluster_out_name):
+        #     continue
         
-    #     daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
-    #     partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
-    #     topic_model = BERTopic(
-    #         embedding_model=embedding_model,            # Step 1 - Extract embeddings
-    #         umap_model=umap_model,                      # Step 2 - Reduce dimensionality
-    #         hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
-    #         vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
-    #         ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
-    #         representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
-    #         calculate_probabilities=True,
-    #         # nr_topics="auto",
-    #         verbose=True
-    #     )
+        daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
+        partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
+        topic_model = BERTopic(
+            embedding_model=embedding_model,            # Step 1 - Extract embeddings
+            umap_model=umap_model,                      # Step 2 - Reduce dimensionality
+            hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
+            vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
+            ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
+            representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
+            calculate_probabilities=True,
+            # nr_topics="auto",
+            verbose=True
+        )
         
-    #     print('Train model: ' + pub_date)
-    #     topics, probabilities = topic_model.fit_transform(daily_texts, partial_embeddings)
+        print('Train model: ' + pub_date)
+        topics, probabilities = topic_model.fit_transform(daily_texts, partial_embeddings)
 
-    #     # print('Reduce outliers ...')
-    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
-    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
-    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
-    #     # topic_model.update_topics(daily_texts, topics=new_topics)
-    #     print(topic_model.get_topic_info())
+        # print('Reduce outliers ...')
+        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
+        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
+        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
+        # topic_model.update_topics(daily_texts, topics=new_topics)
+        print(topic_model.get_topic_info())
            
-    #     single_task(topic_model, partial_embeddings, daily_texts, document_dict[pub_date], pub_date)
+        single_task(topic_model, partial_embeddings, daily_texts, document_dict[pub_date], pub_date)
     
     # All steps together
     text_dict, model_dict  = dict(), dict()
@@ -596,7 +596,7 @@ if __name__ == '__main__':
         text_dict[pub_date] = daily_texts
         model_dict[pub_date] = topic_model
 
-    for i in range(0, 1):
+    for i in range(30, 37):
         models, documents, texts = [model_dict[date_list[i]]], document_dict[date_list[i]], text_dict[date_list[i]]
         for j in range(1, 3):
             d = date_list[i+j]
@@ -606,23 +606,13 @@ if __name__ == '__main__':
         out_name = f"{date_list[i]}-{date_list[i+2]}"
         multitask(models, documents, texts, out_name)
 
-    # for i in range(30, 37):
-    #     models, documents, texts = [model_dict[date_list[i]]], document_dict[date_list[i]], text_dict[date_list[i]]
-    #     for j in range(1, 3):
-    #         d = date_list[i+j]
-    #         models.append(model_dict[d])
-    #         documents.extend(document_dict[d])
-    #         texts.extend(text_dict[d])
-    #     out_name = f"{date_list[i]}-{date_list[i+2]}"
-    #     multitask(models, documents, texts, out_name)
-
-    # for i in range(30, 31):
-    #     models, documents, texts = [model_dict[date_list[i]]], document_dict[date_list[i]], text_dict[date_list[i]]
-    #     for k in [7, 30]:
-    #         for j in range(1, k):
-    #             d = date_list[i+j]
-    #             models.append(model_dict[d])
-    #             documents.extend(document_dict[d])
-    #             texts.extend(text_dict[d])
-    #         out_name = f"{date_list[i]}-{date_list[i+k-1]}"
-    #         multitask(models, documents, texts, out_name)
+    for i in range(30, 31):
+        models, documents, texts = [model_dict[date_list[i]]], document_dict[date_list[i]], text_dict[date_list[i]]
+        for k in [7, 30]:
+            for j in range(1, k):
+                d = date_list[i+j]
+                models.append(model_dict[d])
+                documents.extend(document_dict[d])
+                texts.extend(text_dict[d])
+            out_name = f"{date_list[i]}-{date_list[i+k-1]}"
+            multitask(models, documents, texts, out_name)
