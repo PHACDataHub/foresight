@@ -1,0 +1,432 @@
+{
+    "title": "Foresight",
+    "version": "2.4",
+    "settings": {
+      "pagenumber": 1,
+      "editable": true,
+      "fullscreenEnabled": false,
+      "parameters": {
+        "neodash_class_label": "Coronavirus infectious disease",
+        "neodash_class_label_display": "Coronavirus infectious disease",
+        "neodash_class_description": "",
+        "neodash_class_description_display": "",
+        "neodash_disease_label": "COVID-19",
+        "neodash_disease_label_display": "COVID-19"
+      },
+      "theme": "light",
+      "disableRowLimiting": true
+    },
+    "pages": [
+      {
+        "title": "Disease Ontology",
+        "reports": [
+          {
+            "id": "834c6ae4-70ff-4a0e-95de-de1367bfc087",
+            "title": "Ontology with the first three levels",
+            "query": "MATCH (o:Ontology)-[r1]-(d:Resource:Class)<-[r2:subClassOf*1..3]-(m:Resource:Class)\n  WHERE m.label IS NOT NULL\nRETURN o, r1, d, r2, m\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "Resource": "title",
+              "Ontology": "title",
+              "Class": "label"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "Resource",
+                "date",
+                "saved-by",
+                "hasOBOFormatVersion",
+                "default-namespace",
+                "description",
+                "comment",
+                "versionInfo",
+                "title",
+                "uri",
+                "hasDbXref",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "hasExactSynonym",
+                "creation_date",
+                "created_by",
+                "hasAlternativeId",
+                "exactMatch",
+                "narrowMatch",
+                "hasNarrowSynonym",
+                "hasRelatedSynonym",
+                "OBI_9991118",
+                "broadMatch"
+              ],
+              [
+                "Ontology",
+                "date",
+                "saved-by",
+                "hasOBOFormatVersion",
+                "default-namespace",
+                "description",
+                "comment",
+                "versionInfo",
+                "title",
+                "uri"
+              ],
+              [
+                "IAO_0000700"
+              ],
+              [
+                "Class",
+                "hasDbXref",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasExactSynonym",
+                "creation_date",
+                "created_by",
+                "hasAlternativeId",
+                "comment",
+                "exactMatch",
+                "narrowMatch",
+                "hasNarrowSynonym",
+                "hasRelatedSynonym",
+                "OBI_9991118",
+                "broadMatch"
+              ],
+              [
+                "subClassOf"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Subclass and Superclass",
+        "reports": [
+          {
+            "id": "f3cda05c-bbfa-42aa-9762-1c7959feb4a6",
+            "title": "Disease",
+            "query": "MATCH (n:`Class`) \nWHERE toLower(toString(n.`label`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`label` as value,  n.`label` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+            "width": 4,
+            "height": 2,
+            "x": 0,
+            "y": 0,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "entityType": "Class",
+              "propertyType": "label",
+              "propertyTypeDisplay": "label",
+              "parameterName": "neodash_class_label"
+            },
+            "schema": []
+          },
+          {
+            "id": "8fd6e8e6-0b7c-453f-9089-2a083a537c43",
+            "title": "Superclasses",
+            "query": "MATCH (d:Class {label: $neodash_class_label})-[r:subClassOf*1..]->(m:Class)\n  WHERE m.label IS NOT NULL\nRETURN d, r, m\n\n",
+            "width": 4,
+            "height": 6,
+            "x": 0,
+            "y": 2,
+            "type": "graph",
+            "selection": {
+              "Resource": "label",
+              "Class": "label"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "Resource",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
+              ],
+              [
+                "Class",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
+              ],
+              [
+                "subClassOf"
+              ]
+            ]
+          },
+          {
+            "id": "f96f8f83-7bed-4185-91bb-f96c74a87ec2",
+            "title": "Subclasses (3 levels down)",
+            "query": "MATCH (d:Class {label: $neodash_class_label})<-[r:subClassOf*1..3]-(m:Class)\n  WHERE m.label IS NOT NULL\nRETURN d, r, m\n\n\n\n\n",
+            "width": 20,
+            "height": 8,
+            "x": 4,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "Resource": "label",
+              "Class": "label"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "Resource",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasExactSynonym",
+                "hasDbXref"
+              ],
+              [
+                "Class",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasExactSynonym",
+                "hasDbXref"
+              ],
+              [
+                "subClassOf"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Detected Diseases",
+        "reports": [
+          {
+            "id": "28e5f4fa-2638-4ab9-871e-60ab5c7ce738",
+            "title": "Detected Diseases",
+            "query": "MATCH (a:DON)<-[r1:PART_OF]-(c1:Chunk)-[rs:SIMILAR_D2D_CHUNK]->(c2:Chunk)-[r2:PART_OF]->(d:Resource:Class)<-[rd:DETECTED_DISEASE]-(a)\nRETURN a, r1, c1, rs, c2, r2, d, rd\n\n\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "DON": "title",
+              "PART_OF": "(label)",
+              "Chunk": "(label)",
+              "SIMILAR_D2D_CHUNK": "(label)",
+              "Resource": "label",
+              "Class": "label",
+              "DETECTED_DISEASE": "(label)"
+            },
+            "settings": {
+              "enableEditing": true,
+              "showPropertiesOnHover": true,
+              "allowDownload": true,
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true
+            },
+            "schema": [
+              [
+                "DON",
+                "summary",
+                "topics",
+                "answers",
+                "countries",
+                "title",
+                "url",
+                "content",
+                "report_date"
+              ],
+              [
+                "PART_OF"
+              ],
+              [
+                "Chunk",
+                "embeddings",
+                "text"
+              ],
+              [
+                "SIMILAR_D2D_CHUNK",
+                "score"
+              ],
+              [
+                "Resource",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "deprecated",
+                "hasAlternativeId",
+                "hasRelatedSynonym"
+              ],
+              [
+                "Class",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "deprecated",
+                "hasAlternativeId",
+                "hasRelatedSynonym"
+              ],
+              [
+                "DETECTED_DISEASE",
+                "score",
+                "scores"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Public Health Threats",
+        "reports": [
+          {
+            "id": "04bd7e67-b538-4972-acc3-aa7cf8822551",
+            "title": "Threat Graph",
+            "query": "MATCH (n:DON)-[r:IN_TOPIC]-(t:Topic)\nRETURN n, r, t\n\n\n\n\n\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 8,
+            "type": "graph",
+            "selection": {
+              "DON": "title",
+              "Topic": "text"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "DON",
+                "summary",
+                "topics",
+                "answers",
+                "countries",
+                "title",
+                "url",
+                "content",
+                "report_date"
+              ],
+              [
+                "IN_TOPIC"
+              ],
+              [
+                "Topic",
+                "text"
+              ]
+            ]
+          },
+          {
+            "id": "5b1ca82a-40d4-4ba4-9edf-499524054c71",
+            "title": "Distribution of threats",
+            "query": "MATCH (n:DON)-[r:IN_TOPIC]-(t:Topic)\nRETURN DISTINCT(t.text) AS threat, COUNT(n) AS count ORDER BY count DESC\n\n\n\n\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 0,
+            "type": "bar",
+            "selection": {
+              "index": "threat",
+              "value": "count",
+              "key": "(none)"
+            },
+            "settings": {
+              "marginBottom": 150,
+              "marginRight": 200,
+              "labelRotation": 25
+            },
+            "schema": []
+          }
+        ]
+      },
+      {
+        "title": "World View",
+        "reports": [
+          {
+            "id": "c1958713-378e-4830-aa9b-e34ed920d288",
+            "title": "Map",
+            "query": "MATCH (d:Resource:Class {label: $neodash_disease_label})\nWITH d MATCH (n:DON)-[:DETECTED_DISEASE]->(d)\nWITH n, n.countries AS countries\n  UNWIND countries AS country\nRETURN DISTINCT(country) AS code, COUNT(n) AS count\n\n\n",
+            "width": 17,
+            "height": 8,
+            "x": 7,
+            "y": 0,
+            "type": "areamap",
+            "selection": {
+              "index": "code",
+              "value": "count"
+            },
+            "settings": {
+              "mapDrillDown": true,
+              "showLegend": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "b6a1cb95-8bcf-46a8-a3e3-0cb720450406",
+            "title": "Detected disease",
+            "query": "MATCH (d:Resource:Class)-[:DETECTED_DISEASE]-(:DON)\nRETURN DISTINCT(d.label)\n",
+            "width": 7,
+            "height": 6,
+            "x": 0,
+            "y": 0,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Custom Query",
+              "entityType": "disease_label",
+              "parameterName": "neodash_disease_label"
+            },
+            "schema": []
+          }
+        ]
+      }
+    ],
+    "parameters": {},
+    "extensions": {
+      "active": true,
+      "activeReducers": [],
+      "advanced-charts": {
+        "active": true
+      },
+      "styling": {
+        "active": true
+      },
+      "actions": {
+        "active": true
+      },
+      "query-translator": {},
+      "forms": {
+        "active": true
+      }
+    },
+    "uuid": "ae450566-e6c1-4cfe-86d2-30c39a206766"
+  }

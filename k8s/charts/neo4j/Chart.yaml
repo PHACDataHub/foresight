@@ -1,0 +1,5 @@
+apiVersion: v2
+name: neo4j
+description: A Helm chart for Kubernetes to deploy Neo4j
+type: application
+version: 0.1.0 

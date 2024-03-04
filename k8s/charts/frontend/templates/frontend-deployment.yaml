@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: DATABASE_URL
+              value: "{{ .Values.env.DATABASE_URL }}"
+            - name: NEXTAUTH_SECRET
+              value: "{{ .Values.env.NEXTAUTH_SECRET }}"
+            - name: NEXTAUTH_URL
+              value: "{{ .Values.env.NEXTAUTH_URL }}"
+            - name: DISCORD_CLIENT_ID
+              value: "{{ .Values.env.DISCORD_CLIENT_ID }}"
+            - name: DISCORD_CLIENT_SECRET
+              value: "{{ .Values.env.DISCORD_CLIENT_SECRET }}"
+            - name: HOSTNAME
+              value: "0.0.0.0"

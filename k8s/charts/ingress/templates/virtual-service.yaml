@@ -1,0 +1,83 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: frontend-service
+spec:
+  hosts:
+  - "foresight-serum.phac-aspc.alpha.canada.ca"
+  gateways:
+  - "foresight-gateway"
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: frontend-svc
+        port:
+          number: 3000
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: neo4j-service
+spec:
+  hosts:
+  - "neo4j.foresight-serum.phac-aspc.alpha.canada.ca"
+  gateways:
+  - "foresight-gateway"
+  http:
+  - match:
+    - uri:
+        prefix: "/browser"
+    route:
+    - destination:
+        host: neo4j
+        port:
+          number: 7474
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: neo4j
+        port:
+          number: 7687
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: neodash-service
+spec:
+  hosts:
+  - "neodash.foresight-serum.phac-aspc.alpha.canada.ca"
+  gateways:
+  - "foresight-gateway"
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: neodash-svc
+        port:
+          number: 5005
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: neodash-designer-service
+spec:
+  hosts:
+  - "neodash-designer.foresight-serum.phac-aspc.alpha.canada.ca"
+  gateways:
+  - "foresight-gateway"
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: neodash-designer-svc
+        port:
+          number: 5006
