@@ -526,37 +526,37 @@ if __name__ == '__main__':
     # a `bertopic.representation` model
     representation_model = KeyBERTInspired()
 
-    # # All steps together
-    # for pub_date in sorted(document_dict.keys()):
-    #     # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
-    #     # if os.path.isfile(cluster_out_name):
-    #     #     continue
+    # All steps together
+    for pub_date in sorted(document_dict.keys()):
+        # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
+        # if os.path.isfile(cluster_out_name):
+        #     continue
         
-    #     daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
-    #     partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
-    #     topic_model = BERTopic(
-    #         embedding_model=embedding_model,            # Step 1 - Extract embeddings
-    #         umap_model=umap_model,                      # Step 2 - Reduce dimensionality
-    #         hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
-    #         vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
-    #         ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
-    #         representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
-    #         calculate_probabilities=True,
-    #         # nr_topics="auto",
-    #         verbose=True
-    #     )
+        daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
+        partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
+        topic_model = BERTopic(
+            embedding_model=embedding_model,            # Step 1 - Extract embeddings
+            umap_model=umap_model,                      # Step 2 - Reduce dimensionality
+            hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
+            vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
+            ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
+            representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
+            calculate_probabilities=True,
+            # nr_topics="auto",
+            verbose=True
+        )
         
-    #     print('Train model: ' + pub_date)
-    #     topics, probabilities = topic_model.fit_transform(daily_texts, partial_embeddings)
+        print('Train model: ' + pub_date)
+        topics, probabilities = topic_model.fit_transform(daily_texts, partial_embeddings)
 
-    #     # print('Reduce outliers ...')
-    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
-    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
-    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
-    #     # topic_model.update_topics(daily_texts, topics=new_topics)
-    #     print(topic_model.get_topic_info())
+        # print('Reduce outliers ...')
+        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
+        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
+        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
+        # topic_model.update_topics(daily_texts, topics=new_topics)
+        print(topic_model.get_topic_info())
            
-    #     single_task(topic_model, partial_embeddings, daily_texts, document_dict[pub_date], pub_date)
+        single_task(topic_model, partial_embeddings, daily_texts, document_dict[pub_date], pub_date)
     
     # All steps together
     text_dict, model_dict  = dict(), dict()
