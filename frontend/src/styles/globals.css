@@ -207,3 +207,7 @@
   stroke-dashoffset: 440;
   stroke: #ea5565;
 }
+
+.timeTravelCalendar {
+  font-size: 0.6em !important;
+}

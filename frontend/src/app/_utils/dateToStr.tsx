@@ -7,14 +7,10 @@ export default function dateToStr(
     locale,
     !long
       ? {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
+          dateStyle: "long",
         }
       : {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
+          dateStyle: "short",
         },
   );
 }

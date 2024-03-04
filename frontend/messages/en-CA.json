@@ -5,7 +5,7 @@
     "TimeTravel": {
         "chooseDate": "Today is",
         "currentDate": "current",
-        "travelText": "Time travel to",
+        "travelText": "Time travel",
         "startButton": "Start",
         "nextButton": "Next",
         "lastButton": "Last",

@@ -27,12 +27,7 @@ export default async function Index({
         date={date}
         messages={{
           chooseDate: timeTravelMsg("chooseDate"),
-          currentDate: timeTravelMsg("currentDate"),
           travelText: timeTravelMsg("travelText"),
-          startButton: timeTravelMsg("startButton"),
-          nextButton: timeTravelMsg("nextButton"),
-          lastButton: timeTravelMsg("lastButton"),
-          previousButton: timeTravelMsg("previousButton"),
         }}
       />
       <div className="flex flex-1 flex-col items-center justify-center overflow-hidden border-2">

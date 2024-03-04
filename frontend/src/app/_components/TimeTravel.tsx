@@ -5,11 +5,14 @@
  * the user to select.
  */
 
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import DatePicker from "react-datepicker";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { enCA, frCA } from "date-fns/locale";
 import useDateToStr from "~/app/_hooks/useDateToStr";
+
+import "react-datepicker/dist/react-datepicker.css";
 
 type TimeTravelProps = {
   date?: Date;
@@ -18,11 +21,6 @@ type TimeTravelProps = {
   messages?: {
     chooseDate?: string;
     travelText?: string;
-    currentDate?: string;
-    startButton?: string;
-    previousButton?: string;
-    nextButton?: string;
-    lastButton?: string;
   };
   onChange?: (
     date: Date,
@@ -48,6 +46,8 @@ function TimeTravelComponent({
   const { locale } = useParams();
   const selectedDate = useRef<HTMLAnchorElement>(null);
 
+  const router = useRouter();
+
   const dateToStr = useDateToStr(locale);
 
   useEffect(() => {
@@ -56,145 +56,49 @@ function TimeTravelComponent({
       c.scrollIntoView({
         behavior: "auto",
         inline: "center",
-        block: "end"
+        block: "end",
       });
     }
   }, [selectedDate]);
 
-  const dayMap = useMemo(
-    () =>
-      Array.from({ length: days }, (_, i) => {
-        const r = new Date(startDate);
-        r.setDate(r.getDate() + i);
-        return r;
-      }),
-    [days, startDate],
-  );
-
   const handleDateChange = useCallback(
-    (p: Date) => (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    (p: Date, evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
       if (onChange) {
         onChange(p, evt);
       }
+      if (!evt.defaultPrevented) {
+        const d = (p.getTime() - startDate.getTime()) / 86400000;
+        router.push(`${d + 1}`);
+      }
     },
-    [onChange],
+    [onChange, router, startDate],
   );
 
-  const currentIndex = useMemo(() => {
-    return (
-      dayMap
-        .map((d, i) => [d, i] as [Date, number])
-        .filter(([d]) => d.getTime() === date.getTime())
-        .reduce((p, c) => c[1], -1) + 1
-    );
-  }, [dayMap, date]);
-
-  const prevDisabled = useMemo(
-    () => date.getTime() === startDate.getTime(),
-    [date, startDate],
-  );
-
-  const nextDisabled = useMemo(
-    () => date.getTime() === endDate.getTime(),
+  const showPreviousMonths = useMemo(
+    () => date.getMonth() === endDate.getMonth(),
     [date, endDate],
   );
 
   return (
-    <nav>
-      <h4 className="small">{messages?.chooseDate ?? "title"}</h4>
-      <div className="flex space-x-2">
-        <ul className="pagination" style={{ marginTop: 0 }}>
-          <li>
-            <Link
-              className={`btn btn-sm mr-2${prevDisabled && " disabled pointer-events-none"}`}
-              aria-disabled={prevDisabled}
-              tabIndex={prevDisabled ? -1 : undefined}
-              onClick={handleDateChange(startDate)}
-              href={"1"}
-              style={{ minHeight: 0, padding: 5 }}
-            >
-              <span className="glyphicon glyphicon-fast-backward" aria-hidden />
-              &nbsp;
-              <span className="wb-inv">{messages?.startButton ?? "Start"}</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={`btn btn-sm mr-2${prevDisabled && " disabled pointer-events-none"}`}
-              aria-disabled={prevDisabled}
-              tabIndex={prevDisabled ? -1 : undefined}
-              onClick={handleDateChange(dayMap[currentIndex - 2] ?? date)}
-              href={`${currentIndex - 1}`}
-              style={{ minHeight: 0, padding: 5 }}
-            >
-              <span className="glyphicon glyphicon-backward" aria-hidden />
-              &nbsp;
-              <span className="wb-inv">
-                {messages?.previousButton ?? "Previous"}
-              </span>
-            </Link>
-          </li>
-        </ul>
-
-        <ul
-          className="pagination flex-1 overflow-x-scroll whitespace-nowrap"
-          style={{ marginTop: 0 }}
-        >
-          {dayMap.map((p, i) => (
-            <li
-              key={`day_${p.getTime()}`}
-              className={`mr-2 ${date.getTime() === p.getTime() ? "active" : ""}`}
-              style={{ display: "inline" }}
-            >
-              <Link
-                style={{ float: "none", minHeight: 0, padding: 5 }}
-                onClick={handleDateChange(p)}
-                className="btn btn-sm"
-                href={`${i + 1}`}
-                ref={date.getTime() === p.getTime() ? selectedDate : undefined}
-              >
-                {dateToStr(p)}
-                <span className="wb-inv">
-                  {date.getTime() === p.getTime()
-                    ? `(${messages?.currentDate ?? "current"})`
-                    : ""}{" "}
-                  {messages?.travelText ?? "travel to"} {dateToStr(p, true)}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <ul className="pagination" style={{ marginTop: 0 }}>
-          <li>
-            <Link
-              className={`btn btn-sm mr-2${nextDisabled && " disabled pointer-events-none"}`}
-              aria-disabled={nextDisabled}
-              tabIndex={nextDisabled ? -1 : undefined}
-              onClick={handleDateChange(dayMap[currentIndex] ?? date)}
-              href={`${currentIndex + 1}`}
-              style={{ minHeight: 0, padding: 5 }}
-            >
-              <span className="glyphicon glyphicon-forward" aria-hidden />
-              &nbsp;
-              <span className="wb-inv">{messages?.nextButton ?? "Next"}</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={`btn btn-sm mr-2${nextDisabled && " disabled pointer-events-none"}`}
-              aria-disabled={nextDisabled}
-              tabIndex={nextDisabled ? -1 : undefined}
-              onClick={handleDateChange(endDate)}
-              href={`${dayMap.length}`}
-              style={{ minHeight: 0, padding: 5 }}
-            >
-              <span className="glyphicon glyphicon-fast-forward" aria-hidden />
-              &nbsp;
-              <span className="wb-inv">{messages?.lastButton ?? "End"}</span>
-            </Link>
-          </li>
-        </ul>
-      </div>
+    <nav className="mb-3 mt-3 flex items-center space-x-10">
+      <h4 className="small m-0 p-0">
+        {messages?.chooseDate ?? "title"} {dateToStr(date)}
+      </h4>
+      <DatePicker
+        selected={date}
+        minDate={startDate}
+        maxDate={endDate}
+        onChange={handleDateChange}
+        monthsShown={2}
+        showPreviousMonths={showPreviousMonths}
+        locale={locale === "fr-CA" ? frCA : enCA}
+        customInput={
+          <button className="btn btn-warning">
+            {messages?.travelText ?? "Time Travel"}
+          </button>
+        }
+        calendarClassName="timeTravelCalendar"
+      />
     </nav>
   );
 }

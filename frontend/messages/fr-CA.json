@@ -3,9 +3,9 @@
         "title": "Sérum"
     },
     "TimeTravel": {
-        "chooseDate": "aujourd'hui c'est le",
+        "chooseDate": "Aujourd'hui c'est le",
         "currentDate": "actuelle",
-        "travelText": "Voyager dans le temps vers le",
+        "travelText": "Voyager dans le temps",
         "startButton": "Premier",
         "nextButton": "Prochain",
         "lastButton": "Dernier",
