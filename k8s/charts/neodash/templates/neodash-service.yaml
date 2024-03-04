@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: neodash-svc
+spec:
+  selector:
+    app: neodash
+  ports:
+    - protocol: TCP
+      name: tcp-svc
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+  type: {{ .Values.service.type }}
