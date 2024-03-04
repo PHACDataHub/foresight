@@ -261,7 +261,7 @@ def answer_text(n_workers, input_documents, country_dict, device):
         
 
 def multitask(topic_models, documents, texts, pub_date):
-    model_file_name = f"datasets/pub_date.pkl"
+    model_file_name = f"datasets/{pub_date}.pkl"
     if os.path.isfile(model_file_name):
         print('Load model: ' + model_file_name)
         merged_model = BERTopic.load(model_file_name)
@@ -362,19 +362,19 @@ def multitask(topic_models, documents, texts, pub_date):
     out_name = f"datasets/{pub_date}-clusters.jsonl"
     with open(out_name, 'wt') as out_file:
         out_file.write(f"{to_json_str(grouped_topics)}\n")
-    print(f"\nWritten {out_name}.\n")
+    print(f"\nWritten {out_name}.")
 
     out_name = f"viz/{pub_date}-hie.html"
     viz_hie_arch = topic_model.visualize_hierarchy(custom_labels=True)
     viz_hie_arch.write_html(out_name)
-    print(f"\nWritten {out_name}.\n")
+    print(f"Written {out_name}.")
 
     out_name = f"viz/{pub_date}-cls.html"
     embeddings = embedding_model.encode(texts, show_progress_bar=True)
     reduced_embeddings = UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine').fit_transform(embeddings)
     viz_docs = topic_model.visualize_documents(texts, reduced_embeddings=reduced_embeddings, width=2048, height=1536, custom_labels=True)
     viz_docs.write_html(out_name)
-    print(f"\nWritten {out_name}.\n")
+    print(f"Written {out_name}.\n")
 
 
 def single_task(topic_model, embeddings, texts, documents, pub_date):
@@ -450,18 +450,18 @@ def single_task(topic_model, embeddings, texts, documents, pub_date):
     out_name = f"datasets/{pub_date}-clusters.jsonl"
     with open(out_name, 'wt') as out_file:
         out_file.write(f"{to_json_str(grouped_topics)}\n")
-    print(f"\nWritten {out_name}.\n")
+    print(f"\nWritten {out_name}.")
 
     out_name = f"viz/{pub_date}-hie.html"
     viz_hie_arch = topic_model.visualize_hierarchy(custom_labels=True)
     viz_hie_arch.write_html(out_name)
-    print(f"\nWritten {out_name}.\n")
+    print(f"Written {out_name}.")
 
     out_name = f"viz/{pub_date}-cls.html"
     reduced_embeddings = UMAP(n_neighbors=10, n_components=2, min_dist=0.0, metric='cosine').fit_transform(embeddings)
     viz_docs = topic_model.visualize_documents(texts, reduced_embeddings=reduced_embeddings, width=2048, height=1536, custom_labels=True)
     viz_docs.write_html(out_name)
-    print(f"\nWritten {out_name}.\n")
+    print(f"Written {out_name}.\n")
     
         
 if __name__ == '__main__':
@@ -526,44 +526,44 @@ if __name__ == '__main__':
     # a `bertopic.representation` model
     representation_model = KeyBERTInspired()
 
-    # All steps together
-    for pub_date in sorted(document_dict.keys()):
-        # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
-        # if os.path.isfile(cluster_out_name):
-        #     continue
+    # # All steps together
+    # for pub_date in sorted(document_dict.keys()):
+    #     # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
+    #     # if os.path.isfile(cluster_out_name):
+    #     #     continue
         
-        daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
-        partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
-        topic_model = BERTopic(
-            embedding_model=embedding_model,            # Step 1 - Extract embeddings
-            umap_model=umap_model,                      # Step 2 - Reduce dimensionality
-            hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
-            vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
-            ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
-            representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
-            calculate_probabilities=True,
-            # nr_topics="auto",
-            verbose=True
-        )
+    #     daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
+    #     partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
+    #     topic_model = BERTopic(
+    #         embedding_model=embedding_model,            # Step 1 - Extract embeddings
+    #         umap_model=umap_model,                      # Step 2 - Reduce dimensionality
+    #         hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
+    #         vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
+    #         ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
+    #         representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
+    #         calculate_probabilities=True,
+    #         # nr_topics="auto",
+    #         verbose=True
+    #     )
         
-        print('Train model: ' + pub_date)
-        topics, probabilities = topic_model.fit_transform(daily_texts, partial_embeddings)
+    #     print('Train model: ' + pub_date)
+    #     topics, probabilities = topic_model.fit_transform(daily_texts, partial_embeddings)
 
-        # print('Reduce outliers ...')
-        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
-        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
-        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
-        # topic_model.update_topics(daily_texts, topics=new_topics)
-        print(topic_model.get_topic_info())
+    #     # print('Reduce outliers ...')
+    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
+    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
+    #     # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
+    #     # topic_model.update_topics(daily_texts, topics=new_topics)
+    #     print(topic_model.get_topic_info())
            
-        single_task(topic_model, partial_embeddings, daily_texts, document_dict[pub_date], pub_date)
+    #     single_task(topic_model, partial_embeddings, daily_texts, document_dict[pub_date], pub_date)
     
     # All steps together
     text_dict, model_dict  = dict(), dict()
     for pub_date in sorted(document_dict.keys()):
         daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
 
-        model_file_name = "datasets/" + pub_date + '.pkl'
+        model_file_name = f"datasets/{pub_date}.pkl"
         if os.path.isfile(model_file_name):
             print('Load model: ' + model_file_name)
             topic_model = BERTopic.load(model_file_name)
@@ -590,8 +590,8 @@ if __name__ == '__main__':
             # topic_model.update_topics(daily_texts, topics=new_topics)
             print(topic_model.get_topic_info())
            
-            topic_model.save("datasets/" + pub_date + '.pkl', serialization="pickle")
-            print('Saved model: ' + "datasets/" + pub_date + '.pkl ... ')
+            topic_model.save(model_file_name, serialization="pickle")
+            print('Saved model: ' + model_file_name)
 
         text_dict[pub_date] = daily_texts
         model_dict[pub_date] = topic_model
