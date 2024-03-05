@@ -27,7 +27,7 @@ export const postRouter = createTRPCRouter({
     const session = driver.session();
     try {
       const result = await session.run(
-        "MATCH (t:Topic)-[r]-(a:Article) return t,r,a",
+        "MATCH (t:Topic)-[r]-(a:Article) return t,r,a limit 100",
       );
       return JSON.parse(JSON.stringify(result)) as Neo4JNodeData<
         Record<string, unknown>

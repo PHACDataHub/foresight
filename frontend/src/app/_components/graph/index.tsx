@@ -21,6 +21,7 @@ import { useResizeObserver } from "usehooks-ts";
 import LayoutService from "./Layout";
 
 import DataLoader from "./DataLoader";
+import TimeLine from "./TimeLine";
 
 OgmaLib.libraries.leaflet = L;
 
@@ -41,6 +42,7 @@ export default function Graph({ countries }: { countries: Country[] }) {
   // const [popupOpen, setPopupOpen] = useState(false);
   // const [clickedNode, setClickedNode] = useState<OgmaNode>();
   const ref = useRef<HTMLDivElement | null>(null);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
   const ogmaRef = useRef<OgmaLib | null>(null);
   const { height, width } = useResizeObserver({ ref, box: "border-box" });
   const [tooltipPositon, setTooltipPosition] = useState<Point>({
@@ -52,6 +54,7 @@ export default function Graph({ countries }: { countries: Country[] }) {
   // Controls
 
   const [geoMode, setGeoMode] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
 
   const requestSetTooltipPosition = useCallback((pos: Point) => {
     requestAnimationFrame(() => setTooltipPosition(pos));
@@ -60,6 +63,10 @@ export default function Graph({ countries }: { countries: Country[] }) {
   const handleGeoBtnClick = useCallback(() => {
     setGeoMode(!geoMode);
   }, [geoMode]);
+
+  const handleTimelineBtnClick = useCallback(() => {
+    setShowTimeline(!showTimeline);
+  }, [showTimeline]);
 
   useEffect(() => {
     if (ogmaRef.current && width && height) {
@@ -155,6 +162,7 @@ export default function Graph({ countries }: { countries: Country[] }) {
             </div>
           </Tooltip>
           <LayoutService />
+          <TimeLine container={timelineRef} />
           <Geo
             enabled={geoMode}
             longitudePath="geo.longitude"
@@ -163,13 +171,27 @@ export default function Graph({ countries }: { countries: Country[] }) {
             sizeRatio={0.8}
           />
           <>
-            <div className="control-buttons">
+            <div className="control-buttons space-y-2">
               <button className="btn btn-primary" onClick={handleGeoBtnClick}>
                 Geo Mode
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleTimelineBtnClick}
+              >
+                Timeline
               </button>
             </div>
           </>
         </Ogma>
+        <div
+          id="timeline"
+          ref={timelineRef}
+          style={{
+            opacity: showTimeline ? 1 : 0,
+            pointerEvents: showTimeline ? "initial" : "none",
+          }}
+        />
       </div>
     </div>
   );

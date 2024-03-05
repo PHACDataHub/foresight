@@ -30,7 +30,7 @@ export default async function Index({
           travelText: timeTravelMsg("travelText"),
         }}
       />
-      <div className="flex flex-1 flex-col items-center justify-center overflow-hidden border-2">
+      <div className="flex flex-1 flex-col items-center justify-center overflow-hidden border-2 mb-10">
         <Graph countries={countries} />
       </div>
       {/* <div className="container">

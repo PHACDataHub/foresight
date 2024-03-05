@@ -40,13 +40,21 @@ export default function DataLoader({ countries }: { countries: Country[] }) {
       const g = await OgmaLib.parse.neo4j(rawGraph);
       const graph = {
         nodes: g.nodes.map((n) => {
-          if (n.data?.neo4jLabels.includes("Topic")) return n;
+          const base = {
+            ...n,
+            data: {
+              ...n.data,
+              start: new Date("2019-12-31"),
+              end:  new Date("2019-12-31"),
+            },
+          };
+          if (n.data?.neo4jLabels.includes("Topic")) return base;
           const c = n.data?.neo4jProperties?.countries;
           if (c && Array.isArray(c) && c.length > 0) {
             for (const country of countries) {
               if (c.includes(country.country)) {
                 return {
-                  ...n,
+                  ...base,
                   data: {
                     ...n.data,
                     geo: country,
@@ -55,7 +63,7 @@ export default function DataLoader({ countries }: { countries: Country[] }) {
               }
             }
           }
-          return n;
+          return base;
         }),
         edges: g.edges,
       };

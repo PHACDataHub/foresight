@@ -8,6 +8,16 @@
   }
 }
 
+main.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#def-preFooter {
+  display: none;
+}
+
 .ogma-tooltip,
 .ogma-popup {
   z-index: 401;
@@ -114,6 +124,8 @@
 
 .control-buttons {
   position: absolute;
+  display: flex;
+  flex-direction: column;
   z-index: 401;
   right: 20px;
   top: 20px;
