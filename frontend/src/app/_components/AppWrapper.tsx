@@ -1,12 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { useRef } from "react";
+import React from "react";
 import { AppTemplate, useLngLinks } from "@arcnovus/wet-boew-react";
-import { useResizeObserver } from "usehooks-ts";
 
 import useWetLang from "~/app/_hooks/useWetLang";
-import useDelayedResizeObserver from "~/app/_hooks/useDelayedResizeObserver";
 
 export default function AppWrapper({
   children,
@@ -21,34 +19,18 @@ export default function AppWrapper({
     currentLanguage: lang,
     translatedPage: locale === "en-CA" ? "/fr-CA/1" : "/en-CA/1",
   });
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  const { height = 0 } = useResizeObserver({
-    ref,
-    box: "border-box",
-  });
-
-  const headerHeight = useDelayedResizeObserver("def-appTop");
-  const preFooterHeight = useDelayedResizeObserver("def-preFooter");
-  const footerHeight = useDelayedResizeObserver("wb-info");
 
   return (
-    <div className="h-full max-h-[100%] min-h-[100%] w-full" ref={ref}>
+    <div className="flex h-full max-h-[100%] min-h-[100%] flex-col">
       <AppTemplate
         appName={[{ text: title, href: "/" }]}
         lngLinks={lngLinks}
         showShare={false}
         showFeedback={false}
         isApplication={true}
+        showPostContent={false}
       >
-        <div
-          style={{
-            height: height - headerHeight - preFooterHeight - footerHeight,
-          }}
-          className="flex flex-col"
-        >
-          {children}
-        </div>
+        <div className="flex flex-1 flex-col">{children}</div>
       </AppTemplate>
     </div>
   );
