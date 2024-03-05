@@ -6,6 +6,7 @@
         "esbenp.prettier-vscode",
         "rvest.vs-code-prettier-eslint",
         "bradlc.vscode-tailwindcss",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "bierner.markdown-preview-github-styles"
     ]
 }

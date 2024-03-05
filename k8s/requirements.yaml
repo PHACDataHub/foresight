@@ -1,0 +1,21 @@
+dependencies:
+- name: frontend
+  version: 0.1.0
+  repository: file://./charts/frontend
+  condition: frontend.enabled
+- name: ingress
+  version: 0.1.0
+  repository: file://./charts/ingress
+  condition: ingress.enabled
+- name: neo4j
+  version: 0.1.0
+  repository: file://./charts/neo4j
+  condition: neo4j.enabled
+- name: neodash
+  version: 0.1.0
+  repository: file://./charts/neodash
+  condition: neodash.enabled
+- name: neodash-designer
+  version: 0.1.0
+  repository: file://./charts/neodash-designer
+  condition: neodash-designer.enabled

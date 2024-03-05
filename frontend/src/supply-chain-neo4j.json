@@ -1,0 +1,5376 @@
+{
+    "records": [
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 11.13204871524422
+            }
+          },
+          {
+            "identity": "69",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 289
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 12.13204871524422
+            }
+          },
+          {
+            "identity": "60",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 205
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 55.13204871524422
+            }
+          },
+          {
+            "identity": "45",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 281
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "18",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 26,
+              "co2": 255,
+              "name": "SupplierB1",
+              "lon": 6.338227685970327,
+              "time": 5,
+              "lat": 59.06009250248424
+            }
+          },
+          {
+            "identity": "73",
+            "start": "18",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3143,
+              "quantity": 188
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "52",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 160
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "58",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 122
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "34",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 175
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "37",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 146
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 33.13204871524422
+            }
+          },
+          {
+            "identity": "54",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 185
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "70",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 95
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "64",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 81
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "17",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 22,
+              "co2": 503,
+              "name": "SupplierB0",
+              "lon": 25.072991281086093,
+              "time": 4,
+              "lat": 14.017349778915698
+            }
+          },
+          {
+            "identity": "72",
+            "start": "17",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8056,
+              "quantity": 165
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "15",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 30,
+              "co2": 1251,
+              "name": "SupplierA1",
+              "lon": 86.52601778754027,
+              "time": 0,
+              "lat": 27.895522473272333
+            }
+          },
+          {
+            "identity": "33",
+            "start": "15",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6619,
+              "quantity": 212
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "67",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 220
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "61",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 222
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "16",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 24,
+              "co2": 1339,
+              "name": "SupplierA2",
+              "lon": 82.77858106851605,
+              "time": 3,
+              "lat": 47.17026780787867
+            }
+          },
+          {
+            "identity": "36",
+            "start": "16",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4385,
+              "quantity": 201
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 22.13204871524422
+            }
+          },
+          {
+            "identity": "66",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 211
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 22.13204871524422
+            }
+          },
+          {
+            "identity": "42",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 287
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "49",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 79
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.1406389456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "55",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 112
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 51.13204871524422
+            }
+          },
+          {
+            "identity": "48",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 63
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "46",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 130
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "40",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 93
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "43",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 264
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "31",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 178
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "28",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 46
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "25",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 138
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "22",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 256
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "34",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 175
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "37",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 146
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "3",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 36,
+              "co2": 287,
+              "name": "Retailer0",
+              "lon": 120.3350059243061,
+              "time": "1",
+              "stock": 537,
+              "lat": 61.433685818190334
+            }
+          },
+          {
+            "identity": "35",
+            "start": "1",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5405,
+              "quantity": 98
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "13",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 23,
+              "co2": 313,
+              "name": "Retailer10",
+              "lon": 144.48225548698983,
+              "time": "1",
+              "stock": 345,
+              "lat": 16.946629825629103
+            }
+          },
+          {
+            "identity": "32",
+            "start": "1",
+            "end": "13",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10529,
+              "quantity": 197
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "3",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 36,
+              "co2": 287,
+              "name": "Retailer0",
+              "lon": 120.3350059243061,
+              "time": "1",
+              "stock": 537,
+              "lat": 61.433685818190334
+            }
+          },
+          {
+            "identity": "38",
+            "start": "1",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5405,
+              "quantity": 295
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "31",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 178
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "12",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 38,
+              "co2": 265,
+              "name": "Retailer9",
+              "lon": 16.725796442007002,
+              "time": "1",
+              "stock": 248,
+              "lat": 18.631603499868035
+            }
+          },
+          {
+            "identity": "29",
+            "start": "1",
+            "end": "12",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3912,
+              "quantity": 112
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "28",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 46
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "11",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 25,
+              "co2": 2093,
+              "name": "Retailer8",
+              "lon": 8.69147208910817,
+              "time": "1",
+              "stock": 1009,
+              "lat": 45.023413967516916
+            }
+          },
+          {
+            "identity": "26",
+            "start": "1",
+            "end": "11",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1273,
+              "quantity": 66
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "25",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 138
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "10",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 24,
+              "co2": 256,
+              "name": "Retailer7",
+              "lon": 34.365343995377025,
+              "time": "1",
+              "stock": 192,
+              "lat": 36.68179327242285
+            }
+          },
+          {
+            "identity": "23",
+            "start": "1",
+            "end": "10",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3680,
+              "quantity": 69
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "22",
+            "start": "0",
+            "end": "1",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3737,
+              "quantity": 256
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "9",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 22,
+              "co2": 469,
+              "name": "Retailer6",
+              "lon": 54.99018630047464,
+              "time": "1",
+              "stock": 885,
+              "lat": 35.99284008687277
+            }
+          },
+          {
+            "identity": "20",
+            "start": "1",
+            "end": "9",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8653,
+              "quantity": 234
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "8",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 32,
+              "co2": 618,
+              "name": "Retailer5",
+              "lon": 0.8503195683839501,
+              "time": "1",
+              "stock": 429,
+              "lat": 41.53999730092966
+            }
+          },
+          {
+            "identity": "17",
+            "start": "1",
+            "end": "8",
+            "type": "DELIVER",
+            "properties": {
+              "km": 2023,
+              "quantity": 250
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "7",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 23,
+              "co2": 2879,
+              "name": "Retailer4",
+              "lon": 101.71903330577375,
+              "time": "1",
+              "stock": 266,
+              "lat": 14.142633349703582
+            }
+          },
+          {
+            "identity": "14",
+            "start": "1",
+            "end": "7",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8090,
+              "quantity": 74
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "6",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 29,
+              "co2": 507,
+              "name": "Retailer3",
+              "lon": 103.33586459345403,
+              "time": "1",
+              "stock": 980,
+              "lat": 22.2197472039159
+            }
+          },
+          {
+            "identity": "11",
+            "start": "1",
+            "end": "6",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4132,
+              "quantity": 67
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "5",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 35,
+              "co2": 300,
+              "name": "Retailer2",
+              "lon": 23.24720461522803,
+              "time": "1",
+              "stock": 375,
+              "lat": 0.6469642657212675
+            }
+          },
+          {
+            "identity": "8",
+            "start": "1",
+            "end": "5",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5896,
+              "quantity": 172
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "4",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 22,
+              "co2": 299,
+              "name": "Retailer1",
+              "lon": 69.21941781190561,
+              "time": "1",
+              "stock": 620,
+              "lat": 53.27157446084193
+            }
+          },
+          {
+            "identity": "5",
+            "start": "1",
+            "end": "4",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3116,
+              "quantity": 308
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "3",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 36,
+              "co2": 287,
+              "name": "Retailer0",
+              "lon": 120.3350059243061,
+              "time": "1",
+              "stock": 537,
+              "lat": 61.433685818190334
+            }
+          },
+          {
+            "identity": "2",
+            "start": "1",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5405,
+              "quantity": 208
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "6",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 29,
+              "co2": 507,
+              "name": "Retailer3",
+              "lon": 103.33586459345403,
+              "time": "1",
+              "stock": 980,
+              "lat": 32.2197472039159
+            }
+          },
+          {
+            "identity": "50",
+            "start": "2",
+            "end": "6",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6342,
+              "quantity": 20
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "11",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 25,
+              "co2": 2093,
+              "name": "Retailer8",
+              "lon": 8.69147208910817,
+              "time": "1",
+              "stock": 1009,
+              "lat": 45.023413967516916
+            }
+          },
+          {
+            "identity": "65",
+            "start": "2",
+            "end": "11",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10651,
+              "quantity": 168
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "52",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 160
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "58",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 122
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "70",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 95
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "12",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 38,
+              "co2": 265,
+              "name": "Retailer9",
+              "lon": 16.725796442007002,
+              "time": "1",
+              "stock": 248,
+              "lat": 18.631603499868035
+            }
+          },
+          {
+            "identity": "68",
+            "start": "2",
+            "end": "12",
+            "type": "DELIVER",
+            "properties": {
+              "km": 13632,
+              "quantity": 239
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "64",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 81
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "10",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 24,
+              "co2": 256,
+              "name": "Retailer7",
+              "lon": 34.365343995377025,
+              "time": "1",
+              "stock": 192,
+              "lat": 36.68179327242285
+            }
+          },
+          {
+            "identity": "62",
+            "start": "2",
+            "end": "10",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6887,
+              "quantity": 299
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "7",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 23,
+              "co2": 2879,
+              "name": "Retailer4",
+              "lon": 101.71903330577375,
+              "time": "1",
+              "stock": 266,
+              "lat": 14.142633349703582
+            }
+          },
+          {
+            "identity": "53",
+            "start": "2",
+            "end": "7",
+            "type": "DELIVER",
+            "properties": {
+              "km": 12188,
+              "quantity": 171
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "67",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 220
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "61",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 222
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "4",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 22,
+              "co2": 299,
+              "name": "Retailer1",
+              "lon": 69.21941781190561,
+              "time": "1",
+              "stock": 620,
+              "lat": 53.27157446084193
+            }
+          },
+          {
+            "identity": "44",
+            "start": "2",
+            "end": "4",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10303,
+              "quantity": 233
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "5",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 35,
+              "co2": 300,
+              "name": "Retailer2",
+              "lon": 23.24720461522803,
+              "time": "1",
+              "stock": 375,
+              "lat": 0.6469642657212675
+            }
+          },
+          {
+            "identity": "47",
+            "start": "2",
+            "end": "5",
+            "type": "DELIVER",
+            "properties": {
+              "km": 15717,
+              "quantity": 43
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "9",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 22,
+              "co2": 469,
+              "name": "Retailer6",
+              "lon": 54.99018630047464,
+              "time": "1",
+              "stock": 885,
+              "lat": 35.99284008687277
+            }
+          },
+          {
+            "identity": "59",
+            "start": "2",
+            "end": "9",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1639,
+              "quantity": 80
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "49",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 79
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "3",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 36,
+              "co2": 287,
+              "name": "Retailer0",
+              "lon": 120.3350059243061,
+              "time": "1",
+              "stock": 537,
+              "lat": 61.433685818190334
+            }
+          },
+          {
+            "identity": "41",
+            "start": "2",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7738,
+              "quantity": 62
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "55",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 112
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "13",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 23,
+              "co2": 313,
+              "name": "Retailer10",
+              "lon": 144.48225548698983,
+              "time": "1",
+              "stock": 345,
+              "lat": 16.946629825629103
+            }
+          },
+          {
+            "identity": "71",
+            "start": "2",
+            "end": "13",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8306,
+              "quantity": 309
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "46",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 130
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "8",
+            "labels": ["Retailer"],
+            "properties": {
+              "cost": 32,
+              "co2": 618,
+              "name": "Retailer5",
+              "lon": 0.8503195683839501,
+              "time": "1",
+              "stock": 429,
+              "lat": 41.53999730092966
+            }
+          },
+          {
+            "identity": "56",
+            "start": "2",
+            "end": "8",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10667,
+              "quantity": 280
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "40",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 93
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "43",
+            "start": "0",
+            "end": "2",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6890,
+              "quantity": 264
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "35",
+            "start": "1",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5405,
+              "quantity": 98
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "41",
+            "start": "2",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7738,
+              "quantity": 62
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "38",
+            "start": "1",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5405,
+              "quantity": 295
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "2",
+            "start": "1",
+            "end": "3",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5405,
+              "quantity": 208
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "44",
+            "start": "2",
+            "end": "4",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10303,
+              "quantity": 233
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "5",
+            "start": "1",
+            "end": "4",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3116,
+              "quantity": 308
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "47",
+            "start": "2",
+            "end": "5",
+            "type": "DELIVER",
+            "properties": {
+              "km": 15717,
+              "quantity": 43
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "8",
+            "start": "1",
+            "end": "5",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5896,
+              "quantity": 172
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "50",
+            "start": "2",
+            "end": "6",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6342,
+              "quantity": 20
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "11",
+            "start": "1",
+            "end": "6",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4132,
+              "quantity": 67
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "53",
+            "start": "2",
+            "end": "7",
+            "type": "DELIVER",
+            "properties": {
+              "km": 12188,
+              "quantity": 171
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "14",
+            "start": "1",
+            "end": "7",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8090,
+              "quantity": 74
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "56",
+            "start": "2",
+            "end": "8",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10667,
+              "quantity": 280
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "17",
+            "start": "1",
+            "end": "8",
+            "type": "DELIVER",
+            "properties": {
+              "km": 2023,
+              "quantity": 250
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "59",
+            "start": "2",
+            "end": "9",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1639,
+              "quantity": 80
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "20",
+            "start": "1",
+            "end": "9",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8653,
+              "quantity": 234
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "62",
+            "start": "2",
+            "end": "10",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6887,
+              "quantity": 299
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "23",
+            "start": "1",
+            "end": "10",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3680,
+              "quantity": 69
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "65",
+            "start": "2",
+            "end": "11",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10651,
+              "quantity": 168
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "26",
+            "start": "1",
+            "end": "11",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1273,
+              "quantity": 66
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "68",
+            "start": "2",
+            "end": "12",
+            "type": "DELIVER",
+            "properties": {
+              "km": 13632,
+              "quantity": 239
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "29",
+            "start": "1",
+            "end": "12",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3912,
+              "quantity": 112
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "1",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 25,
+              "co2": 454,
+              "name": "Wholesaler0",
+              "lon": 21.323179132582617,
+              "time": 2,
+              "stock": 1028,
+              "lat": 53.493312000154994
+            }
+          },
+          {
+            "identity": "32",
+            "start": "1",
+            "end": "13",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10529,
+              "quantity": 197
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "2",
+            "labels": ["Wholesaler"],
+            "properties": {
+              "cost": 21,
+              "co2": 353,
+              "name": "Wholesaler1",
+              "lon": 46.140638991456186,
+              "time": 3,
+              "stock": "3000",
+              "lat": 48.415497461193
+            }
+          },
+          {
+            "identity": "71",
+            "start": "2",
+            "end": "13",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8306,
+              "quantity": 309
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "23",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 35,
+              "co2": 310,
+              "name": "RawSupplierA4",
+              "lon": 138.9329147762149,
+              "time": 1,
+              "lat": 38.0983887083636
+            }
+          },
+          {
+            "identity": "78",
+            "start": "23",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5266,
+              "quantity": 261
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "69",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 289
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "60",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 205
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "45",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 281
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "54",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 185
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "19",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 39,
+              "co2": 363,
+              "name": "RawSupplierA0",
+              "lon": 62.268410580129554,
+              "time": 2,
+              "lat": 7.0069988838318
+            }
+          },
+          {
+            "identity": "74",
+            "start": "19",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 9323,
+              "quantity": 15
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "22",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 27,
+              "co2": 260,
+              "name": "RawSupplierA3",
+              "lon": 119.32972337699064,
+              "time": 5,
+              "lat": 21.149583347120085
+            }
+          },
+          {
+            "identity": "77",
+            "start": "22",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7770,
+              "quantity": 169
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "66",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 211
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "20",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 22,
+              "co2": 2878,
+              "name": "RawSupplierA1",
+              "lon": 20.102761906460703,
+              "time": 3,
+              "lat": 5.427426441547278
+            }
+          },
+          {
+            "identity": "75",
+            "start": "20",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 9475,
+              "quantity": 175
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "42",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 287
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "48",
+            "start": "14",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 537,
+              "quantity": 63
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "21",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 22,
+              "co2": 251,
+              "name": "RawSupplierA2",
+              "lon": 93.7629078718814,
+              "time": 4,
+              "lat": 32.0005263954051
+            }
+          },
+          {
+            "identity": "76",
+            "start": "21",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 111,
+              "quantity": 18
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "24",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 23,
+              "co2": 252,
+              "name": "RawSupplierA5",
+              "lon": 4.069407789863825,
+              "time": 3,
+              "lat": 21.289651228239002
+            }
+          },
+          {
+            "identity": "79",
+            "start": "24",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7661,
+              "quantity": 302
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "24",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 23,
+              "co2": 252,
+              "name": "RawSupplierA5",
+              "lon": 4.069407789863825,
+              "time": 3,
+              "lat": 21.289651228239002
+            }
+          },
+          {
+            "identity": "85",
+            "start": "24",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8205,
+              "quantity": 95
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "23",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 35,
+              "co2": 310,
+              "name": "RawSupplierA4",
+              "lon": 138.9329147762149,
+              "time": 1,
+              "lat": 138.0983887083636
+            }
+          },
+          {
+            "identity": "84",
+            "start": "23",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10658,
+              "quantity": 155
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "22",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 27,
+              "co2": 260,
+              "name": "RawSupplierA3",
+              "lon": 119.32972337699064,
+              "time": 5,
+              "lat": 21.149583347120085
+            }
+          },
+          {
+            "identity": "83",
+            "start": "22",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3373,
+              "quantity": 76
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "19",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 39,
+              "co2": 363,
+              "name": "RawSupplierA0",
+              "lon": 62.268410580129554,
+              "time": 2,
+              "lat": 7.0069988838318
+            }
+          },
+          {
+            "identity": "80",
+            "start": "19",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3384,
+              "quantity": 64
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "33",
+            "start": "15",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6619,
+              "quantity": 212
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "20",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 22,
+              "co2": 2878,
+              "name": "RawSupplierA1",
+              "lon": 20.102761906460703,
+              "time": 3,
+              "lat": 5.427426441547278
+            }
+          },
+          {
+            "identity": "81",
+            "start": "20",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7391,
+              "quantity": 107
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "21",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 22,
+              "co2": 251,
+              "name": "RawSupplierA2",
+              "lon": 93.7629078718814,
+              "time": 4,
+              "lat": 32.0005263954051
+            }
+          },
+          {
+            "identity": "82",
+            "start": "21",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7226,
+              "quantity": 208
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "23",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 35,
+              "co2": 310,
+              "name": "RawSupplierA4",
+              "lon": 138.9329147762149,
+              "time": 1,
+              "lat": 138.0983887083636
+            }
+          },
+          {
+            "identity": "90",
+            "start": "23",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8681,
+              "quantity": 157
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "22",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 27,
+              "co2": 260,
+              "name": "RawSupplierA3",
+              "lon": 119.32972337699064,
+              "time": 5,
+              "lat": 21.149583347120085
+            }
+          },
+          {
+            "identity": "89",
+            "start": "22",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4367,
+              "quantity": 251
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "36",
+            "start": "16",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4385,
+              "quantity": 201
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "21",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 22,
+              "co2": 251,
+              "name": "RawSupplierA2",
+              "lon": 93.7629078718814,
+              "time": 4,
+              "lat": 32.0005263954051
+            }
+          },
+          {
+            "identity": "88",
+            "start": "21",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5000,
+              "quantity": 25
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "20",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 22,
+              "co2": 2878,
+              "name": "RawSupplierA1",
+              "lon": 20.102761906460703,
+              "time": 3,
+              "lat": 5.427426441547278
+            }
+          },
+          {
+            "identity": "87",
+            "start": "20",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7545,
+              "quantity": 173
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "19",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 39,
+              "co2": 363,
+              "name": "RawSupplierA0",
+              "lon": 62.268410580129554,
+              "time": 2,
+              "lat": 7.0069988838318
+            }
+          },
+          {
+            "identity": "86",
+            "start": "19",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4856,
+              "quantity": 294
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "24",
+            "labels": ["RawSupplierA"],
+            "properties": {
+              "cost": 23,
+              "co2": 252,
+              "name": "RawSupplierA5",
+              "lon": 4.069407789863825,
+              "time": 3,
+              "lat": 21.289651228239002
+            }
+          },
+          {
+            "identity": "91",
+            "start": "24",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7459,
+              "quantity": 76
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "27",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 34,
+              "co2": 254,
+              "name": "RawSuppplierB2",
+              "lon": 79.57252591432555,
+              "time": 3,
+              "lat": 47.6145843929958
+            }
+          },
+          {
+            "identity": "94",
+            "start": "27",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6187,
+              "quantity": 109
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "26",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 32,
+              "co2": 257,
+              "name": "RawSuppplierB1",
+              "lon": 58.38519853750158,
+              "time": 4,
+              "lat": 47.2955996520498
+            }
+          },
+          {
+            "identity": "93",
+            "start": "26",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 13701,
+              "quantity": 242
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "30",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 23,
+              "co2": 269,
+              "name": "RawSuppplierB5",
+              "lon": 37.56651595879072,
+              "time": 3,
+              "lat": 41.9299390619598
+            }
+          },
+          {
+            "identity": "97",
+            "start": "30",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7472,
+              "quantity": 273
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "72",
+            "start": "17",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8056,
+              "quantity": 165
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "25",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 29,
+              "co2": 284,
+              "name": "RawSuppplierB0",
+              "lon": 9.610399399009628,
+              "time": 3,
+              "lat": 22.041859980700057
+            }
+          },
+          {
+            "identity": "92",
+            "start": "25",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1859,
+              "quantity": 220
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "28",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 23,
+              "co2": 271,
+              "name": "RawSuppplierB3",
+              "lon": 14.130579474346439,
+              "time": 5,
+              "lat": 21.101411735930455
+            }
+          },
+          {
+            "identity": "95",
+            "start": "28",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1396,
+              "quantity": 286
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "29",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 25,
+              "co2": 263,
+              "name": "RawSuppplierB4",
+              "lon": 68.08419980419322,
+              "time": 2,
+              "lat": 17.41999876663947
+            }
+          },
+          {
+            "identity": "96",
+            "start": "29",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10677,
+              "quantity": 108
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "0",
+            "labels": ["Product"],
+            "properties": {
+              "cost": "100",
+              "co2": "200",
+              "name": "Product",
+              "lon": 54.66461174410734,
+              "time": "0",
+              "lat": 36.5889069519533
+            }
+          },
+          {
+            "identity": "73",
+            "start": "18",
+            "end": "0",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3143,
+              "quantity": 188
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "28",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 23,
+              "co2": 271,
+              "name": "RawSuppplierB3",
+              "lon": 14.130579474346439,
+              "time": 5,
+              "lat": 21.101411735930455
+            }
+          },
+          {
+            "identity": "101",
+            "start": "28",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4271,
+              "quantity": 86
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "25",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 29,
+              "co2": 284,
+              "name": "RawSuppplierB0",
+              "lon": 9.610399399009628,
+              "time": 3,
+              "lat": 22.041859980700057
+            }
+          },
+          {
+            "identity": "98",
+            "start": "25",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4122,
+              "quantity": 254
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "27",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 34,
+              "co2": 254,
+              "name": "RawSuppplierB2",
+              "lon": 79.57252591432555,
+              "time": 3,
+              "lat": 47.6145843929958
+            }
+          },
+          {
+            "identity": "100",
+            "start": "27",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4780,
+              "quantity": 123
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "30",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 23,
+              "co2": 269,
+              "name": "RawSuppplierB5",
+              "lon": 37.56651595879072,
+              "time": 3,
+              "lat": 41.9299390619598
+            }
+          },
+          {
+            "identity": "103",
+            "start": "30",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 2618,
+              "quantity": 94
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "29",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 25,
+              "co2": 263,
+              "name": "RawSuppplierB4",
+              "lon": 68.08419980419322,
+              "time": 2,
+              "lat": 117.41999876663947
+            }
+          },
+          {
+            "identity": "102",
+            "start": "29",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5461,
+              "quantity": 199
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "26",
+            "labels": ["RawSupplierB"],
+            "properties": {
+              "cost": 32,
+              "co2": 257,
+              "name": "RawSuppplierB1",
+              "lon": 58.38519853750158,
+              "time": 4,
+              "lat": 147.2955996520498
+            }
+          },
+          {
+            "identity": "99",
+            "start": "26",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8715,
+              "quantity": 276
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 51.13204871524422
+            }
+          },
+          {
+            "identity": "74",
+            "start": "19",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 9323,
+              "quantity": 15
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "15",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 30,
+              "co2": 1251,
+              "name": "SupplierA1",
+              "lon": 86.52601778754027,
+              "time": 0,
+              "lat": 27.895522473272333
+            }
+          },
+          {
+            "identity": "80",
+            "start": "19",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3384,
+              "quantity": 64
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "16",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 24,
+              "co2": 1339,
+              "name": "SupplierA2",
+              "lon": 82.77858106851605,
+              "time": 3,
+              "lat": 47.17026780787867
+            }
+          },
+          {
+            "identity": "86",
+            "start": "19",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4856,
+              "quantity": 294
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 51.13204871524422
+            }
+          },
+          {
+            "identity": "75",
+            "start": "20",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 9475,
+              "quantity": 175
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "15",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 30,
+              "co2": 1251,
+              "name": "SupplierA1",
+              "lon": 86.52601778754027,
+              "time": 0,
+              "lat": 27.895522473272333
+            }
+          },
+          {
+            "identity": "81",
+            "start": "20",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7391,
+              "quantity": 107
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "16",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 24,
+              "co2": 1339,
+              "name": "SupplierA2",
+              "lon": 82.77858106851605,
+              "time": 3,
+              "lat": 47.17026780787867
+            }
+          },
+          {
+            "identity": "87",
+            "start": "20",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7545,
+              "quantity": 173
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "16",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 24,
+              "co2": 1339,
+              "name": "SupplierA2",
+              "lon": 82.77858106851605,
+              "time": 3,
+              "lat": 47.17026780787867
+            }
+          },
+          {
+            "identity": "88",
+            "start": "21",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5000,
+              "quantity": 25
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 51.13204871524422
+            }
+          },
+          {
+            "identity": "76",
+            "start": "21",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 111,
+              "quantity": 18
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "15",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 30,
+              "co2": 1251,
+              "name": "SupplierA1",
+              "lon": 86.52601778754027,
+              "time": 0,
+              "lat": 27.895522473272333
+            }
+          },
+          {
+            "identity": "82",
+            "start": "21",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7226,
+              "quantity": 208
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "15",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 30,
+              "co2": 1251,
+              "name": "SupplierA1",
+              "lon": 86.52601778754027,
+              "time": 0,
+              "lat": 27.895522473272333
+            }
+          },
+          {
+            "identity": "83",
+            "start": "22",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 3373,
+              "quantity": 76
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "16",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 24,
+              "co2": 1339,
+              "name": "SupplierA2",
+              "lon": 82.77858106851605,
+              "time": 3,
+              "lat": 47.17026780787867
+            }
+          },
+          {
+            "identity": "89",
+            "start": "22",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4367,
+              "quantity": 251
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 51.13204871524422
+            }
+          },
+          {
+            "identity": "77",
+            "start": "22",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7770,
+              "quantity": 169
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "15",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 30,
+              "co2": 1251,
+              "name": "SupplierA1",
+              "lon": 86.52601778754027,
+              "time": 0,
+              "lat": 27.895522473272333
+            }
+          },
+          {
+            "identity": "84",
+            "start": "23",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10658,
+              "quantity": 155
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 51.13204871524422
+            }
+          },
+          {
+            "identity": "78",
+            "start": "23",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5266,
+              "quantity": 261
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "16",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 24,
+              "co2": 1339,
+              "name": "SupplierA2",
+              "lon": 82.77858106851605,
+              "time": 3,
+              "lat": 47.17026780787867
+            }
+          },
+          {
+            "identity": "90",
+            "start": "23",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8681,
+              "quantity": 157
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "15",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 30,
+              "co2": 1251,
+              "name": "SupplierA1",
+              "lon": 86.52601778754027,
+              "time": 0,
+              "lat": 27.895522473272333
+            }
+          },
+          {
+            "identity": "85",
+            "start": "24",
+            "end": "15",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8205,
+              "quantity": 95
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "14",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 33,
+              "co2": 254,
+              "name": "SupplierA0",
+              "lon": 92.70139901973018,
+              "time": 4,
+              "lat": 51.13204871524422
+            }
+          },
+          {
+            "identity": "79",
+            "start": "24",
+            "end": "14",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7661,
+              "quantity": 302
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "16",
+            "labels": ["SupplierA"],
+            "properties": {
+              "cost": 24,
+              "co2": 1339,
+              "name": "SupplierA2",
+              "lon": 82.77858106851605,
+              "time": 3,
+              "lat": 47.17026780787867
+            }
+          },
+          {
+            "identity": "91",
+            "start": "24",
+            "end": "16",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7459,
+              "quantity": 76
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "18",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 26,
+              "co2": 255,
+              "name": "SupplierB1",
+              "lon": 6.338227685970327,
+              "time": 5,
+              "lat": 59.06009250248424
+            }
+          },
+          {
+            "identity": "98",
+            "start": "25",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4122,
+              "quantity": 254
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "17",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 22,
+              "co2": 503,
+              "name": "SupplierB0",
+              "lon": 25.072991281086093,
+              "time": 4,
+              "lat": 14.017349778915698
+            }
+          },
+          {
+            "identity": "92",
+            "start": "25",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1859,
+              "quantity": 220
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "17",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 22,
+              "co2": 503,
+              "name": "SupplierB0",
+              "lon": 25.072991281086093,
+              "time": 4,
+              "lat": 14.017349778915698
+            }
+          },
+          {
+            "identity": "93",
+            "start": "26",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 13701,
+              "quantity": 242
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "18",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 26,
+              "co2": 255,
+              "name": "SupplierB1",
+              "lon": 6.338227685970327,
+              "time": 5,
+              "lat": 59.06009250248424
+            }
+          },
+          {
+            "identity": "99",
+            "start": "26",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 8715,
+              "quantity": 276
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "18",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 26,
+              "co2": 255,
+              "name": "SupplierB1",
+              "lon": 6.338227685970327,
+              "time": 5,
+              "lat": 59.06009250248424
+            }
+          },
+          {
+            "identity": "100",
+            "start": "27",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4780,
+              "quantity": 123
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "17",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 22,
+              "co2": 503,
+              "name": "SupplierB0",
+              "lon": 25.072991281086093,
+              "time": 4,
+              "lat": 14.017349778915698
+            }
+          },
+          {
+            "identity": "94",
+            "start": "27",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 6187,
+              "quantity": 109
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "18",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 26,
+              "co2": 255,
+              "name": "SupplierB1",
+              "lon": 6.338227685970327,
+              "time": 5,
+              "lat": 59.06009250248424
+            }
+          },
+          {
+            "identity": "101",
+            "start": "28",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 4271,
+              "quantity": 86
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "17",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 22,
+              "co2": 503,
+              "name": "SupplierB0",
+              "lon": 25.072991281086093,
+              "time": 4,
+              "lat": 14.017349778915698
+            }
+          },
+          {
+            "identity": "95",
+            "start": "28",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 1396,
+              "quantity": 286
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "18",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 26,
+              "co2": 255,
+              "name": "SupplierB1",
+              "lon": 6.338227685970327,
+              "time": 5,
+              "lat": 59.06009250248424
+            }
+          },
+          {
+            "identity": "102",
+            "start": "29",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 5461,
+              "quantity": 199
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "17",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 22,
+              "co2": 503,
+              "name": "SupplierB0",
+              "lon": 25.072991281086093,
+              "time": 4,
+              "lat": 14.017349778915698
+            }
+          },
+          {
+            "identity": "96",
+            "start": "29",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 10677,
+              "quantity": 108
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "18",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 26,
+              "co2": 255,
+              "name": "SupplierB1",
+              "lon": 6.338227685970327,
+              "time": 5,
+              "lat": 59.06009250248424
+            }
+          },
+          {
+            "identity": "103",
+            "start": "30",
+            "end": "18",
+            "type": "DELIVER",
+            "properties": {
+              "km": 2618,
+              "quantity": 94
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      },
+      {
+        "keys": ["a", "r"],
+        "length": 2,
+        "_fields": [
+          {
+            "identity": "17",
+            "labels": ["SupplierB"],
+            "properties": {
+              "cost": 22,
+              "co2": 503,
+              "name": "SupplierB0",
+              "lon": 25.072991281086093,
+              "time": 4,
+              "lat": 14.017349778915698
+            }
+          },
+          {
+            "identity": "97",
+            "start": "30",
+            "end": "17",
+            "type": "DELIVER",
+            "properties": {
+              "km": 7472,
+              "quantity": 273
+            }
+          }
+        ],
+        "_fieldLookup": {
+          "a": 0,
+          "r": 1
+        }
+      }
+    ],
+    "summary": {
+      "query": {
+        "text": "MATCH (a)-[r]-() RETURN a, r",
+        "parameters": {}
+      },
+      "queryType": "r",
+      "counters": {
+        "_stats": {
+          "nodesCreated": 0,
+          "nodesDeleted": 0,
+          "relationshipsCreated": 0,
+          "relationshipsDeleted": 0,
+          "propertiesSet": 0,
+          "labelsAdded": 0,
+          "labelsRemoved": 0,
+          "indexesAdded": 0,
+          "indexesRemoved": 0,
+          "constraintsAdded": 0,
+          "constraintsRemoved": 0
+        },
+        "_systemUpdates": 0
+      },
+      "updateStatistics": {
+        "_stats": {
+          "nodesCreated": 0,
+          "nodesDeleted": 0,
+          "relationshipsCreated": 0,
+          "relationshipsDeleted": 0,
+          "propertiesSet": 0,
+          "labelsAdded": 0,
+          "labelsRemoved": 0,
+          "indexesAdded": 0,
+          "indexesRemoved": 0,
+          "constraintsAdded": 0,
+          "constraintsRemoved": 0
+        },
+        "_systemUpdates": 0
+      },
+      "plan": false,
+      "profile": false,
+      "notifications": [],
+      "server": {
+        "address": "db-xk5qmxsgakadwhvrtomo.graphenedb.com:24786",
+        "version": "Neo4j/4.1.1",
+        "protocolVersion": 4.1
+      },
+      "resultConsumedAfter": {
+        "low": 2,
+        "high": 0
+      },
+      "resultAvailableAfter": {
+        "low": 1,
+        "high": 0
+      },
+      "database": {
+        "name": "neo4j"
+      }
+    }
+  }
+  

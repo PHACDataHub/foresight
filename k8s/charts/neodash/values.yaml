@@ -1,0 +1,20 @@
+replicaCount: 1
+
+image:
+  repository: nielsdejong/neodash
+  tag: 2.4.1
+
+service:
+  type: ClusterIP
+  port: 5005
+  targetPort: 5005
+
+env:
+  ssoEnabled: "false"
+  standalone: "true"
+  standaloneProtocol: "bolt"
+  standaloneHost: "neodash"
+  standalonePort: "443"
+  standaloneDatabase: "neo4j"
+  standaloneDashboardName: "Dashboard"
+  standaloneDashboardDatabase: "neo4j"

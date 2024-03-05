@@ -1,6 +1,8 @@
 ##### DEPENDENCIES
 
 FROM --platform=linux/amd64 node:20-alpine AS deps
+ARG OGMA_KEY
+
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
@@ -10,7 +12,7 @@ COPY prisma ./
 
 # Install dependencies based on the preferred package manager
 
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml\* ./
+COPY package.json env-dependencies.js yarn.lock* package-lock.json* pnpm-lock.yaml\* ./
 
 RUN \
     if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
@@ -23,6 +25,10 @@ RUN \
 
 FROM --platform=linux/amd64 node:20-alpine AS builder
 ARG DATABASE_URL
+ARG NEO4J_URL
+ARG NEO4J_USERNAME
+ARG NEO4J_PASSWORD
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -41,9 +47,16 @@ RUN \
 FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ARG NEO4J_URL
+ARG NEO4J_USERNAME
+ARG NEO4J_PASSWORD
 
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+ENV NEO4J_URL ${NEO4J_URL}
+ENV NEO4J_USERNAME ${NEO4J_USERNAME}
+ENV NEO4J_PASSWORD ${NEO4J_PASSWORD}
+
+ENV NEXT_TELEMETRY_DISABLED 1
 
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
