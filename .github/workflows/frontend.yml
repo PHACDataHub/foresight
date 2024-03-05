@@ -96,14 +96,14 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: OGMA_KEY=${{ secrets.OGMA_KEY }}
 
-      # - name: Get GKE credentials
-      #   uses: google-github-actions/get-gke-credentials@v0.4.0
-      #   with:
-      #     cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-      #     location: ${{ secrets.GKE_CLUSTER_ZONE }}
-      #     project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v0.4.0
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
+          location: ${{ secrets.GKE_CLUSTER_ZONE }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # - name: Restart Deployment
-      #   run: |
-      #     kubectl rollout restart deployment/${{ secrets.DEPLOYMENT_NAME }} -n ${{ secrets.NAMESPACE }}
-      #     kubectl rollout status deployment/${{ secrets.DEPLOYMENT_NAME }} -n ${{ secrets.NAMESPACE }}
+      - name: Restart Deployment
+        run: |
+          kubectl rollout restart deployment/${{ secrets.DEPLOYMENT_NAME }} -n ${{ secrets.NAMESPACE }}
+          kubectl rollout status deployment/${{ secrets.DEPLOYMENT_NAME }} -n ${{ secrets.NAMESPACE }}
