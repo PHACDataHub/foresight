@@ -548,7 +548,7 @@ if __name__ == '__main__':
     # a `bertopic.representation` model
     representation_model = KeyBERTInspired()
 
-    if daily == 'daily':
+    if daily in ['daily', 'both']:
         # All steps together
         for pub_date in sorted(document_dict.keys()):
             # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
@@ -581,7 +581,7 @@ if __name__ == '__main__':
             
             single_task(topic_model, topics, partial_embeddings, texts, document_dict[pub_date], pub_date, labeling_llm_chain)
         
-    if daily == 'period':
+    if daily in ['period', 'both']:
         for i in range(30, 37):
             documents, texts = [], []
             for j in range(0, 3):
