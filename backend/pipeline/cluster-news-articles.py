@@ -618,7 +618,7 @@ if __name__ == '__main__':
         for i in range(30, 31):
             documents, texts = [], []
             for k in [7, 30]:
-                for j in range(1, k):
+                for j in range(0, k):
                     d = date_list[i+j]
                     documents.extend(document_dict[d])
                     texts.extend(['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[d]])
