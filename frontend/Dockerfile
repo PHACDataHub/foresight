@@ -47,9 +47,16 @@ RUN \
 FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ARG NEO4J_URL
+ARG NEO4J_USERNAME
+ARG NEO4J_PASSWORD
 
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+ENV NEO4J_URL ${NEO4J_URL}
+ENV NEO4J_USERNAME ${NEO4J_USERNAME}
+ENV NEO4J_PASSWORD ${NEO4J_PASSWORD}
+
+ENV NEXT_TELEMETRY_DISABLED 1
 
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
