@@ -1,6 +1,8 @@
 ##### DEPENDENCIES
 
 FROM --platform=linux/amd64 node:20-alpine AS deps
+ARG OGMA_KEY
+
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
