@@ -31,9 +31,3 @@ spec:
               value: "{{ .Values.env.DISCORD_CLIENT_SECRET }}"
             - name: HOSTNAME
               value: "0.0.0.0"
-            - name: NEO4J_USERNAME
-              value: "{{ .Values.env.NEO4J_USERNAME }}"
-            - name: NEO4J_PASSWORD
-              value: "{{ .Values.env.NEO4J_PASSWORD }}"
-            - name: NEO4J_URL
-              value: "{{ .Values.env.NEO4J_URL }}"

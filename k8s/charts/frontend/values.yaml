@@ -16,6 +16,3 @@ env:
   NEXTAUTH_URL: "demo"
   DISCORD_CLIENT_ID: "demo"
   DISCORD_CLIENT_SECRET: "demo"
-  NEO4J_USERNAME: "neo4j"
-  NEO4J_PASSWORD: "phac@2024"
-  NEO4J_URL: "bolt://35.203.10.81:7687"

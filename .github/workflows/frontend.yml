@@ -94,7 +94,11 @@ jobs:
           tags: northamerica-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/foresight/frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: OGMA_KEY=${{ secrets.OGMA_KEY }}
+          build-args: |
+            OGMA_KEY=${{ secrets.OGMA_KEY }}
+            NEO4J_USERNAME=${{ secrets.NEO4J_USERNAME }}
+            NEO4J_PASSWORD=${{ secrets.NEO4J_PASSWORD }}
+            NEO4J_URL=${{ secrets.NEO4J_URL }}
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v0.4.0
