@@ -25,6 +25,10 @@ RUN \
 
 FROM --platform=linux/amd64 node:20-alpine AS builder
 ARG DATABASE_URL
+ARG NEO4J_URL
+ARG NEO4J_USERNAME
+ARG NEO4J_PASSWORD
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
