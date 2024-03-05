@@ -32,7 +32,7 @@ YIELD total RETURN total;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// Create topics and connect WHO Disease Outbreak News Articles
+// Create threats and connect WHO Disease Outbreak News Articles
 //
 WITH [
     'Outbreaks of known infectious diseases',
@@ -66,28 +66,28 @@ WITH [
     'Anomalous disease clusters',
     'Unrecognized health risks',
     'Atypical health incidents'
-] AS topics
-    UNWIND topics AS topic
+] AS threats
+    UNWIND threats AS threat
 WITH topic
-    MERGE (t:Topic {text: topic})
+    MERGE (t:Threat {text: threat})
 RETURN t.text;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// Create topics and connect WHO Disease Outbreak News Articles
+// Connect WHO Disease Outbreak News Articles
 //
 CALL apoc.periodic.iterate('
 	MATCH (n:DON)
-    RETURN n, n.topics AS topics
+    RETURN n, n.topics AS threats
 ','
-	WITH n, topics
-        UNWIND topics AS topic
-    WITH n, topic
-        MERGE (t:Topic {text: topic})
-        MERGE (n)-[:IN_TOPIC]->(t)
-    RETURN DISTINCT(n.url) AS url, COLLECT(DISTINCT(t.text)) AS topics
+	WITH n, threats
+        UNWIND threats AS threat
+    WITH n, threat
+        MERGE (t:Threat {text: threat})
+        MERGE (n)-[:DETECTED_THREAT]->(t)
+    RETURN DISTINCT(n.url) AS url, COLLECT(DISTINCT(t.text)) AS threats
 ',
 {batchSize:10000, parallel:false})
 YIELD total RETURN total;

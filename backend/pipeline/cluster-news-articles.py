@@ -97,10 +97,11 @@ def summarize_text_task(worker_id, device, topic_document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=768, chunk_overlap=0)
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=device_id)
+    # summarizer = pipeline("summarization", model="philschmid/flan-t5-base-samsum",  device=device_id)
     
-    for topic, document in topic_document_list:
+    for topic, documents in topic_document_list:
         summary = ''
-        chunks = [c.page_content for c in text_splitter.create_documents([document])]
+        chunks = [c.page_content for c in text_splitter.create_documents(documents)]
         for chunk in chunks:
             summary = summary + '\n\n' + chunk
             if len(summary) > 768:
@@ -146,8 +147,8 @@ def classify_text_task(worker_id, device, topic_document_list, queue):
     device_id = 'mps' if device == 'mps' else worker_id
     classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli",  device=device_id)
     
-    for topic, document in topic_document_list:
-        result = classifier(document, TOPIC_LIST, multi_label=True)
+    for topic, documents in topic_document_list:
+        result = classifier('\n\n'.join(documents), TOPIC_LIST, multi_label=True)
         topics = {topic: score for topic, score in zip(result['labels'], result['scores']) if score > 0.9}
         
         if topics:
@@ -260,7 +261,7 @@ def answer_text(n_workers, input_documents, country_dict, device):
     return output_documents
         
 
-def multitask(topic_models, documents, texts, pub_date):
+def multitask(topic_models, documents, texts, pub_date, labeling_llm_chain):
     model_file_name = f"datasets/{pub_date}.pkl"
     if os.path.isfile(model_file_name):
         print('Load model: ' + model_file_name)
@@ -281,23 +282,33 @@ def multitask(topic_models, documents, texts, pub_date):
             index += 1
             continue
         if topic not in topic_doc_dict:
-            topic_doc_dict[topic] = {'id_dict': dict(), 'rp_docs': dict()}
-        topic_doc_dict[topic]['id_dict'][index] = documents[index]['id']
+            topic_doc_dict[topic] = {'id_list': [], 'rp_docs': dict()}
+        topic_doc_dict[topic]['id_list'].append(documents[index]['id'])
         topic_doc_dict[topic]['rp_docs'][index] = probability
         index += 1
+        # print(f"{topic} --- ID_LIST --- {topic_doc_dict[topic]['id_list']}")
 
     for topic in sorted(topic_doc_dict.keys()):
         if topic != -1:
             rp_docs = topic_doc_dict[topic]['rp_docs']
             topic_doc_dict[topic]['rp_docs'] = sorted(rp_docs, key=rp_docs.get, reverse=True)[0:min(5, len(rp_docs))]
             titles = [documents[i]['title'] for i in topic_doc_dict[topic]['rp_docs']]
-            print(f"{topic} --- {len(topic_doc_dict[topic]['id_dict'])} --- {titles[0]}")
+            print(f"{topic} --- {len(topic_doc_dict[topic]['id_list'])} --- {topic_doc_dict[topic]['rp_docs']} --- {merged_model.topic_labels_[topic]} --- {titles[0]}")
 
     n_workers = 4
-    topic_top_repr_doc_list = [ [topic, texts[topic_doc_dict[topic]['rp_docs'][0]]] for topic in sorted(topic_doc_dict.keys()) if topic != -1]
+    # topic_top_repr_doc_list = [ [topic, texts[topic_doc_dict[topic]['rp_docs'][0]]] for topic in sorted(topic_doc_dict.keys()) if topic != -1]
+    topic_all_content_list = [
+        [topic, [ texts[i] for i in topic_doc_dict[topic]['rp_docs']] ] 
+        for topic in sorted(topic_doc_dict.keys()) if topic != -1
+    ]
+    topic_one_content_list = [
+        [topic, [ texts[topic_doc_dict[topic]['rp_docs'][0]] ]] 
+        for topic in sorted(topic_doc_dict.keys()) if topic != -1
+    ]
    
     print('Summarize clusters ...')
-    topic_summary_list = summarize_text(n_workers, topic_top_repr_doc_list, device)
+    summary_dict = dict()
+    topic_summary_list = summarize_text(n_workers, topic_one_content_list, device)
     summary_dict = dict()
     for topic, summary in topic_summary_list:
         summary_dict[topic] = summary
@@ -305,7 +316,7 @@ def multitask(topic_models, documents, texts, pub_date):
         if topic != -1:
             print(f"[{topic}] --- SUM --- {summary_dict[topic]}")
         else:
-            summary_dict[topic] = {}
+            summary_dict[topic] = ''
 
     print('Label clusters ...')
     label_dict = dict()
@@ -314,7 +325,8 @@ def multitask(topic_models, documents, texts, pub_date):
             label_dict[topic] = 'Outlier Topic'
         else:
             keywords = merged_model.topic_labels_[topic].split('_')[1:]
-            output = labeling_llm_chain.invoke({'documents': summary_dict[topic], 'keywords': keywords})['text']
+            # output = labeling_llm_chain.invoke({'documents': summary_dict[topic], 'keywords': keywords})['text']
+            output = labeling_llm_chain.invoke({'documents': [documents[i]['title'] for i in topic_doc_dict[topic]['rp_docs']], 'keywords': keywords})['text']
             result = output_parser.parse(output)
             if result and len(result) > 0:
                 label_dict[topic] = result[0]
@@ -326,7 +338,7 @@ def multitask(topic_models, documents, texts, pub_date):
     print(merged_model.get_topic_info())
 
     print('Classify clusters ...')
-    topic_threats_list = classify_text(n_workers, topic_top_repr_doc_list, device)
+    topic_threats_list = classify_text(n_workers, topic_all_content_list, device)
     topic_threats_dict = dict()
     for topic, threats in topic_threats_list:
         topic_threats_dict[topic] = threats
@@ -338,7 +350,7 @@ def multitask(topic_models, documents, texts, pub_date):
 
     print('Answering questions ...')
     topic_all_repr_doc_list = [ 
-        [topic, topic_threats_dict[topic], [texts[topic_doc_dict[topic]['rp_docs'][i]] for i in range(0, len(topic_doc_dict[topic]['rp_docs']))]] 
+        [topic, topic_threats_dict[topic], [texts[i] for i in range(0, len(topic_doc_dict[topic]['rp_docs']))]] 
         for topic in sorted(topic_doc_dict.keys()) if topic != -1]
             
     topic_answers_list = answer_text(n_workers, topic_all_repr_doc_list, country_dict, device)
@@ -354,7 +366,7 @@ def multitask(topic_models, documents, texts, pub_date):
     print('Gathering stats ...')
     grouped_topics = {
         topic: { 
-            'id_list': topic_doc_dict[topic]['id_dict'], 'label': label_dict[topic], 'summary': summary_dict[topic], 
+            'id_list': topic_doc_dict[topic]['id_list'], 'label': label_dict[topic], 'summary': summary_dict[topic], 
             'threats': topic_threats_dict[topic], 'answers': topic_answers_dict[topic], 
         } for topic in sorted(topic_doc_dict.keys()) if topic != -1
     }
@@ -377,15 +389,25 @@ def multitask(topic_models, documents, texts, pub_date):
     print(f"Written {out_name}.\n")
 
 
-def single_task(topic_model, embeddings, texts, documents, pub_date):
-    topics = topic_model.topics_
-    topic_set = set(topics)
+def single_task(topic_model, topics, embeddings, texts, documents, pub_date, labeling_llm_chain):
+    topic_set = sorted(set(topics))
     
     n_workers = 4
-    topic_top_repr_doc_list = [[topic, topic_model.representative_docs_[topic][0]] for topic in topic_set if topic != -1]
+    topic_all_title_list = [
+        [topic, [d.split('\n\n')[0] for d in topic_model.representative_docs_[topic]]] 
+        for topic in topic_set if topic != -1
+    ]
+    topic_all_content_list = [
+        [topic, topic_model.representative_docs_[topic]] 
+        for topic in topic_set if topic != -1
+    ]
+    topic_one_content_list = [
+        [topic, [topic_model.representative_docs_[topic][0]]]
+        for topic in topic_set if topic != -1
+    ]
    
     print('Summarize clusters ...')
-    topic_summary_list = summarize_text(n_workers, topic_top_repr_doc_list, device)
+    topic_summary_list = summarize_text(n_workers, topic_one_content_list, device)
     summary_dict = dict()
     for topic, summary in topic_summary_list:
         summary_dict[topic] = summary
@@ -393,8 +415,8 @@ def single_task(topic_model, embeddings, texts, documents, pub_date):
         if topic != -1:
             print(f"[{topic}] --- SUM --- {summary_dict[topic]}")
         else:
-            summary_dict[topic] = {}
-
+            summary_dict[topic] = ''
+    
     print('Label clusters ...')
     label_dict = dict()
     for topic in topic_set:
@@ -402,7 +424,8 @@ def single_task(topic_model, embeddings, texts, documents, pub_date):
             label_dict[topic] = 'Outlier Topic'
         else:
             keywords = topic_model.topic_labels_[topic].split('_')[1:]
-            output = labeling_llm_chain.invoke({'documents': summary_dict[topic], 'keywords': keywords})['text']
+            # output = labeling_llm_chain.invoke({'documents': summary_dict[topic], 'keywords': keywords})['text']
+            output = labeling_llm_chain.invoke({'documents': [d.split('\n\n')[0] for d in topic_model.representative_docs_[topic]], 'keywords': keywords})['text']
             result = output_parser.parse(output)
             if result and len(result) > 0:
                 label_dict[topic] = result[0]
@@ -414,7 +437,7 @@ def single_task(topic_model, embeddings, texts, documents, pub_date):
     print(topic_model.get_topic_info())
 
     print('Classify clusters ...')
-    topic_threats_list = classify_text(n_workers, topic_top_repr_doc_list, device)
+    topic_threats_list = classify_text(n_workers, topic_all_content_list, device)
     topic_threats_dict = dict()
     for topic, threats in topic_threats_list:
         topic_threats_dict[topic] = threats
@@ -467,7 +490,7 @@ def single_task(topic_model, embeddings, texts, documents, pub_date):
 if __name__ == '__main__':
     start_time = datetime.now()
 
-    path, country_file_name, device = sys.argv[1], sys.argv[2], sys.argv[3]
+    path, country_file_name, device, daily = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     country_dict = load_country_codes(country_file_name)
 
     date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)]
@@ -479,11 +502,10 @@ if __name__ == '__main__':
             document_dict[pub_date] = [json.loads(line.strip()) for line in in_file.readlines()]
         print(f"[{pub_date}] Read {len(document_dict[pub_date])} articles.")
 
-    # System prompt describes information given to all conversations
     LABELING_PROMPT_TEMPLATE = """
     You are a helpful, respectful and honest assistant for labeling topics.
 
-    I have a topic that contains the following documents delimited by triple backquotes (```). 
+    I have a topic that contains the following document delimited by triple backquotes (```). 
     ```{documents}```
     
     The topic is described by the following keywords delimited by triple backquotes (```):
@@ -526,52 +548,16 @@ if __name__ == '__main__':
     # a `bertopic.representation` model
     representation_model = KeyBERTInspired()
 
-    # All steps together
-    for pub_date in sorted(document_dict.keys()):
-        # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
-        # if os.path.isfile(cluster_out_name):
-        #     continue
-        
-        daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
-        partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
-        topic_model = BERTopic(
-            embedding_model=embedding_model,            # Step 1 - Extract embeddings
-            umap_model=umap_model,                      # Step 2 - Reduce dimensionality
-            hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
-            vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
-            ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
-            representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
-            calculate_probabilities=True,
-            # nr_topics="auto",
-            verbose=True
-        )
-        
-        print('Train model: ' + pub_date)
-        topics, probabilities = topic_model.fit_transform(daily_texts, partial_embeddings)
-
-        # print('Reduce outliers ...')
-        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
-        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
-        # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
-        # topic_model.update_topics(daily_texts, topics=new_topics)
-        print(topic_model.get_topic_info())
-           
-        single_task(topic_model, partial_embeddings, daily_texts, document_dict[pub_date], pub_date)
-    
-    # All steps together
-    text_dict, model_dict  = dict(), dict()
-    for pub_date in sorted(document_dict.keys()):
-        daily_texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
-
-        model_file_name = f"datasets/{pub_date}.pkl"
-        if os.path.isfile(model_file_name):
-            print('Load model: ' + model_file_name)
-            topic_model = BERTopic.load(model_file_name)
-            print(topic_model.get_topic_info())
-        else:
-            partial_embeddings = embedding_model.encode(daily_texts, show_progress_bar=True)
-            print('Train model: ' + model_file_name)
-            topic_model = topic_model = BERTopic(
+    if daily == 'daily':
+        # All steps together
+        for pub_date in sorted(document_dict.keys()):
+            # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
+            # if os.path.isfile(cluster_out_name):
+            #     continue
+            
+            texts = ['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[pub_date]]
+            partial_embeddings = embedding_model.encode(texts, show_progress_bar=True)
+            topic_model = BERTopic(
                 embedding_model=embedding_model,            # Step 1 - Extract embeddings
                 umap_model=umap_model,                      # Step 2 - Reduce dimensionality
                 hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
@@ -581,7 +567,44 @@ if __name__ == '__main__':
                 calculate_probabilities=True,
                 # nr_topics="auto",
                 verbose=True
-            ).fit(daily_texts, partial_embeddings)
+            )
+            
+            print('Train model: ' + pub_date)
+            topics, probabilities = topic_model.fit_transform(texts, partial_embeddings)
+
+            # print('Reduce outliers ...')
+            # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
+            # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=probabilities)
+            # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
+            # topic_model.update_topics(daily_texts, topics=new_topics)
+            print(topic_model.get_topic_info())
+            
+            single_task(topic_model, topics, partial_embeddings, texts, document_dict[pub_date], pub_date, labeling_llm_chain)
+        
+    if daily == 'period':
+        for i in range(0, 1):
+            documents, texts = [], []
+            for j in range(0, 3):
+                d = date_list[i+j]
+                documents.extend(document_dict[d])
+                texts.extend(['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[d]])
+
+            pub_date = f"{date_list[i]}-{date_list[i+2]}"
+            partial_embeddings = embedding_model.encode(texts, show_progress_bar=True)
+            topic_model = BERTopic(
+                embedding_model=embedding_model,            # Step 1 - Extract embeddings
+                umap_model=umap_model,                      # Step 2 - Reduce dimensionality
+                hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
+                vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
+                ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
+                representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
+                calculate_probabilities=True,
+                # nr_topics="auto",
+                verbose=True
+            )
+        
+            print('Train model: ' + pub_date)
+            topics, probabilities = topic_model.fit_transform(texts, partial_embeddings)
 
             # print('Reduce outliers ...')
             # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
@@ -589,30 +612,72 @@ if __name__ == '__main__':
             # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
             # topic_model.update_topics(daily_texts, topics=new_topics)
             print(topic_model.get_topic_info())
-           
-            topic_model.save(model_file_name, serialization="pickle")
-            print('Saved model: ' + model_file_name)
+        
+            single_task(topic_model, topics, partial_embeddings, texts, documents, pub_date, labeling_llm_chain)
 
-        text_dict[pub_date] = daily_texts
-        model_dict[pub_date] = topic_model
-
-    for i in range(30, 37):
-        models, documents, texts = [model_dict[date_list[i]]], document_dict[date_list[i]], text_dict[date_list[i]]
-        for j in range(1, 3):
-            d = date_list[i+j]
-            models.append(model_dict[d])
-            documents.extend(document_dict[d])
-            texts.extend(text_dict[d])
-        out_name = f"{date_list[i]}-{date_list[i+2]}"
-        multitask(models, documents, texts, out_name)
-
-    for i in range(30, 31):
-        models, documents, texts = [model_dict[date_list[i]]], document_dict[date_list[i]], text_dict[date_list[i]]
-        for k in [7, 30]:
-            for j in range(1, k):
+        for i in range(30, 37):
+            documents, texts = [], []
+            for j in range(0, 3):
                 d = date_list[i+j]
-                models.append(model_dict[d])
                 documents.extend(document_dict[d])
-                texts.extend(text_dict[d])
-            out_name = f"{date_list[i]}-{date_list[i+k-1]}"
-            multitask(models, documents, texts, out_name)
+                texts.extend(['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[d]])
+
+            pub_date = f"{date_list[i]}-{date_list[i+2]}"
+            partial_embeddings = embedding_model.encode(texts, show_progress_bar=True)
+            topic_model = BERTopic(
+                embedding_model=embedding_model,            # Step 1 - Extract embeddings
+                umap_model=umap_model,                      # Step 2 - Reduce dimensionality
+                hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
+                vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
+                ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
+                representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
+                calculate_probabilities=True,
+                # nr_topics="auto",
+                verbose=True
+            )
+        
+            print('Train model: ' + pub_date)
+            topics, probabilities = topic_model.fit_transform(texts, partial_embeddings)
+
+            # print('Reduce outliers ...')
+            # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
+            # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=topic_model.probabilities_)
+            # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
+            # topic_model.update_topics(daily_texts, topics=new_topics)
+            print(topic_model.get_topic_info())
+        
+            single_task(topic_model, topics, partial_embeddings, texts, documents, pub_date, labeling_llm_chain)
+            
+        for i in range(30, 31):
+            documents, texts = [], []
+            for k in [7, 30]:
+                for j in range(1, k):
+                    d = date_list[i+j]
+                    documents.extend(document_dict[d])
+                    texts.extend(['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[d]])
+
+                pub_date = f"{date_list[i]}-{date_list[i+2]}"
+                partial_embeddings = embedding_model.encode(texts, show_progress_bar=True)
+                topic_model = BERTopic(
+                    embedding_model=embedding_model,            # Step 1 - Extract embeddings
+                    umap_model=umap_model,                      # Step 2 - Reduce dimensionality
+                    hdbscan_model=hdbscan_model,                # Step 3 - Cluster reduced embeddings
+                    vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
+                    ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
+                    representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
+                    calculate_probabilities=True,
+                    # nr_topics="auto",
+                    verbose=True
+                )
+            
+                print('Train model: ' + pub_date)
+                topics, probabilities = topic_model.fit_transform(texts, partial_embeddings)
+
+                # print('Reduce outliers ...')
+                # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="embeddings", embeddings=partial_embeddings)
+                # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_, strategy="probabilities", probabilities=topic_model.probabilities_)
+                # new_topics = topic_model.reduce_outliers(daily_texts, topic_model.topics_)
+                # topic_model.update_topics(daily_texts, topics=new_topics)
+                print(topic_model.get_topic_info())
+            
+                single_task(topic_model, topics, partial_embeddings, texts, documents, pub_date, labeling_llm_chain)

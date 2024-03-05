@@ -6,18 +6,24 @@ CREATE CONSTRAINT url_don IF NOT EXISTS FOR (n:DON) REQUIRE n.url IS UNIQUE;
 CREATE INDEX report_date_don IF NOT EXISTS FOR (n:DON) ON (n.report_date);
 CREATE TEXT INDEX summary_don IF NOT EXISTS FOR (n:DON) ON (n.summary);
 //
-// Create vector index for embeddings
-CALL db.index.vector.createNodeIndex('text-chunk', 'Chunk', 'embeddings', 768, 'COSINE');
-//
-
+// Public Health Threat
+CREATE CONSTRAINT text_threat IF NOT EXISTS FOR (n:Threat) REQUIRE n.text IS UNIQUE;
 //
 // Chunks
 CREATE CONSTRAINT chunk_resource IF NOT EXISTS FOR (n:Chunk) REQUIRE n.text IS UNIQUE;
 //
-
+// Down Jones News Articles
+CREATE CONSTRAINT id_article IF NOT EXISTS FOR (n:Article) REQUIRE n.id IS UNIQUE;
+CREATE TEXT INDEX title_article IF NOT EXISTS FOR (n:Article) ON (n.title);
+CREATE INDEX pub_date_article IF NOT EXISTS FOR (n:Article) ON (n.pub_date);
+CREATE TEXT INDEX pub_name_article IF NOT EXISTS FOR (n:Article) ON (n.pub_name);
 //
-// Topic
-CREATE CONSTRAINT text_topic IF NOT EXISTS FOR (n:Topic) REQUIRE n.text IS UNIQUE;
+// Cluster
+CREATE CONSTRAINT id_cluster IF NOT EXISTS FOR (n:Cluster) REQUIRE n.id IS UNIQUE;
+CREATE TEXT INDEX summary_cluster IF NOT EXISTS FOR (n:Cluster) ON (n.summary);
+//
+// Create vector index for embeddings
+CALL db.index.vector.createNodeIndex('text-chunk', 'Chunk', 'embeddings', 768, 'COSINE');
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
