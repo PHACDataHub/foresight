@@ -491,6 +491,7 @@ if __name__ == '__main__':
     start_time = datetime.now()
 
     path, country_file_name, device, daily = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    start_date = sys.argv[5] if len(sys.argv) > 5 else '2019-12-31'
     country_dict = load_country_codes(country_file_name)
 
     date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)]
@@ -551,6 +552,8 @@ if __name__ == '__main__':
     if daily in ['daily', 'both']:
         # All steps together
         for pub_date in sorted(document_dict.keys()):
+            if pub_date < start_date:
+                continue
             # cluster_out_name = f"datasets/{pub_date}-clusters.jsonl"
             # if os.path.isfile(cluster_out_name):
             #     continue
