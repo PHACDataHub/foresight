@@ -623,7 +623,7 @@ if __name__ == '__main__':
                     documents.extend(document_dict[d])
                     texts.extend(['\n\n'.join([document[prop] for prop in ['title', 'content']]) for document in document_dict[d]])
 
-                pub_date = f"{date_list[i]}-{date_list[i+2]}"
+                pub_date = f"{date_list[i]}-{date_list[i+k-1]}"
                 partial_embeddings = embedding_model.encode(texts, show_progress_bar=True)
                 topic_model = BERTopic(
                     embedding_model=embedding_model,            # Step 1 - Extract embeddings
