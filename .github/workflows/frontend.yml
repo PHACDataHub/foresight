@@ -12,15 +12,15 @@ on:
     branches:
       - main      
     paths:
-      - 'frontend'
+      - 'frontend/**'
       - '.github/workflows/frontend.yml'
+      - 'k8s/**'
 
   pull_request:
-    types: [ opened, synchronize, reopened ]
     branches:
       - main      
     paths:
-      - 'frontend'
+      - 'frontend/**'
       - '.github/workflows/frontend.yml'
     
   # Allows you to run this workflow manually from the Actions tab
