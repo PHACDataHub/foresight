@@ -13,6 +13,6 @@ service:
 env:
   DATABASE_URL: "file:/tmp/db.sqlite"
   NEXTAUTH_SECRET: "demo"
-  NEXTAUTH_URL: "demo"
+  NEXTAUTH_URL: "https://foresight-serum.phac-aspc.alpha.canada.ca/auth"
   DISCORD_CLIENT_ID: "demo"
   DISCORD_CLIENT_SECRET: "demo"
