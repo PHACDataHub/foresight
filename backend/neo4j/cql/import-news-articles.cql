@@ -12,7 +12,7 @@ WITH month + day AS pub_date
     CALL apoc.periodic.iterate('
 	    CALL apoc.load.json("file:///" + $infile) YIELD value RETURN value AS doc
     ','
-        WITH doc, SPLIT(doc.publicationdate, " ") AS splits
+        WITH doc, SPLIT(doc.publicationdate, "-") AS splits
             MERGE (n:Article {id: doc.id})
                 SET 
                     n.pub_date = DATE({year: TOINTEGER(splits[2]), month: CASE WHEN splits[1] = "December" THEN 12 ELSE 1 END, day: TOINTEGER(splits[0])}),
