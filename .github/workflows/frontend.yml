@@ -52,6 +52,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.node-version }}-frontend-${{ hashFiles('frontend/package-lock.json', 'frontend/yarn.lock') }}-
       - name: Install dependencies
+        env:
+          OGMA_KEY: ${{ secrets.OGMA_KEY }}
         run: npm ci
       - name: Perform linting
         run: |
