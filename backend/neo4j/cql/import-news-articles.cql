@@ -64,11 +64,19 @@ WITH days + [
         	WHERE cluster.label <> "Outlier Topic"
         RETURN topic, cluster
     ','
-        WITH topic, cluster 
+        WITH topic, cluster, 
+            SPLIT(SUBSTRING(pub_date, 0, 10), "-") AS start_date_splits,
+            CASE WHEN SIZE(pub_date) > 20 THEN SPLIT(SUBSTRING(pub_date, 10, 10), "-") ELSE '' END AS end_date_splits
+        WITH topic, cluster, 
+            DATE({year: TOINTEGER(start_date_splits[2]), month: TOINTEGER(start_date_splits[1]), day: TOINTEGER(start_date_splits[0])}) AS start_date,
+            CASE WHEN SIZE(end_date_splits) > 0 THEN DATE({year: TOINTEGER(end_date_splits[2]), month: TOINTEGER(end_date_splits[1]), day: TOINTEGER(end_date_splits[0])}) ELSE NULL END AS end_date
             MERGE (c:Cluster {id: $pub_date + "-" + TOSTRING(topic)})
                 SET c.summary = cluster.summary,
                     c.answers = apoc.convert.toJson(cluster.answers),
-                    c.title = cluster.label
+                    c.title = cluster.label,
+                    c.topic_id = topic,
+                    c.start_date = start_date,
+                    c.end_date =  end_date 
         WITH c, cluster
             FOREACH (article_id IN cluster.id_list  |
                 MERGE (a:Article {id: article_id})
