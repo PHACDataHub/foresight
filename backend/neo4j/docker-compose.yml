@@ -79,7 +79,7 @@ services:
       - ssoDiscoveryUrl=
       - standalone=true
       - standaloneProtocol=neo4j
-      - standaloneHost=localhost
+      - standaloneHost=${EXTERNAL_IP}
       - standalonePort=7687
       - standaloneUsername=${NEO4J_USERNAME}
       - standaloneDatabase=neo4j

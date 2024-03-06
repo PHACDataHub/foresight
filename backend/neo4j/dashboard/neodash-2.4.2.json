@@ -409,7 +409,7 @@
         "neodash_end_date": {
           "year": 2019,
           "month": 12,
-          "day": 31
+          "day": 1
         },
         "neodash_cluster_id": "2019-12-31-7",
         "neodash_cluster_id_display": "2019-12-31-7"
@@ -503,11 +503,39 @@
               "layout": "force-directed",
               "styleRules": [
                 {
-                  "field": "",
-                  "condition": "=",
-                  "value": "",
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
                   "customization": "node color",
-                  "customizationValue": "black"
+                  "customizationValue": "#FF0000"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF0000"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF0000"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF0000"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "red"
                 }
               ],
               "nodeColorScheme": "neodash"
@@ -516,6 +544,7 @@
               [
                 "Cluster",
                 "summary",
+                "nr_articles",
                 "answers",
                 "topic_id",
                 "id",
@@ -596,12 +625,50 @@
               "enableEditing": true,
               "layout": "force-directed",
               "nodeColorScheme": "neodash",
-              "showPropertiesOnClick": true
+              "showPropertiesOnClick": true,
+              "styleRules": [
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "red"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "red"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF0000"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "red"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "red"
+                }
+              ]
             },
             "schema": [
               [
                 "Cluster",
                 "summary",
+                "nr_articles",
                 "answers",
                 "topic_id",
                 "id",
@@ -666,9 +733,7 @@
             "selection": {
               "Cluster": "title",
               "Threat": "(label)",
-              "Article": "gphin_score",
-              "IN_CLUSTER": "(label)",
-              "DETECTED_THREAT": "(label)"
+              "Article": "pub_name"
             },
             "settings": {
               "allowDownload": true,
@@ -719,7 +784,7 @@
           {
             "id": "46f0a2c9-2be1-45f3-88a8-8f4a4d924775",
             "title": "Label and number of articles ",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n\n",
             "width": 12,
             "height": 9,
             "x": 12,
