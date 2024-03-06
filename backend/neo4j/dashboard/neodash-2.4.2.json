@@ -12,7 +12,11 @@
         "neodash_class_description_display": "",
         "neodash_disease_label": "COVID-19",
         "neodash_disease_label_display": "COVID-19",
-        "neodash_start_date": "2020-01-05",
+        "neodash_start_date": {
+          "year": 2019,
+          "month": 12,
+          "day": 31
+        },
         "neodash_threats": [
           "",
           [
@@ -402,7 +406,11 @@
             "_owner": null
           }
         ],
-        "neodash_end_date": "2019-12-31",
+        "neodash_end_date": {
+          "year": 2019,
+          "month": 12,
+          "day": 31
+        },
         "neodash_cluster_id": "2019-12-31-7",
         "neodash_cluster_id_display": "2019-12-31-7"
       },
@@ -425,7 +433,7 @@
             "type": "select",
             "selection": {},
             "settings": {
-              "type": "Free Text",
+              "type": "Date Picker",
               "entityType": "Start date",
               "parameterName": "neodash_start_date"
             },
@@ -442,7 +450,7 @@
             "type": "select",
             "selection": {},
             "settings": {
-              "type": "Free Text",
+              "type": "Date Picker",
               "entityType": "End date",
               "parameterName": "neodash_end_date"
             },
@@ -473,7 +481,7 @@
           {
             "id": "0827c67b-a42c-482a-92d5-3dce7c9542fc",
             "title": "Clusters with detected threats",
-            "query": "WITH CASE WHEN $neodash_end_date > $neodash_start_date THEN $neodash_start_date + '-' + $neodash_end_date ELSE $neodash_start_date END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nRETURN c, r, t\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nRETURN c, r, t\n\n\n\n\n\n\n",
             "width": 12,
             "height": 9,
             "x": 0,
@@ -569,7 +577,7 @@
           {
             "id": "13669818-c254-4918-817b-aeffb4611b8b",
             "title": "Clusters without detected threats",
-            "query": "WITH CASE WHEN $neodash_end_date > $neodash_start_date THEN $neodash_start_date + '-' + $neodash_end_date ELSE $neodash_start_date END AS period\nWITH period + '-\\\\d+' AS id_pattern\nMATCH (c:Cluster)\n  WHERE c.id =~ id_pattern\n    AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nRETURN c\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\nMATCH (c:Cluster)\n  WHERE c.id =~ id_pattern\n    AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nRETURN c\n\n\n\n\n\n\n",
             "width": 12,
             "height": 5,
             "x": 0,
@@ -711,7 +719,7 @@
           {
             "id": "46f0a2c9-2be1-45f3-88a8-8f4a4d924775",
             "title": "Label and number of articles ",
-            "query": "WITH CASE WHEN $neodash_end_date > $neodash_start_date THEN $neodash_start_date + '-' + $neodash_end_date ELSE $neodash_start_date END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n\n",
             "width": 12,
             "height": 9,
             "x": 12,
@@ -744,7 +752,7 @@
           {
             "id": "05f217c5-dd22-48b3-928c-ee2f591f61a6",
             "title": "Clusters without detected threats",
-            "query": "WITH CASE WHEN $neodash_end_date > $neodash_start_date THEN $neodash_start_date + '-' + $neodash_end_date ELSE $neodash_start_date END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n",
             "width": 12,
             "height": 5,
             "x": 12,
