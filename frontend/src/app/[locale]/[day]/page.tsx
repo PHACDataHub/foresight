@@ -4,8 +4,6 @@ import AppWrapper from "~/app/_components/AppWrapper";
 import Graph from "~/app/_components/graph";
 import TimeTravel from "~/app/_components/TimeTravel";
 
-import countries from "~/countries.json";
-
 export default async function Index({
   params,
 }: {
@@ -31,7 +29,7 @@ export default async function Index({
         }}
       />
       <div className="flex flex-1 flex-col items-center justify-center overflow-hidden border-2 mb-10">
-        <Graph countries={countries} />
+        <Graph />
       </div>
       {/* <div className="container">
         <div className="row">
