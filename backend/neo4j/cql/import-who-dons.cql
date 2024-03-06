@@ -13,8 +13,7 @@ CALL apoc.periodic.iterate('
                 n.countries = doc.countries,
 				n.report_date = DATE({year: TOINTEGER(splits[2]), month: CASE WHEN splits[1] = "December" THEN 12 ELSE 1 END, day: TOINTEGER(splits[0])}),
                 n.summary = doc.summary,
-                n.title = doc.title,
-                n.topics = doc.topics
+                n.title = doc.title
     WITH doc, n, apoc.coll.zip(doc.chunks, doc.embeddings) AS chunk_embeddings_list
     WITH doc, n, chunk_embeddings_list
         UNWIND chunk_embeddings_list AS chunk_embeddings
@@ -25,7 +24,7 @@ CALL apoc.periodic.iterate('
         CALL db.create.setNodeVectorProperty(c, "embeddings", embeddings)
     RETURN n.url
 ',
-{batchSize:10000, parallel:false})
+{batchSize:1000, parallel:false})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +67,7 @@ WITH [
     'Atypical health incidents'
 ] AS threats
     UNWIND threats AS threat
-WITH topic
+WITH threat
     MERGE (t:Threat {text: threat})
 RETURN t.text;
 //
@@ -79,17 +78,19 @@ RETURN t.text;
 // Connect WHO Disease Outbreak News Articles
 //
 CALL apoc.periodic.iterate('
-	MATCH (n:DON)
-    RETURN n, n.topics AS threats
+    CALL apoc.load.json("file:///processed-who-dons.jsonl") YIELD value RETURN value AS doc
 ','
-	WITH n, threats
+    WITH doc, KEYS(doc.topics) AS threats
+        MERGE (n:DON {url: doc.url})
+	WITH doc, n, threats
         UNWIND threats AS threat
-    WITH n, threat
+    WITH doc, n, doc.topics[threat] AS score, threat
         MERGE (t:Threat {text: threat})
-        MERGE (n)-[:DETECTED_THREAT]->(t)
+        MERGE (n)-[r:DETECTED_THREAT]->(t)
+            SET t.score = score
     RETURN DISTINCT(n.url) AS url, COLLECT(DISTINCT(t.text)) AS threats
 ',
-{batchSize:10000, parallel:false})
+{batchSize:1000, parallel:false})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +100,7 @@ YIELD total RETURN total;
 // Detect similar chunks
 //
 CALL apoc.periodic.iterate("
-    MATCH (:Topic)<-[:IN_TOPIC]-(a:DON)<-[:PART_OF]-(c1:Chunk)
+    MATCH (a:DON)<-[:PART_OF]-(c1:Chunk)
         WITH a, c1
             CALL db.index.vector.queryNodes('text-chunk', 100, c1.embeddings)
             YIELD node AS c2, score AS s
@@ -113,7 +114,7 @@ CALL apoc.periodic.iterate("
         MERGE (c1)-[r:SIMILAR_D2D_CHUNK]->(c2)
         SET r.score = s;
 ",
-{params: {cutoff: 0.82}, batchSize:10000, parallel:false})
+{params: {cutoff: 0.75}, batchSize:1000, parallel:false})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +137,7 @@ CALL apoc.periodic.iterate("
         SET r.score = sum,
             r.scores = coll;
 ",
-{params: {cutoff: 0.82}, batchSize:10000, parallel:false})
+{params: {cutoff: 0.75}, batchSize:1000, parallel:false})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

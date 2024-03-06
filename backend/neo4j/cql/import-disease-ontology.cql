@@ -49,7 +49,7 @@ CALL apoc.periodic.iterate('
         )
     RETURN n.uri
 ',
-{batchSize:10000, parallel:false})
+{batchSize:1000, parallel:false})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ CALL apoc.periodic.iterate('
         CALL db.create.setNodeVectorProperty(c, "embeddings", embeddings)
     RETURN r.url
 ',
-{batchSize:10000, parallel:true})
+{batchSize:1000, parallel:true})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
