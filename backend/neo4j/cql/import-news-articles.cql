@@ -66,7 +66,7 @@ WITH days + [
     ','
         WITH topic, cluster, 
             SPLIT(SUBSTRING(pub_date, 0, 10), "-") AS start_date_splits,
-            CASE WHEN SIZE(pub_date) > 20 THEN SPLIT(SUBSTRING(pub_date, 10, 10), "-") ELSE '' END AS end_date_splits
+            CASE WHEN SIZE(pub_date) > 20 THEN SPLIT(SUBSTRING(pub_date, 11, 10), "-") ELSE '' END AS end_date_splits
         WITH topic, cluster, 
             DATE({year: TOINTEGER(start_date_splits[2]), month: TOINTEGER(start_date_splits[1]), day: TOINTEGER(start_date_splits[0])}) AS start_date,
             CASE WHEN SIZE(end_date_splits) > 0 THEN DATE({year: TOINTEGER(end_date_splits[2]), month: TOINTEGER(end_date_splits[1]), day: TOINTEGER(end_date_splits[0])}) ELSE NULL END AS end_date
