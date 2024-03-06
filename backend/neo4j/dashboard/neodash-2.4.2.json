@@ -12,7 +12,7 @@
         "neodash_class_description_display": "",
         "neodash_disease_label": "COVID-19",
         "neodash_disease_label_display": "COVID-19",
-        "neodash_start_date": "2019-12-31",
+        "neodash_start_date": "2020-01-05",
         "neodash_threats": [
           "",
           [
@@ -532,7 +532,7 @@
             "width": 8,
             "height": 2,
             "x": 0,
-            "y": 11,
+            "y": 16,
             "type": "select",
             "selection": {},
             "settings": {
@@ -551,7 +551,7 @@
             "width": 24,
             "height": 8,
             "x": 0,
-            "y": 20,
+            "y": 25,
             "type": "table",
             "selection": {},
             "settings": {
@@ -571,9 +571,9 @@
             "title": "Clusters without detected threats",
             "query": "WITH CASE WHEN $neodash_end_date > $neodash_start_date THEN $neodash_start_date + '-' + $neodash_end_date ELSE $neodash_start_date END AS period\nWITH period + '-\\\\d+' AS id_pattern\nMATCH (c:Cluster)\n  WHERE c.id =~ id_pattern\n    AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nRETURN c\n\n\n\n\n\n\n",
             "width": 12,
-            "height": 9,
-            "x": 12,
-            "y": 2,
+            "height": 5,
+            "x": 0,
+            "y": 11,
             "type": "graph",
             "selection": {
               "Cluster": "title"
@@ -582,12 +582,13 @@
               "refreshButtonEnabled": true,
               "fullscreenEnabled": true,
               "downloadImageEnabled": true,
-              "rightClickToExpandNodes": false,
+              "rightClickToExpandNodes": true,
               "allowDownload": true,
               "showPropertiesOnHover": true,
               "enableEditing": true,
               "layout": "force-directed",
-              "nodeColorScheme": "neodash"
+              "nodeColorScheme": "neodash",
+              "showPropertiesOnClick": true
             },
             "schema": [
               [
@@ -608,7 +609,7 @@
             "width": 8,
             "height": 5,
             "x": 8,
-            "y": 11,
+            "y": 16,
             "type": "value",
             "selection": {},
             "settings": {
@@ -626,7 +627,7 @@
             "width": 8,
             "height": 5,
             "x": 16,
-            "y": 11,
+            "y": 16,
             "type": "table",
             "selection": {},
             "settings": {
@@ -640,7 +641,7 @@
             "width": 16,
             "height": 4,
             "x": 8,
-            "y": 16,
+            "y": 21,
             "type": "table",
             "selection": {},
             "settings": {}
@@ -652,7 +653,7 @@
             "width": 8,
             "height": 7,
             "x": 0,
-            "y": 13,
+            "y": 18,
             "type": "graph",
             "selection": {
               "Cluster": "title",
@@ -706,6 +707,63 @@
                 "score"
               ]
             ]
+          },
+          {
+            "id": "46f0a2c9-2be1-45f3-88a8-8f4a4d924775",
+            "title": "Label and number of articles ",
+            "query": "WITH CASE WHEN $neodash_end_date > $neodash_start_date THEN $neodash_start_date + '-' + $neodash_end_date ELSE $neodash_start_date END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n\n",
+            "width": 12,
+            "height": 9,
+            "x": 12,
+            "y": 2,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "",
+                  "condition": "=",
+                  "value": "",
+                  "customization": "node color",
+                  "customizationValue": "black"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "columnWidths": "[95,5}"
+            },
+            "schema": []
+          },
+          {
+            "id": "05f217c5-dd22-48b3-928c-ee2f591f61a6",
+            "title": "Clusters without detected threats",
+            "query": "WITH CASE WHEN $neodash_end_date > $neodash_start_date THEN $neodash_start_date + '-' + $neodash_end_date ELSE $neodash_start_date END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n",
+            "width": 12,
+            "height": 5,
+            "x": 12,
+            "y": 11,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "nodeColorScheme": "neodash",
+              "showPropertiesOnClick": true
+            },
+            "schema": []
           }
         ]
       },
