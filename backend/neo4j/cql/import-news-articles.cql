@@ -30,6 +30,7 @@ WITH month + day AS pub_date
         WITH doc, n, chunk_embeddings[0] AS chunk, chunk_embeddings[1] AS embeddings
             MERGE (c:Chunk {text: chunk})
             MERGE (c)-[:PART_OF]->(n)
+        WITH doc, n, c, embeddings
             CALL db.create.setNodeVectorProperty(c, "embeddings", embeddings)
         RETURN DISTINCT(n.url) AS url
     ',
@@ -67,7 +68,7 @@ WITH days + [
     ','
         WITH topic, cluster, 
             SPLIT(SUBSTRING(pub_date, 0, 10), "-") AS start_date_splits,
-            CASE WHEN SIZE(pub_date) > 20 THEN SPLIT(SUBSTRING(pub_date, 11, 10), "-") ELSE '' END AS end_date_splits
+            CASE WHEN SIZE(pub_date) > 20 THEN SPLIT(SUBSTRING(pub_date, 11, 10), "-") ELSE [] END AS end_date_splits
         WITH topic, cluster, 
             DATE({year: TOINTEGER(start_date_splits[0]), month: TOINTEGER(start_date_splits[1]), day: TOINTEGER(start_date_splits[2])}) AS start_date,
             CASE WHEN SIZE(end_date_splits) > 0 THEN DATE({year: TOINTEGER(end_date_splits[0]), month: TOINTEGER(end_date_splits[1]), day: TOINTEGER(end_date_splits[2])}) ELSE NULL END AS end_date
