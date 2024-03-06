@@ -23,20 +23,65 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  articles: publicProcedure.query(async () => {
+  threats: publicProcedure.query(async () => {
     const session = driver.session();
     try {
       const result = await session.run(
-        "MATCH (t:Topic)-[r]-(a:Article) return t,r,a limit 100",
+        "MATCH (t:Threat) return t order by t.score DESC;",
       );
-      return JSON.parse(JSON.stringify(result)) as Neo4JNodeData<
-        Record<string, unknown>
-      >;
+      return result.records
+        .map((record) => {
+          const t = record.get("t") as {
+            properties: { text: string; score: number };
+          };
+          return { text: t.properties.text, score: t.properties.score ?? 0 };
+        })
+        .sort((a, b) => {
+          if (a.score > b.score) return -1;
+          if (a.score < b.score) return 1;
+          return 0;
+        });
     } finally {
       await session.close();
     }
-    return null;
   }),
+
+  articles: publicProcedure
+    .input(
+      z.object({ day: z.number().gte(1).lte(62)
+        // , threats: z.string().array() 
+      }),
+    )
+    .query(async ({ input }) => {
+      const session = driver.session();
+      const baseDate = new Date("2019-12-01");
+      baseDate.setDate(baseDate.getDate() + input.day - 1);
+      const startDate = baseDate.toLocaleDateString("en-CA", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      });
+
+      const period = `${startDate}`;
+      try {
+        const result = await session.run(
+          `
+        WITH $period + '-\\d+' AS id_pattern
+          MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
+            WHERE c.id =~ id_pattern
+        RETURN c, r, t
+        `,
+          { period }
+          // , threats: input.threats },
+        );
+        // AND t.text IN $threats
+        return JSON.parse(JSON.stringify(result)) as Neo4JNodeData<
+          Record<string, unknown>
+        >;
+      } finally {
+        await session.close();
+      }
+    }),
 
   create: protectedProcedure
     .input(z.object({ name: z.string().min(1) }))

@@ -6,6 +6,7 @@ import L from "leaflet";
 import {
   EdgeStyleRule,
   Geo,
+  NodeFilter,
   NodeStyleRule,
   Ogma,
   Tooltip,
@@ -18,17 +19,26 @@ import OgmaLib, {
 
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
+import { useParams } from "next/navigation";
+import ThreatSelector from "~/app/_components/ThreatSelector";
 import LayoutService from "./Layout";
 
-import DataLoader from "./DataLoader";
-import TimeLine from "./TimeLine";
+import DataLoader, { type ForesightData } from "./DataLoader";
+// import TimeLine from "./TimeLine";
 
 OgmaLib.libraries.leaflet = L;
 
 // Helper function to get the type of a Node
 function getNodeType(node: OgmaNode): string {
-  const labels = node.getData("neo4jLabels") as string[];
-  return labels[0] ?? "unknown";
+  const data: ForesightData = node.getData() as ForesightData;
+  if (data.type === "cluster") return "Cluster";
+  if (data.type === "threat") return "Threat";
+  return "unknown";
+}
+
+function getNodeTitle(node: OgmaNode): string {
+  const data: ForesightData = node.getData() as ForesightData;
+  return data.title;
 }
 
 export interface Country {
@@ -38,7 +48,7 @@ export interface Country {
   name: string;
 }
 
-export default function Graph({ countries }: { countries: Country[] }) {
+export default function Graph() {
   // const [popupOpen, setPopupOpen] = useState(false);
   // const [clickedNode, setClickedNode] = useState<OgmaNode>();
   const ref = useRef<HTMLDivElement | null>(null);
@@ -50,9 +60,21 @@ export default function Graph({ countries }: { countries: Country[] }) {
     y: 0,
   });
   const [target, setTarget] = useState<OgmaNode | Edge | null>();
+  const { day } = useParams();
+
+  const [threats, setThreats] = useState([
+    "Outbreaks of known infectious diseases",
+    "Emerging infectious diseases or novel pathogens",
+    "Reports on suspicious disease-related incidents",
+    "Foodborne illness outbreaks and recalls",
+    "Waterborne diseases and contamination alerts",
+    "Outbreaks linked to vaccine-preventable diseases",
+    "Unusual health patterns",
+    "Emerging pathogens",
+    "Anomalous disease clusters",
+  ]);
 
   // Controls
-
   const [geoMode, setGeoMode] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
 
@@ -74,8 +96,11 @@ export default function Graph({ countries }: { countries: Country[] }) {
     }
   }, [height, width]);
 
+  if (typeof day !== "string") return <p>Day error</p>;
+
   return (
     <div className="relative w-full flex-1" ref={ref}>
+      <ThreatSelector selected={threats} onChange={setThreats} />
       <div className="absolute h-full max-h-full w-full  max-w-full">
         <Ogma
           ref={ogmaRef}
@@ -114,22 +139,37 @@ export default function Graph({ countries }: { countries: Country[] }) {
               );
           }}
         >
-          <DataLoader countries={countries} />
+          <DataLoader day={parseInt(day)} />
+          <NodeFilter
+            criteria={(node) => {
+              const d = node.getData() as ForesightData;
+              if (!d) return false;
+              if (d.type === "threat") {
+                return threats.includes(d.title);
+              } else if (d.type === "cluster") {
+                return node.getAdjacentNodes().filter((n) => {
+                  const adjNode = n.getData() as ForesightData;
+                  return adjNode.type === "cluster" || threats.includes(adjNode.title) 
+                }).size > 0
+              }
+              return true;
+            }}
+          />
           <NodeStyleRule
             attributes={{
               color: (n) =>
-                getNodeType(n) === "Topic" ? "#76378A" : "#9AD0D0",
-              radius: (n) => 10 + n.getAdjacentNodes().size / 10,
-              text: (n) => getNodeType(n),
+                getNodeType(n) === "Threat" ? "#997766" : "#668899",
+              radius: (n) => 10 + n.getAdjacentNodes().size / 2,
+              text: (n) => getNodeTitle(n),
               // pulse: (n) => ({
               //   enabled:
-              //     getNodeType(n) === "Topic" && n.getAdjacentNodes().size > 500,
-              //   endRatio: 1.5,
-              //   width: 4,
-              //   interval: 600,
-              //   startRatio: 1.0,
+              //     getNodeType(n) === "Threat" && n.getAdjacentNodes().size > 60,
+              //   endRatio: 1.2,
+              //   width: 2,
+              //   interval: 0,
+              //   startRatio: 1.2,
               //   endColor: "red",
-              //   startColor: "orange",
+              //   startColor: "red",
               // }),
             }}
           />
@@ -138,8 +178,8 @@ export default function Graph({ countries }: { countries: Country[] }) {
               shape: {
                 head: "arrow",
               },
-              // color: "#444",
-              width: 3,
+              color: "#ccc",
+              width: 1,
             }}
           />
           {/* <Popup
@@ -151,18 +191,22 @@ export default function Graph({ countries }: { countries: Country[] }) {
             <div className="x">{`Node ${clickedNode.getId()}:`}</div>
           )}
         </Popup> */}
-          <Tooltip visible={!!target} placement="top" position={tooltipPositon}>
+          <Tooltip
+            visible={false && !!target}
+            placement="top"
+            position={tooltipPositon}
+          >
             <div className="x">
               {target &&
                 target.isNode &&
-                (getNodeType(target) === "Topic"
+                (getNodeType(target) === "Threat"
                   ? target.getData("neo4jProperties.text")
                   : target.getData("neo4jProperties.title"))}
               {target && !target.isNode && `Edge ${target.getId()}`}
             </div>
           </Tooltip>
-          <LayoutService />
-          <TimeLine container={timelineRef} />
+          <LayoutService threats={threats} />
+          {/* <TimeLine container={timelineRef} /> */}
           <Geo
             enabled={geoMode}
             longitudePath="geo.longitude"
@@ -171,7 +215,7 @@ export default function Graph({ countries }: { countries: Country[] }) {
             sizeRatio={0.8}
           />
           <>
-            <div className="control-buttons space-y-2">
+            <div className="control-buttons hidden space-y-2">
               <button className="btn btn-primary" onClick={handleGeoBtnClick}>
                 Geo Mode
               </button>

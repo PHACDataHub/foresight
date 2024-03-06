@@ -8,6 +8,24 @@
   }
 }
 
+.SlideModal {
+  background-color: #F8F8FC !important;
+  padding: 10px;
+}
+
+.SlideModal ul {
+  margin-top: 10px;
+  
+}
+
+.SlideModal ul li {
+  margin-top: 5px;
+  display: flex;
+  gap: 10px;
+  
+  border-bottom: 1px solid #ccc;
+}
+
 main.container {
   flex: 1;
   display: flex;
@@ -27,8 +45,7 @@ main.container {
 .ogma-tooltip--content,
 .ogma-popup--body {
   transform: translate(-50%, 0);
-  background-color: var(--overlay-background-color);
-  color: var(--overlay-text-color);
+  color: #000;
   border-radius: 5px;
   padding: 5px;
   box-sizing: border-box;
@@ -36,6 +53,7 @@ main.container {
   width: auto;
   height: auto;
   position: relative;
+  background: #fff;
 }
 
 .ogma-tooltip {

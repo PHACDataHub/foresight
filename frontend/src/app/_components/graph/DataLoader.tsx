@@ -3,9 +3,38 @@ import OgmaLib from "@linkurious/ogma";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "~/trpc/react";
 import ProgressBar from "./ProgressBar";
-import { type Country } from ".";
 
-export default function DataLoader({ countries }: { countries: Country[] }) {
+export type ClusterQA = {
+  score: number;
+  question: string;
+  answer: string;
+};
+
+export interface Cluster {
+  type: "cluster";
+  answers: ClusterQA[];
+  id: string;
+  nr_articles: number;
+  start_date: Date;
+  summary: string;
+  title: string;
+  topic_id: string;
+}
+
+export interface Threat {
+  type: "threat";
+  title: string;
+}
+
+export type ForesightData = Cluster | Threat;
+
+export default function DataLoader({
+  day,
+  // threats,
+}: {
+  day: number;
+  // threats: string[];
+}) {
   const ogma = useOgma();
   const [totalSize, setTotalSize] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -13,9 +42,12 @@ export default function DataLoader({ countries }: { countries: Country[] }) {
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
-  const { isLoading, data: rawGraph } = api.post.articles.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading, data: rawGraph } = api.post.articles.useQuery(
+    { day },
+    {
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const tick = useCallback(() => {
     progressTimer.current = setTimeout(() => {
@@ -40,30 +72,32 @@ export default function DataLoader({ countries }: { countries: Country[] }) {
       const g = await OgmaLib.parse.neo4j(rawGraph);
       const graph = {
         nodes: g.nodes.map((n) => {
-          const base = {
-            ...n,
-            data: {
-              ...n.data,
-              start: new Date("2019-12-31"),
-              end:  new Date("2019-12-31"),
-            },
-          };
-          if (n.data?.neo4jLabels.includes("Topic")) return base;
-          const c = n.data?.neo4jProperties?.countries;
-          if (c && Array.isArray(c) && c.length > 0) {
-            for (const country of countries) {
-              if (c.includes(country.country)) {
-                return {
-                  ...base,
-                  data: {
-                    ...n.data,
-                    geo: country,
-                  },
-                };
-              }
-            }
-          }
-          return base;
+          const data = n.data?.neo4jProperties;
+          if (data && n.data?.neo4jLabels.includes("Threat")) {
+            return {
+              ...n,
+              data: {
+                type: "threat",
+                title: (data.text as string) ?? "No text",
+              } as Threat,
+            };
+          } else if (data && n.data?.neo4jLabels.includes("Cluster")) {
+            return {
+              ...n,
+              data: {
+                type: "cluster",
+                answers: JSON.parse(
+                  (data.answers as string) ?? "[]",
+                ) as ClusterQA[],
+                id: data.id,
+                nr_articles: parseInt(data.nr_articles as string),
+                start_date: new Date(),
+                summary: data.summary,
+                title: data.title,
+                topic_id: data.topic_id,
+              } as Cluster,
+            };
+          } else return n;
         }),
         edges: g.edges,
       };
@@ -73,7 +107,7 @@ export default function DataLoader({ countries }: { countries: Country[] }) {
       setTotalSize(0);
     };
     void parse();
-  }, [rawGraph, isLoading, countries, ogma]);
+  }, [rawGraph, isLoading, ogma]);
 
   if (isLoading)
     return (
