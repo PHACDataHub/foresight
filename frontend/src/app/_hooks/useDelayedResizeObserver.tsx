@@ -11,11 +11,11 @@ export default function useDelayedResizeObserver(
   const [height, setHeight] = useState(0);
 
   useEffect(() => {
-    console.log("-- load delayed resize observer --");
     const observer = new ResizeObserver(([entry]) => {
       const newHeight = entry?.borderBoxSize[0]?.blockSize;
       if (newHeight) setHeight(newHeight);
     });
+
     let count = 0;
     const findElement = () => {
       setTimeout(() => {
