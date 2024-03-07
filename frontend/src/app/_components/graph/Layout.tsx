@@ -1,10 +1,19 @@
 "use client";
 
 import { useOgma } from "@linkurious/ogma-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
-export default function LayoutService({threats} : {threats: string[]}) {
+export default function LayoutService({
+  threats,
+  fullScreen,
+  onExitFullScreen,
+}: {
+  threats: string[];
+  fullScreen: boolean;
+  onExitFullScreen?: () => void;
+}) {
   const ogma = useOgma();
+  const timer = useRef<NodeJS.Timeout | null>(null);
 
   const updateLayout = useCallback(() => {
     ogma.events.once("idle", () => {
@@ -20,6 +29,28 @@ export default function LayoutService({threats} : {threats: string[]}) {
   }, [ogma.events, ogma.geo, ogma.layouts]);
 
   useEffect(() => {
+    const pollFullscreen = () => {
+      timer.current = setTimeout(() => {
+        if (!ogma.view.isFullScreen()) {
+          if (onExitFullScreen) onExitFullScreen();
+        } else pollFullscreen();
+      }, 200);
+    };
+    ogma.events.once("idle", async () => {
+      await ogma.view.setFullScreen(fullScreen);
+      fullScreen && pollFullscreen();
+    });
+    if (!fullScreen) {
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
+      return;
+    }
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [fullScreen, ogma, onExitFullScreen]);
+
+  useEffect(() => {
     // Update the layout if the threats change.
     // TODO: must be a better way
     updateLayout();
@@ -30,7 +61,6 @@ export default function LayoutService({threats} : {threats: string[]}) {
     const onNodesAdded = () => {
       updateLayout();
     };
-
     ogma.events.on(
       [
         "addNodes",

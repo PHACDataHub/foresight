@@ -48,21 +48,36 @@ export const postRouter = createTRPCRouter({
 
   articles: publicProcedure
     .input(
-      z.object({ day: z.number().gte(1).lte(62)
-        // , threats: z.string().array() 
+      z.object({
+        day: z.number().gte(1).lte(62),
+        history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
+        // , threats: z.string().array()
       }),
     )
     .query(async ({ input }) => {
       const session = driver.session();
       const baseDate = new Date("2019-12-01");
       baseDate.setDate(baseDate.getDate() + input.day - 1);
-      const startDate = baseDate.toLocaleDateString("en-CA", {
+
+      let endDate = "";
+      let startDate = "";
+
+      if (input.history) {
+        endDate = baseDate.toLocaleDateString("en-CA", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        });
+        baseDate.setDate(baseDate.getDate() - input.history + 1);
+      }
+
+      startDate = baseDate.toLocaleDateString("en-CA", {
         year: "numeric",
         month: "numeric",
         day: "numeric",
       });
 
-      const period = `${startDate}`;
+      const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
       try {
         const result = await session.run(
           `
@@ -71,7 +86,7 @@ export const postRouter = createTRPCRouter({
             WHERE c.id =~ id_pattern
         RETURN c, r, t
         `,
-          { period }
+          { period },
           // , threats: input.threats },
         );
         // AND t.text IN $threats

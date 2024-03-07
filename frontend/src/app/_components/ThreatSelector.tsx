@@ -43,8 +43,6 @@ function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
   const header = useDelayedResizeObserver("def-appTop");
   const footer = useDelayedResizeObserver("wb-info");
 
-  if (isLoading || !threats) return "Loading...";
-
   return (
     <Slider
       verticalOffset={{ top: header, bottom: footer }}
@@ -65,7 +63,7 @@ function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
             </button>
           </div>
           <ul>
-            {threats.map((threat, idx) => (
+            {threats?.map((threat, idx) => (
               <li key={`threat_${idx}`}>
                 <input
                   type="checkbox"
@@ -74,7 +72,7 @@ function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
                   onChange={handleCheckClick}
                   checked={selected.includes(threat.text)}
                 />
-                <label htmlFor={`threat_box_${idx}`}>{threat.text}</label>
+                <label className="small" htmlFor={`threat_box_${idx}`}>{threat.text}</label>
               </li>
             ))}
           </ul>

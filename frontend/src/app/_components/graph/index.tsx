@@ -77,6 +77,7 @@ export default function Graph() {
   // Controls
   const [geoMode, setGeoMode] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [maximized, setMaximized] = useState(false);
 
   const requestSetTooltipPosition = useCallback((pos: Point) => {
     requestAnimationFrame(() => setTooltipPosition(pos));
@@ -90,23 +91,33 @@ export default function Graph() {
     setShowTimeline(!showTimeline);
   }, [showTimeline]);
 
+  const handleMaximizeClick = useCallback(() => {
+    setMaximized(!maximized);
+  }, [maximized]);
+
   useEffect(() => {
-    if (ogmaRef.current && width && height) {
+    if (!ogmaRef.current) return;
+    if (maximized) {
+      void ogmaRef.current.view.setSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    } else if (width && height) {
       void ogmaRef.current.view.setSize({ width, height });
     }
-  }, [height, width]);
+  }, [height, width, maximized]);
 
   if (typeof day !== "string") return <p>Day error</p>;
 
   return (
     <div className="relative w-full flex-1" ref={ref}>
       <ThreatSelector selected={threats} onChange={setThreats} />
-      <div className="absolute h-full max-h-full w-full  max-w-full">
+      <div className="absolute h-full max-h-full w-full max-w-full">
         <Ogma
           ref={ogmaRef}
           options={{
-            width,
-            height,
+            // width,
+            // height,
             detect: {
               edges: false,
               nodeTexts: false,
@@ -147,10 +158,15 @@ export default function Graph() {
               if (d.type === "threat") {
                 return threats.includes(d.title);
               } else if (d.type === "cluster") {
-                return node.getAdjacentNodes().filter((n) => {
-                  const adjNode = n.getData() as ForesightData;
-                  return adjNode.type === "cluster" || threats.includes(adjNode.title) 
-                }).size > 0
+                return (
+                  node.getAdjacentNodes().filter((n) => {
+                    const adjNode = n.getData() as ForesightData;
+                    return (
+                      adjNode.type === "cluster" ||
+                      threats.includes(adjNode.title)
+                    );
+                  }).size > 0
+                );
               }
               return true;
             }}
@@ -205,7 +221,11 @@ export default function Graph() {
               {target && !target.isNode && `Edge ${target.getId()}`}
             </div>
           </Tooltip>
-          <LayoutService threats={threats} />
+          <LayoutService
+            threats={threats}
+            fullScreen={maximized}
+            onExitFullScreen={handleMaximizeClick}
+          />
           {/* <TimeLine container={timelineRef} /> */}
           <Geo
             enabled={geoMode}
@@ -215,12 +235,21 @@ export default function Graph() {
             sizeRatio={0.8}
           />
           <>
-            <div className="control-buttons hidden space-y-2">
-              <button className="btn btn-primary" onClick={handleGeoBtnClick}>
+            <div className="control-buttons space-y-2">
+              <button className="btn btn-primary" onClick={handleMaximizeClick}>
+                <span className="wb-inv">Make Graph View Full Screen</span>
+                <span
+                  className={`glyphicon glyphicon-resize-${maximized ? "small" : "full"}`}
+                />
+              </button>
+              <button
+                className="btn btn-primary hidden"
+                onClick={handleGeoBtnClick}
+              >
                 Geo Mode
               </button>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary hidden"
                 onClick={handleTimelineBtnClick}
               >
                 Timeline

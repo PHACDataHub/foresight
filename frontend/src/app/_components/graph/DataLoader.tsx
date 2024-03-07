@@ -2,6 +2,7 @@ import { useOgma } from "@linkurious/ogma-react";
 import OgmaLib from "@linkurious/ogma";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "~/trpc/react";
+import { useStore } from "~/app/_store";
 import ProgressBar from "./ProgressBar";
 
 export type ClusterQA = {
@@ -38,12 +39,14 @@ export default function DataLoader({
   const ogma = useOgma();
   const [totalSize, setTotalSize] = useState(0);
   const [progress, setProgress] = useState(0);
+  
+  const { history } = useStore();
 
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
   const { isLoading, data: rawGraph } = api.post.articles.useQuery(
-    { day },
+    { day, history },
     {
       refetchOnWindowFocus: false,
     },

@@ -66,17 +66,42 @@ function TimeTravelComponent({
       if (onChange) {
         onChange(p, evt);
       }
-      if (!evt.defaultPrevented) {
+      if (!evt.defaultPrevented && typeof locale === "string") {
         const d = (p.getTime() - startDate.getTime()) / 86400000;
-        router.push(`${d + 1}`);
+        router.push(`/${locale}/${d + 1}`);
       }
     },
-    [onChange, router, startDate],
+    [locale, onChange, router, startDate],
   );
 
   const showPreviousMonths = useMemo(
     () => date.getMonth() === endDate.getMonth(),
     [date, endDate],
+  );
+
+  const highlights: Record<string, Date[]>[] = useMemo(
+    () =>
+      [
+        {
+          cluster_3_day: [
+            new Date(2020, 0, 1),
+            new Date(2020, 0, 2),
+            new Date(2020, 0, 3),
+            new Date(2020, 0, 4),
+            new Date(2020, 0, 5),
+            new Date(2020, 0, 6),
+            new Date(2020, 0, 7),
+            new Date(2020, 0, 8),
+          ],
+        },
+        {
+          cluster_6_day: [new Date(2020, 0, 6)],
+        },
+        {
+          cluster_30_day: [new Date(2020, 0, 29)],
+        },
+      ] as Record<string, Date[]>[],
+    [],
   );
 
   return (
@@ -89,6 +114,7 @@ function TimeTravelComponent({
         minDate={startDate}
         maxDate={endDate}
         onChange={handleDateChange}
+        highlightDates={highlights}
         monthsShown={2}
         showPreviousMonths={showPreviousMonths}
         locale={locale === "fr-CA" ? frCA : enCA}

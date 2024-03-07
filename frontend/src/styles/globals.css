@@ -8,6 +8,24 @@
   }
 }
 
+.cluster_3_day {
+  border-radius: 0.3rem;
+  background-color: #3dcc4a;
+  color: #fff !important;
+}
+
+.cluster_6_day {
+  border-radius: 0.3rem;
+  background-color: #cc3dff;
+  color: #fff !important;
+}
+
+.cluster_30_day {
+  border-radius: 0.3rem;
+  background-color: #ffcc3d;
+  /* color: #fff !important; */
+}
+
 .SlideModal {
   background-color: #F8F8FC !important;
   padding: 10px;
@@ -15,15 +33,21 @@
 
 .SlideModal ul {
   margin-top: 10px;
-  
+
 }
 
 .SlideModal ul li {
-  margin-top: 5px;
+  margin-top: 1px;
   display: flex;
   gap: 10px;
-  
-  border-bottom: 1px solid #ccc;
+
+}
+
+.SlideModal ul li label {
+  font-weight: lighter;
+  font-size: 0.7em;
+  padding: 0;
+  margin: 0;
 }
 
 main.container {
@@ -158,6 +182,7 @@ main.container {
   margin-top: -100px;
   margin-left: -100px;
 }
+
 .ogmaprogressbar--card {
   position: relative;
   background: rgba(255, 255, 255, 0.5);
@@ -192,6 +217,7 @@ main.container {
   align-items: center;
   border-radius: 50%;
 }
+
 .ogmaprogressbar--num h2 {
   color: #777;
   font-weight: 700;
@@ -222,6 +248,7 @@ main.container {
   height: 150px;
   z-index: 1000;
 }
+
 .ogmaprogressbar--circle {
   width: 100%;
   height: 100%;
