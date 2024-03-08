@@ -18,7 +18,7 @@ type ThreatSelectorProps = {
 function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
   const [open, setOpen] = useState(false);
   const [initialThreats] = useState(selected);
-  const { isLoading, data: threats } = api.post.threats.useQuery(undefined, {
+  const { data: threats } = api.post.threats.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
 

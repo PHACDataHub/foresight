@@ -13,7 +13,7 @@ export default function HistoryChooser() {
     (evt: MouseEvent<HTMLButtonElement>) => {
       const t = parseInt(evt.currentTarget.value);
       if (typeof locale === "string" && typeof day === "string") {
-        if (t === 3 || t === 7) {
+        if (t === 3 || t === 7 || t === 30) {
           router.push(`/${locale}/${day}/${t}`);
         } else {
           router.push(`/${locale}/${day}`);
@@ -54,8 +54,8 @@ export default function HistoryChooser() {
       </button>
       <button
         onClick={handleClick}
-        disabled
-        value={7}
+        disabled={dayNum !== 60}
+        value={30}
         className={`btn btn-default${history === 30 ? " active" : ""}`}
       >
         1 month

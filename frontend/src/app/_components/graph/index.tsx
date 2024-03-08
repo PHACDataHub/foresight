@@ -11,11 +11,7 @@ import {
   Ogma,
   Tooltip,
 } from "@linkurious/ogma-react";
-import OgmaLib, {
-  type Edge,
-  type Node as OgmaNode,
-  type Point,
-} from "@linkurious/ogma";
+import OgmaLib, { type Node as OgmaNode, type Point } from "@linkurious/ogma";
 
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
@@ -24,6 +20,8 @@ import ThreatSelector from "~/app/_components/ThreatSelector";
 import LayoutService from "./Layout";
 
 import DataLoader, { type ForesightData } from "./DataLoader";
+import Hightlighter from "./Hightlighter";
+import NodeInfo from "./NodeInfo";
 // import TimeLine from "./TimeLine";
 
 OgmaLib.libraries.leaflet = L;
@@ -39,6 +37,13 @@ function getNodeType(node: OgmaNode): string {
 function getNodeTitle(node: OgmaNode): string {
   const data: ForesightData = node.getData() as ForesightData;
   return data.title;
+}
+
+function getNodeSummary(node: OgmaNode): string {
+  const data: ForesightData = node.getData() as ForesightData;
+  if (data.type === "cluster") return data.summary;
+  if (data.type === "threat") return data.title;
+  return "";
 }
 
 export interface Country {
@@ -59,7 +64,8 @@ export default function Graph() {
     x: 0,
     y: 0,
   });
-  const [target, setTarget] = useState<OgmaNode | Edge | null>();
+  const [target, setTarget] = useState<OgmaNode | null>();
+  const [selectedNode, setSelectedNode] = useState<OgmaNode | null>();
   const { day } = useParams();
 
   const [threats, setThreats] = useState([
@@ -131,26 +137,33 @@ export default function Graph() {
           }}
           onReady={async (ogma) => {
             ogma.events
-              // .on("click", ({ target }) => {
-              //   if (target && target.isNode) {
-              //     setClickedNode(target);
-              //     setPopupOpen(true);
-              //   }
-              // })
+              .on("click", ({ target }) => {
+                setSelectedNode(target && target.isNode ? target : null);
+              })
+              .on("doubleclick", ({ target }) => {
+                if (target && target.isNode) {
+                  void target.locate();
+                }
+              })
               .on("mousemove", () => {
                 const ptr = ogma.getPointerInformation();
                 requestSetTooltipPosition(
                   ogma.view.screenToGraphCoordinates({ x: ptr.x, y: ptr.y }),
                 );
-                setTarget(ptr.target);
+                if (
+                  !ptr.target ||
+                  (ptr.target.isNode && getNodeType(ptr.target) === "Cluster")
+                )
+                  setTarget(ptr.target);
               })
               // locate graph when the nodes are added
-              .on("addNodes", () =>
-                ogma.view.locateGraph({ duration: 250, padding: 50 }),
-              );
+              .on("addNodes", () => {
+                // ogma.view.locateGraph({ duration: 250, padding: 50 }),
+              });
           }}
         >
           <DataLoader day={parseInt(day)} />
+          <Hightlighter />
           <NodeFilter
             criteria={(node) => {
               const d = node.getData() as ForesightData;
@@ -176,7 +189,10 @@ export default function Graph() {
               color: (n) =>
                 getNodeType(n) === "Threat" ? "#997766" : "#668899",
               radius: (n) => 10 + n.getAdjacentNodes().size / 2,
-              text: (n) => getNodeTitle(n),
+              text: {
+                content: (n) => getNodeTitle(n),
+                size: 15,
+              },
               // pulse: (n) => ({
               //   enabled:
               //     getNodeType(n) === "Threat" && n.getAdjacentNodes().size > 60,
@@ -207,20 +223,12 @@ export default function Graph() {
             <div className="x">{`Node ${clickedNode.getId()}:`}</div>
           )}
         </Popup> */}
-          <Tooltip
-            visible={false && !!target}
-            placement="top"
-            position={tooltipPositon}
-          >
-            <div className="x">
-              {target &&
-                target.isNode &&
-                (getNodeType(target) === "Threat"
-                  ? target.getData("neo4jProperties.text")
-                  : target.getData("neo4jProperties.title"))}
-              {target && !target.isNode && `Edge ${target.getId()}`}
+          <Tooltip visible={!!target} placement="top" position={tooltipPositon}>
+            <div className="toolTip">
+              {target?.isNode && getNodeSummary(target)}
             </div>
           </Tooltip>
+          <NodeInfo node={selectedNode} />
           <LayoutService
             threats={threats}
             fullScreen={maximized}

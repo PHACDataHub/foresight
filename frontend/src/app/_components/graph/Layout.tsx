@@ -28,6 +28,27 @@ export default function LayoutService({
     });
   }, [ogma.events, ogma.geo, ogma.layouts]);
 
+  const updateLabelSize = useCallback(() => {
+    ogma.events.once("idle", () => {
+      if (!ogma.geo.enabled()) {
+        const z = ogma.view.getZoom();
+        const size = Math.min(Math.max(15, z * 8), 40);
+        const cls =
+          ogma.styles.getClass("textZoom") ??
+          ogma.styles.createClass({
+            name: "textZoom",
+          });
+        cls.update({
+          nodeAttributes: {
+            text: {
+              size,
+            },
+          },
+        });
+      }
+    });
+  }, [ogma.events, ogma.geo, ogma.styles, ogma.view]);
+
   useEffect(() => {
     const pollFullscreen = () => {
       timer.current = setTimeout(() => {
@@ -71,13 +92,20 @@ export default function LayoutService({
       onNodesAdded,
     );
 
+    const onZoom = () => {
+      updateLabelSize();
+    };
+
+    ogma.events.on("viewChanged", onZoom);
+
     setTimeout(() => onNodesAdded(), 4000);
 
     // cleanup
     return () => {
       ogma.events.off(onNodesAdded);
+      ogma.events.off(onZoom);
     };
-  }, [ogma, updateLayout]);
+  }, [ogma, updateLabelSize, updateLayout]);
 
   return null;
 }

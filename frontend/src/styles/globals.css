@@ -8,6 +8,12 @@
   }
 }
 
+.toolTip {
+  max-width: 600px;
+  font-size: 14px;
+
+}
+
 .cluster_3_day {
   border-radius: 0.3rem;
   background-color: #3dcc4a;

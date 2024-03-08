@@ -1,5 +1,4 @@
-import { type Neo4JNodeData } from "@linkurious/ogma";
-import neo4j from "neo4j-driver";
+import neo4j, { type QueryResult } from "neo4j-driver";
 import { z } from "zod";
 import { env } from "~/env";
 
@@ -8,6 +7,62 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+
+export type Neo4JNumber = { low: number; high: number };
+export type Neo4JDate = {
+  day: Neo4JNumber;
+  month: Neo4JNumber;
+  year: Neo4JNumber;
+};
+
+export interface Neo4JRecord<T1, T2, T3> {
+  keys: string[];
+  length: number;
+  _fieldLookup: Record<string, number>;
+  _fields: [T1, T2, T3];
+}
+
+export interface ClusterRecord {
+  elementId: string;
+  identity: Neo4JNumber;
+  labels: ["Cluster"];
+  properties: {
+    answers: string;
+    id: string;
+    node_size: number;
+    nr_articles: Neo4JNumber;
+    start_date: Neo4JDate;
+    summary: string;
+    title: string;
+    topic_id: string;
+  };
+}
+
+export interface EdgeRecord {
+  elementId: string;
+  end: Neo4JNumber;
+  endNodeElementId: string;
+  identity: Neo4JNumber;
+  properties: {
+    score: number;
+  };
+  start: Neo4JNumber;
+  startNodeElementId: string;
+  type: string;
+}
+
+export interface ThreatRecord {
+  elementId: string;
+  identity: Neo4JNumber;
+  labels: ["Threat"];
+  properties: {
+    text: string;
+  };
+}
+
+export interface GraphResult extends Pick<QueryResult, "summary"> {
+  records: Neo4JRecord<ClusterRecord, EdgeRecord, ThreatRecord>[];
+}
 
 const driver = neo4j.driver(
   env.NEO4J_URL,
@@ -90,9 +145,7 @@ export const postRouter = createTRPCRouter({
           // , threats: input.threats },
         );
         // AND t.text IN $threats
-        return JSON.parse(JSON.stringify(result)) as Neo4JNodeData<
-          Record<string, unknown>
-        >;
+        return JSON.parse(JSON.stringify(result)) as GraphResult;
       } finally {
         await session.close();
       }
