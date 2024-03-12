@@ -32,7 +32,9 @@ if __name__ == '__main__':
     print(f"Read {len(disease_classes)} classes.\n")
     
     device = sys.argv[3] if len(sys.argv) > 3 else 'cuda'
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2', model_kwargs = {'device': device})
+    
+    model_name = 'sentence-transformers/all-MiniLM-L6-v2'
+    embeddings = HuggingFaceEmbeddings(model_name=model_name, model_kwargs = {'device': device})
 
     with open(out_file_name, 'wt') as out_file:
         count = 0

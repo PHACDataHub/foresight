@@ -23,7 +23,7 @@ CREATE CONSTRAINT id_cluster IF NOT EXISTS FOR (n:Cluster) REQUIRE n.id IS UNIQU
 CREATE TEXT INDEX summary_cluster IF NOT EXISTS FOR (n:Cluster) ON (n.summary);
 //
 // Create vector index for embeddings
-CALL db.index.vector.createNodeIndex('text-chunk', 'Chunk', 'embeddings', 768, 'COSINE');
+CALL db.index.vector.createNodeIndex('text-chunk', 'Chunk', 'embeddings', 384, 'COSINE');
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

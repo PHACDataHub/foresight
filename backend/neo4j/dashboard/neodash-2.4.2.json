@@ -13,9 +13,9 @@
         "neodash_disease_label": "COVID-19",
         "neodash_disease_label_display": "COVID-19",
         "neodash_start_date": {
-          "year": 2019,
-          "month": 12,
-          "day": 31
+          "year": 2020,
+          "month": 1,
+          "day": 2
         },
         "neodash_threats": [
           "",
@@ -407,12 +407,12 @@
           }
         ],
         "neodash_end_date": {
-          "year": 2019,
-          "month": 12,
-          "day": 1
+          "year": 2020,
+          "month": 1,
+          "day": 2
         },
-        "neodash_cluster_id": "2019-12-31-7",
-        "neodash_cluster_id_display": "2019-12-31-7"
+        "neodash_cluster_id": "2019-12-31-2020-01-02-0",
+        "neodash_cluster_id_display": "2019-12-31-2020-01-02-0"
       },
       "theme": "light",
       "disableRowLimiting": true,
@@ -482,7 +482,7 @@
             "id": "0827c67b-a42c-482a-92d5-3dce7c9542fc",
             "title": "Clusters with detected threats",
             "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nRETURN c, r, t\n\n\n\n\n\n\n",
-            "width": 12,
+            "width": 16,
             "height": 9,
             "x": 0,
             "y": 2,
@@ -536,9 +536,21 @@
                   "value": "Pneumonia",
                   "customization": "node color",
                   "customizationValue": "red"
+                },
+                {
+                  "field": "Cluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
                 }
               ],
-              "nodeColorScheme": "neodash"
+              "nodeColorScheme": "neodash",
+              "nodeSizeProp": "node_size",
+              "nodeLabelColor": "#000000FF",
+              "nodeLabelFontSize": 3,
+              "defaultRelColor": "#a0a0a088",
+              "relLabelFontSize": 1
             },
             "schema": [
               [
@@ -546,9 +558,10 @@
                 "summary",
                 "nr_articles",
                 "answers",
-                "topic_id",
                 "id",
+                "topic_id",
                 "title",
+                "node_size",
                 "start_date"
               ],
               [
@@ -661,8 +674,16 @@
                   "value": "Pneumonia",
                   "customization": "node color",
                   "customizationValue": "red"
+                },
+                {
+                  "field": "Cluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
                 }
-              ]
+              ],
+              "nodeSizeProp": "node_size"
             },
             "schema": [
               [
@@ -673,6 +694,7 @@
                 "topic_id",
                 "id",
                 "title",
+                "node_size",
                 "start_date"
               ]
             ]
@@ -691,7 +713,8 @@
               "fontSize": 14,
               "format": "yml",
               "monospace": false,
-              "fullscreenEnabled": true
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true
             },
             "schema": []
           },
@@ -706,7 +729,8 @@
             "type": "table",
             "selection": {},
             "settings": {
-              "columnWidths": "[50,5]"
+              "columnWidths": "[50,5]",
+              "refreshButtonEnabled": true
             }
           },
           {
@@ -724,7 +748,7 @@
           {
             "id": "66cedbe2-6ff0-4fcb-82dd-7e8a2b68c227",
             "title": "Articles",
-            "query": "MATCH (a:Article)-[r1:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat)\nRETURN c, t, a, r1, r2\n\n\n",
+            "query": "MATCH (a:Article)-[r1:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat)\nRETURN c, r1, a, r2, t LIMIT 3000\n\n\n\n",
             "width": 8,
             "height": 7,
             "x": 0,
@@ -732,8 +756,10 @@
             "type": "graph",
             "selection": {
               "Cluster": "title",
-              "Threat": "(label)",
-              "Article": "pub_name"
+              "IN_CLUSTER": "(label)",
+              "Article": "pub_name",
+              "DETECTED_THREAT": "(label)",
+              "Threat": "text"
             },
             "settings": {
               "allowDownload": true,
@@ -742,52 +768,65 @@
               "downloadImageEnabled": true,
               "fullscreenEnabled": true,
               "refreshButtonEnabled": true,
-              "nodeColorScheme": "neodash"
+              "nodeColorScheme": "neodash",
+              "styleRules": [
+                {
+                  "field": "Article.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#EDCC2688"
+                }
+              ],
+              "nodeLabelFontSize": 2
             },
             "schema": [
               [
                 "Cluster",
+                "end_date",
                 "summary",
+                "nr_articles",
                 "answers",
                 "topic_id",
                 "id",
                 "title",
+                "node_size",
                 "start_date"
-              ],
-              [
-                "Threat",
-                "score",
-                "text"
-              ],
-              [
-                "Article",
-                "pub_date",
-                "gphin_state",
-                "factiva_folder",
-                "pub_time",
-                "pub_name",
-                "factiva_file_name",
-                "id",
-                "gphin_score",
-                "title",
-                "content"
               ],
               [
                 "IN_CLUSTER"
               ],
               [
+                "Article",
+                "pub_date",
+                "gphin_state",
+                "pub_time",
+                "pub_name",
+                "id",
+                "gphin_score",
+                "title",
+                "content",
+                "factiva_folder",
+                "factiva_file_name"
+              ],
+              [
                 "DETECTED_THREAT",
                 "score"
+              ],
+              [
+                "Threat",
+                "score",
+                "text"
               ]
             ]
           },
           {
             "id": "46f0a2c9-2be1-45f3-88a8-8f4a4d924775",
             "title": "Label and number of articles ",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n\n",
-            "width": 12,
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS cluster, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n\n",
+            "width": 8,
             "height": 9,
-            "x": 12,
+            "x": 16,
             "y": 2,
             "type": "table",
             "selection": {},
@@ -817,7 +856,7 @@
           {
             "id": "05f217c5-dd22-48b3-928c-ee2f591f61a6",
             "title": "Clusters without detected threats",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n",
             "width": 12,
             "height": 5,
             "x": 12,

@@ -92,7 +92,9 @@ if __name__ == '__main__':
     devices = ['mps' for i in range(0, 4)]
     if device == 'cuda':
         devices = [0, 1, 2, 3]
-    sentence_transformer = SentenceTransformer('sentence-transformers/all-mpnet-base-v2', device=devices[0])
+
+    model_name = 'sentence-transformers/all-MiniLM-L6-v2'
+    sentence_transformer = SentenceTransformer(model_name, device=devices[0])
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn",  device=devices[1])
     answerer = pipeline('question-answering', model="deepset/roberta-base-squad2", tokenizer="deepset/roberta-base-squad2",  device=devices[2])
     classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli",  device=devices[3])
