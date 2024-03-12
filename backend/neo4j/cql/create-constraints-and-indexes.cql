@@ -6,21 +6,41 @@ CREATE CONSTRAINT url_don IF NOT EXISTS FOR (n:DON) REQUIRE n.url IS UNIQUE;
 CREATE INDEX report_date_don IF NOT EXISTS FOR (n:DON) ON (n.report_date);
 CREATE TEXT INDEX summary_don IF NOT EXISTS FOR (n:DON) ON (n.summary);
 //
+//
 // Public Health Threat
+//
 CREATE CONSTRAINT text_threat IF NOT EXISTS FOR (n:Threat) REQUIRE n.text IS UNIQUE;
 //
+//
 // Chunks
+//
 CREATE CONSTRAINT chunk_resource IF NOT EXISTS FOR (n:Chunk) REQUIRE n.text IS UNIQUE;
 //
+//
 // Down Jones News Articles
+//
 CREATE CONSTRAINT id_article IF NOT EXISTS FOR (n:Article) REQUIRE n.id IS UNIQUE;
 CREATE TEXT INDEX title_article IF NOT EXISTS FOR (n:Article) ON (n.title);
 CREATE INDEX pub_date_article IF NOT EXISTS FOR (n:Article) ON (n.pub_date);
 CREATE TEXT INDEX pub_name_article IF NOT EXISTS FOR (n:Article) ON (n.pub_name);
 //
-// Cluster
+CREATE TEXT INDEX summary_article IF NOT EXISTS FOR (n:Article) ON (n.summary);
+CREATE INDEX is_don_article IF NOT EXISTS FOR (n:Article) ON (n.is_don);
+CREATE CONSTRAINT id_outlier IF NOT EXISTS FOR (n:Outlier) REQUIRE n.id IS UNIQUE;
+//
+//
+// Clusters
+//
 CREATE CONSTRAINT id_cluster IF NOT EXISTS FOR (n:Cluster) REQUIRE n.id IS UNIQUE;
 CREATE TEXT INDEX summary_cluster IF NOT EXISTS FOR (n:Cluster) ON (n.summary);
+//
+//
+// Hierarchical Cluster
+//
+CREATE CONSTRAINT id_cluster IF NOT EXISTS FOR (n:HierarchicalCluster) REQUIRE n.id IS UNIQUE;
+CREATE TEXT INDEX name_cluster IF NOT EXISTS FOR (n:HierarchicalCluster) ON (n.name);
+CREATE INDEX clusters_cluster IF NOT EXISTS FOR (n:HierarchicalCluster) ON (n.clusters);
+//
 //
 // Create vector index for embeddings
 CALL db.index.vector.createNodeIndex('text-chunk', 'Chunk', 'embeddings', 384, 'COSINE');

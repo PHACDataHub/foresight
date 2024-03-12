@@ -95,3 +95,43 @@ WITH days + [
     YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Import Hierarchical Topics
+//
+CALL apoc.load.json("file:///processed-2019-12-31-htp.jsonl") YIELD value AS row
+WITH COLLECT(row) AS rows
+WITH rows,
+    REDUCE(m=0, r IN rows | CASE WHEN m = 0 OR m > TOINTEGER(r['Parent_ID']) THEN TOINTEGER(r['Parent_ID']) ELSE m END) AS min_id
+WITH rows, min_id
+    UNWIND rows AS row
+WITH row, min_id, 
+    TOINTEGER(row['Parent_ID']) AS parent_id,
+    TOINTEGER(row['Child_Left_ID']) AS child_left_id,
+    TOINTEGER(row['Child_Right_ID']) AS child_right_id
+    MERGE (p:HierarchicalCluster {id: parent_id})
+        ON CREATE SET p.clusters = row['Topics'], p.name = row['Parent_Name']
+    FOREACH (dummy IN CASE WHEN min_id > child_left_id THEN [1] ELSE [] END |
+        MERGE (c:Cluster {id: child_left_id})
+            ON CREATE SET c.name = row['Child_Left_Name']
+        MERGE (p)-[:CONTAINS {side: 'left'}]->(c)
+    )
+    FOREACH (dummy IN CASE WHEN min_id <= child_left_id THEN [1] ELSE [] END |
+        MERGE (c:HierarchicalCluster {id: child_left_id})
+            ON CREATE SET c.name = row['Child_Left_Name']
+        MERGE (p)-[:CONTAINS {side: 'left'}]->(c)
+    )
+    FOREACH (dummy IN CASE WHEN min_id > child_right_id THEN [1] ELSE [] END |
+        MERGE (c:Cluster {id: child_right_id})
+            ON CREATE SET c.name = row['Child_Right_Name']
+        MERGE (p)-[:CONTAINS {side: 'right'}]->(c)
+    )
+    FOREACH (dummy IN CASE WHEN min_id <= child_right_id THEN [1] ELSE [] END |
+        MERGE (c:HierarchicalCluster {id: child_right_id})
+            ON CREATE SET c.name = row['Child_Right_Name']
+        MERGE (p)-[:CONTAINS {side: 'right'}]->(c)            
+    )
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
