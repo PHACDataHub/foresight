@@ -6,6 +6,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline, AutoTokenizer
 
+
 TOPIC_LIST = [
     'Outbreaks of known infectious diseases',
     'Emerging infectious diseases or novel pathogens',

@@ -518,8 +518,9 @@ def filter_outliers(filter_llm_chain, output_parser, topic_dict, full_texts):
     for document_index, doc_id, probability in articles:
         text = truncate_text(full_texts[int(document_index)])
         output = filter_llm_chain.invoke({'article': text, 'question': OUTLIER_FILTER})
-        answer = output_parser.parse(output['text'])[0]
-        if not answer.startswith('No.'):
+        results = output_parser.parse(output['text'])
+        answer = results[0] if results and len(results) > 0 else None
+        if answer and not answer.startswith('No.'):
             enriched_articles[str(doc_id)] = {'filter': answer, 'probability': probability}
             count += 1
         print(f"[FLT] --- {document_index} --- {answer}")
@@ -580,31 +581,31 @@ def qa_outliers(qa_llm_chain, output_parser, topic_dict, full_texts):
 
 
 def performing_tasks(path, temp, period, documents, full_texts, process_outliers=False):
-    # Load model as pickled
-    cls_file_name = f"{path}/processed-{period}-topics.pkl"
-    loaded_model = BERTopic.load(cls_file_name)
-    print(f"[{cls_file_name}] loaded.")
+    # # Load model as pickled
+    # cls_file_name = f"{path}/processed-{period}-topics.pkl"
+    # loaded_model = BERTopic.load(cls_file_name)
+    # print(f"[{cls_file_name}] loaded.")
     
-    # Extracting topic info
-    topic_dict, nr_docs = extract_topic_info(loaded_model, documents, full_texts)
-    assert nr_docs == len(full_texts)
-    tpc_file_name = f"{temp}/processed-{period}-tpc.jsonl"
-    save_jsonl(topic_dict, tpc_file_name, single=True)
+    # # Extracting topic info
+    # topic_dict, nr_docs = extract_topic_info(loaded_model, documents, full_texts)
+    # assert nr_docs == len(full_texts)
+    # tpc_file_name = f"{temp}/processed-{period}-tpc.jsonl"
+    # save_jsonl(topic_dict, tpc_file_name, single=True)
 
-    # Extracting hierarchical topic info
-    hierarchical_topic_list = extract_hierarchical_topic_info(loaded_model, full_texts)
-    htp_file_name = f"{path}/processed-{period}-htp.jsonl"
-    save_jsonl(hierarchical_topic_list, htp_file_name)
+    # # Extracting hierarchical topic info
+    # hierarchical_topic_list = extract_hierarchical_topic_info(loaded_model, full_texts)
+    # htp_file_name = f"{path}/processed-{period}-htp.jsonl"
+    # save_jsonl(hierarchical_topic_list, htp_file_name)
     
-    # Summarizing
-    tpc_file_name = f"{temp}/processed-{period}-tpc.jsonl"
-    topic_dict = load_jsonl(tpc_file_name, single=True)
-    chain_llm = chain_dict[f"summarizer-generic"]
-    if period in model_dict['summarizer']:
-        chain_llm = chain_dict[f"summarizer-{period}"]
-    topic_dict = summarize_topics(chain_llm, topic_dict)
-    sum_file_name = f"{temp}/processed-{period}-sum.jsonl"
-    save_jsonl(topic_dict, sum_file_name, single=True)
+    # # Summarizing
+    # tpc_file_name = f"{temp}/processed-{period}-tpc.jsonl"
+    # topic_dict = load_jsonl(tpc_file_name, single=True)
+    # chain_llm = chain_dict[f"summarizer-generic"]
+    # if period in model_dict['summarizer']:
+    #     chain_llm = chain_dict[f"summarizer-{period}"]
+    # topic_dict = summarize_topics(chain_llm, topic_dict)
+    # sum_file_name = f"{temp}/processed-{period}-sum.jsonl"
+    # save_jsonl(topic_dict, sum_file_name, single=True)
             
     # Labeling
     sum_file_name = f"{temp}/processed-{period}-sum.jsonl"
@@ -711,13 +712,13 @@ if __name__ == '__main__':
         print(f"{seconds} seconds --- {len(full_texts)} documents --- {seconds/len(full_texts):0.2f} seconds per document.\n")
 
 
-    for period_length, period_days in [ (3, range(30, 37)), (7, range(30, 31)), (30, range(30, 31)) ]:
-        for i in period_days:
+    # for period_length, period_days in [ (3, range(30, 37)), (7, range(30, 31)), (30, range(30, 31)) ]:
+    #     for i in period_days:
             
-            start_period, end_period = date_list[i], date_list[i+period_length-1]
-            period = f"{start_period}-{end_period}"
-            period_documents = [d for j in range(0, period_length) for d in daily_documents_dict[date_list[i+j]]]
-            full_texts = [f"{d['title']}\n\n{d['content']}" for d in period_documents]
+    #         start_period, end_period = date_list[i], date_list[i+period_length-1]
+    #         period = f"{start_period}-{end_period}"
+    #         period_documents = [d for j in range(0, period_length) for d in daily_documents_dict[date_list[i+j]]]
+    #         full_texts = [f"{d['title']}\n\n{d['content']}" for d in period_documents]
 
-            performing_tasks(path, temp, period, period_documents, full_texts)
+    #         performing_tasks(path, temp, period, period_documents, full_texts)
 
