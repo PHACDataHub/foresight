@@ -25,32 +25,78 @@ from langchain.output_parsers.json import SimpleJsonOutputParser
 # MAX_DOC_LENGTH = 1536
 MAX_DOC_LENGTH = 1024
 
+# TOPIC_LIST = [
+#     'Health impacts of geophysical events, including earthquakes, tsunamis, liquefaction, volcanic activity, and mass movement such as landslides, rock fall, and subsidence that have a geophysical trigger ',
+#     'Health impacts of hydro-meteorological events, including storms, extreme temperatures, droughts, wildfires, floods, wave action, and mass movement such as landslides, avalanches, mudflows, and debris flows that have a hydro-meteorological trigger',
+#     'Health impacts of known infectious diseases and outbreaks, including airborne diseases, waterborne diseases, vectorborne diseases, foodborne diseases, and antimicrobial resistant microorganisms',
+#     'Outbreaks linked to vaccine-preventable diseases',
+#     'Foodborne illness outbreaks and recalls',
+#     'Waterborne diseases and contamination alerts',
+#     'Health impacts of chemical, radiological, and technological events, including industrial accidents, radiation exposure, structural collapse, occupational hazards, transportation incidents, explosions, fires, infrastructure disruption, cybersecurity events, and chemical and radiological contamination of air, soil, water and food',
+#     'Potential biological attacks or bioterrorism threats',
+#     'Health impacts of societal events, including mass gatherings, acts of violence, armed conflicts, civil unrest, stampedes, terrorism, and financial crises',
+#     'Health impacts of abnormal environmental indicators, including air pollution, erosion, deforestation, salinization, sea level rise, desertification, habitat degradation, glacier retreat, sand encroachment, and changing climate patterns',
+#     'Reports on suspicious drug-related incidents, drug recalls, and drug safety concerns',
+#     'Healthcare system issues, including controversies or developments in vaccination policies, security breaches or cyberattacks on healthcare systems, risks to patient data, healthcare system evaluations of readiness during emergencies, and healthcare capacity reports during crises or emergencies',
+#     'Emerging infectious diseases, novel pathogens, or emerging pathogens',
+#     'Anomalous health patterns, disease clusters, and disease-related incidents',
+#     'Unforeseen health outcomes, health risks, and health incidents',
+#     'Issues with medical device safety, recalls, and their impact on health'
+# ]
+
 TOPIC_LIST = [
-    'Health impacts of geophysical events, including earthquakes, tsunamis, liquefaction, volcanic activity, and mass movement such as landslides, rock fall, and subsidence that have a geophysical trigger ',
-    'Health impacts of hydro-meteorological events, including storms, extreme temperatures, droughts, wildfires, floods, wave action, and mass movement such as landslides, avalanches, mudflows, and debris flows that have a hydro-meteorological trigger',
-    'Health impacts of known infectious diseases and outbreaks, including airborne diseases, waterborne diseases, vectorborne diseases, foodborne diseases, and antimicrobial resistant microorganisms',
-    'Outbreaks linked to vaccine-preventable diseases',
+    'Outbreaks of known infectious diseases',
+    'Emerging infectious diseases or novel pathogens',
+    'Hurricanes, earthquakes, floods, wildfires, and their health impacts',
+    'Effects on health infrastructure and services during disasters',
+    'Air pollution levels and associated health risks',
+    'Water contamination issues and their health implications',
+    'Chemical spills or industrial accidents affecting public health',
+    'Health implications of accidents in industrial settings',
+    'Potential biological attacks or bioterrorism threats',
+    'Reports on suspicious disease-related incidents', 
+    'Reports on suspicious drug-related incidents', 
     'Foodborne illness outbreaks and recalls',
     'Waterborne diseases and contamination alerts',
-    'Health impacts of chemical, radiological, and technological events, including industrial accidents, radiation exposure, structural collapse, occupational hazards, transportation incidents, explosions, fires, infrastructure disruption, cybersecurity events, and chemical and radiological contamination of air, soil, water and food',
-    'Potential biological attacks or bioterrorism threats',
-    'Health impacts of societal events, including mass gatherings, acts of violence, armed conflicts, civil unrest, stampedes, terrorism, and financial crises',
-    'Health impacts of abnormal environmental indicators, including air pollution, erosion, deforestation, salinization, sea level rise, desertification, habitat degradation, glacier retreat, sand encroachment, and changing climate patterns',
-    'Reports on suspicious drug-related incidents, drug recalls, and drug safety concerns',
-    'Healthcare system issues, including controversies or developments in vaccination policies, security breaches or cyberattacks on healthcare systems, risks to patient data, healthcare system evaluations of readiness during emergencies, and healthcare capacity reports during crises or emergencies',
-    'Emerging infectious diseases, novel pathogens, or emerging pathogens',
-    'Anomalous health patterns, disease clusters, and disease-related incidents',
-    'Unforeseen health outcomes, health risks, and health incidents',
-    'Issues with medical device safety, recalls, and their impact on health'
+    'Incidents involving radiation exposure and their health consequences',
+    'Extreme weather events and health advisories',
+    'Health implications of changing climate patterns',
+    'Outbreaks linked to vaccine-preventable diseases',
+    'Controversies or developments in vaccination policies',
+    'Security breaches or cyberattacks on healthcare systems',
+    'Risks to patient data and healthcare services',
+    'Evaluations of healthcare system readiness during emergencies',
+    'Reports on hospital capacity during crises or emergencies',
+    'Drug recalls, counterfeit drugs, and safety concerns',
+    'Issues with medical device safety, recalls, and their impact on health',
+    'Unusual health patterns',
+    'Emerging pathogens',
+    'Abnormal environmental indicators',
+    'Unforeseen health outcomes',
+    'Anomalous disease clusters',
+    'Unrecognized health risks',
+    'Atypical health incidents'
 ]
 
+# DISEASE_THREATS = {
+#     'Health impacts of known infectious diseases and outbreaks, including airborne diseases, waterborne diseases, vectorborne diseases, foodborne diseases, and antimicrobial resistant microorganisms',
+#     'Emerging infectious diseases, novel pathogens, or emerging pathogens',
+#     'Anomalous health patterns, disease clusters, and disease-related incidents',
+#     'Foodborne illness outbreaks and recalls',
+#     'Waterborne diseases and contamination alerts',
+#     'Outbreaks linked to vaccine-preventable diseases'
+# }
+
 DISEASE_THREATS = {
-    'Health impacts of known infectious diseases and outbreaks, including airborne diseases, waterborne diseases, vectorborne diseases, foodborne diseases, and antimicrobial resistant microorganisms',
-    'Emerging infectious diseases, novel pathogens, or emerging pathogens',
-    'Anomalous health patterns, disease clusters, and disease-related incidents',
+    'Outbreaks of known infectious diseases',
+    'Emerging infectious diseases or novel pathogens',
+    'Reports on suspicious disease-related incidents', 
     'Foodborne illness outbreaks and recalls',
     'Waterborne diseases and contamination alerts',
-    'Outbreaks linked to vaccine-preventable diseases'
+    'Outbreaks linked to vaccine-preventable diseases',
+    'Unusual health patterns',
+    'Emerging pathogens',
+    'Anomalous disease clusters',
 }
 
 QUESTION_LIST = [
