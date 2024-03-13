@@ -1,9 +1,21 @@
 import { useOgma } from "@linkurious/ogma-react";
-import OgmaLib from "@linkurious/ogma";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "~/trpc/react";
 import { useStore } from "~/app/_store";
 import ProgressBar from "./ProgressBar";
+
+export type Article = {
+  pub_date: Date;
+  gphin_state: string;
+  factiva_folder: string;
+  pub_time: Date;
+  pub_name: string;
+  factiva_file_name: string;
+  id: number;
+  gphin_score: number;
+  title: string;
+  content: string;
+};
 
 export type ClusterQA = {
   score: number;
@@ -16,36 +28,43 @@ export interface Cluster {
   answers: ClusterQA[];
   id: string;
   nr_articles: number;
+  node_size: number;
   start_date: Date;
   summary: string;
   title: string;
   topic_id: string;
+  primary_threat: string;
+  threats?: { t: Threat; r: { score: number } }[];
+  articles?: Article[];
 }
 
 export interface Threat {
   type: "threat";
   title: string;
+  score?: number;
 }
 
 export type ForesightData = Cluster | Threat;
 
 export default function DataLoader({
   day,
+  onLoading,
   // threats,
 }: {
   day: number;
+  onLoading?: (loading: boolean) => void;
   // threats: string[];
 }) {
   const ogma = useOgma();
   const [totalSize, setTotalSize] = useState(0);
   const [progress, setProgress] = useState(0);
-  
+
   const { history } = useStore();
 
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
-  const { isLoading, data: rawGraph } = api.post.articles.useQuery(
+  const { isLoading, data: rawGraph } = api.post.clusters.useQuery(
     { day, history },
     {
       refetchOnWindowFocus: false,
@@ -63,54 +82,34 @@ export default function DataLoader({
 
   useEffect(() => {
     if (isLoading && progressTimer.current === null) {
+      if (onLoading) {
+        console.log(`-- event -- ${isLoading ? "Loading" : "Done"}`);
+        onLoading(isLoading);
+      }
+      setTotalSize(0);
+      setProgress(0);
       tick();
+      ogma.clearGraph();
     } else if (!isLoading && progressTimer.current !== null) {
       clearTimeout(progressTimer.current);
+      progressTimer.current = null;
     }
-  }, [isLoading, tick]);
+  }, [isLoading, ogma, onLoading, tick]);
 
   useEffect(() => {
     if (!rawGraph) return;
     const parse = async () => {
-      const g = await OgmaLib.parse.neo4j(rawGraph);
-      const graph = {
-        nodes: g.nodes.map((n) => {
-          const data = n.data?.neo4jProperties;
-          if (data && n.data?.neo4jLabels.includes("Threat")) {
-            return {
-              ...n,
-              data: {
-                type: "threat",
-                title: (data.text as string) ?? "No text",
-              } as Threat,
-            };
-          } else if (data && n.data?.neo4jLabels.includes("Cluster")) {
-            return {
-              ...n,
-              data: {
-                type: "cluster",
-                answers: JSON.parse(
-                  (data.answers as string) ?? "[]",
-                ) as ClusterQA[],
-                id: data.id,
-                nr_articles: parseInt(data.nr_articles as string),
-                start_date: new Date(),
-                summary: data.summary,
-                title: data.title,
-                topic_id: data.topic_id,
-              } as Cluster,
-            };
-          } else return n;
-        }),
-        edges: g.edges,
-      };
-      setTotalSize(graph.nodes.length + graph.edges.length);
-      await ogma.view.locateRawGraph(graph);
-      await ogma.setGraph(graph, { batchSize: 500 });
-      setTotalSize(0);
+      setTotalSize(rawGraph.nodes.length + rawGraph.edges.length);
+      await ogma.setGraph(rawGraph);
+      await ogma.view.locateRawGraph(rawGraph);
+      ogma.events.once("idle", () => {
+        setTotalSize(0);
+        onLoading && onLoading(false);
+      });
     };
-    void parse();
-  }, [rawGraph, isLoading, ogma]);
+    if (onLoading) onLoading(true);
+    setTimeout(() => void parse(), 0);
+  }, [rawGraph, isLoading, ogma, onLoading]);
 
   if (isLoading)
     return (

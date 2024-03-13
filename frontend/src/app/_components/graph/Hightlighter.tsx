@@ -24,18 +24,18 @@ export default function Hightlighter() {
   const highlights = useRef<HighlightState>({});
 
   useEffect(() => {
-    if (!ogma.styles.getClass("highlighted"))
-      ogma.styles.createClass({
-        name: "highlighted",
-        nodeAttributes: {
-          color: "#916699",
-          // radius: (n) => +n.getAttribute("radius") * 2,
-        },
-        edgeAttributes: {
-          color: "#916699",
-          // width: (e) => +e.getAttribute("width") * 2,
-        },
-      });
+    // if (!ogma.styles.getClass("highlighted"))
+    //   ogma.styles.createClass({
+    //     name: "highlighted",
+    //     nodeAttributes: {
+    //       color: "#916699",
+    //       // radius: (n) => +n.getAttribute("radius") * 2,
+    //     },
+    //     edgeAttributes: {
+    //       color: "#916699",
+    //       // width: (e) => +e.getAttribute("width") * 2,
+    //     },
+    //   });
     if (!ogma.styles.getClass("dimmed"))
       ogma.styles.createClass({
         name: "dimmed",
@@ -47,11 +47,11 @@ export default function Hightlighter() {
     const clearHighlight = () => {
       if (!highlights.current.node) return;
       void highlights.current.edgesToDim?.removeClass("dimmed", 250);
-      void highlights.current.edgesToHighlight?.removeClass("highlighted");
+      // void highlights.current.edgesToHighlight?.removeClass("highlighted");
       highlights.current.edgesToHighlight?.forEach((n, i) =>
         n.setVisible(highlights.current.visibleEdges?.at(i) ?? false),
       );
-      void highlights.current.nodesToHighlight?.removeClass("highlighted");
+      // void highlights.current.nodesToHighlight?.removeClass("highlighted");
       void highlights.current.nodesToDim?.removeClass("dimmed", 250);
       highlights.current.node = undefined;
     };
@@ -91,9 +91,9 @@ export default function Hightlighter() {
         );
 
       highlights.current.edgesToHighlight.setVisible(true);
-      void highlights.current.edgesToHighlight.addClass("highlighted");
+      // void highlights.current.edgesToHighlight.addClass("highlighted");
       void highlights.current.edgesToDim.addClass("dimmed", 250);
-      void highlights.current.nodesToHighlight.addClass("highlighted");
+      // void highlights.current.nodesToHighlight.addClass("highlighted");
       void highlights.current.nodesToDim.addClass("dimmed", 250);
     };
     ogma.events.on("mouseover", onMouseOver);

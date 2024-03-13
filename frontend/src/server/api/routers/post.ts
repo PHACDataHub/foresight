@@ -1,4 +1,5 @@
-import neo4j, { type QueryResult } from "neo4j-driver";
+import neo4j, { type Node, type QueryResult } from "neo4j-driver";
+import OgmaLib from "@linkurious/ogma";
 import { z } from "zod";
 import { env } from "~/env";
 
@@ -7,6 +8,12 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import {
+  type Article,
+  type Cluster,
+  type ClusterQA,
+  type Threat,
+} from "~/app/_components/graph/DataLoader";
 
 export type Neo4JNumber = { low: number; high: number };
 export type Neo4JDate = {
@@ -101,7 +108,103 @@ export const postRouter = createTRPCRouter({
     }
   }),
 
-  articles: publicProcedure
+  cluster: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const session = driver.session();
+      try {
+        const result = await session.run(
+          `
+        MATCH (c:Cluster {id: $id})-[]-(a:Article)
+          OPTIONAL MATCH (c)-[r2]-(t:Threat)
+        RETURN c,a,r2,t        
+        `,
+          { id: input.id },
+        );
+        if (result.records.length > 0) {
+          const cluster = (result.records.at(0)?.get("c") as Node)
+            .properties as Record<string, unknown>;
+
+          const articles: Record<string, unknown> = {};
+          const threats: Record<string, unknown> = {};
+          const threatTitles: string[] = [];
+          result.records.forEach((rec) => {
+            const a = (rec.get("a") as Node).properties;
+            const t = (rec.get("t") as Node).properties;
+            const r2 = (rec.get("r2") as Node).properties;
+            const article_id = `${(a.id as Neo4JNumber).low}`;
+            const threat_id = `${(a.id as Neo4JNumber).low}`;
+            if (!articles[article_id]) articles[article_id] = a;
+            if (!threats[threat_id]) {
+              const title = (t as { text: string }).text;
+              if (!threatTitles.includes(title)) {
+                threats[threat_id] = { t, r: r2 };
+                threatTitles.push(title)
+              }
+            }
+          });
+
+          return {
+            type: "cluster",
+            answers: JSON.parse(
+              (cluster.answers as string) ?? "[]",
+            ) as ClusterQA[],
+            id: cluster.id,
+            nr_articles: parseInt(cluster.nr_articles as string),
+            node_size: cluster.node_size,
+            start_date: new Date(),
+            summary: cluster.summary,
+            title: cluster.title,
+            topic_id: cluster.topic_id,
+            primary_threat: cluster.primary_threat,
+            threats: Object.entries(threats)
+              .map(([_, o]) => {
+                const d = o as Record<"t" | "r", Record<string, unknown>>;
+                return {
+                  t: {
+                    type: "threat",
+                    title: d.t.text,
+                    score: d.t.score,
+                  },
+                  r: { score: d.r.score }
+                } as { t: Threat, r: { score: number }}
+              })
+              .sort((a, b) => {
+                if (a.r.score > b.r.score) return -1;
+                if (a.r.score < b.r.score) return 1;
+                if ((a.t.score ?? 0) > (b.t.score ?? 0)) return -1;
+                if ((a.t.score ?? 0) < (b.t.score ?? 0)) return 1;
+                return 0;
+              }),
+            articles: Object.entries(articles)
+              .map(([_, o]) => {
+                const d = o as Record<string, unknown>;
+                return {
+                  pub_date: d.pub_date,
+                  gphin_state: d.gphin_state,
+                  factiva_folder: d.factiva_folder,
+                  pub_time: d.pub_time,
+                  pub_name: d.pub_name,
+                  factiva_file_name: d.factiva_file_name,
+                  id: d.id,
+                  gphin_score: d.gphin_score,
+                  title: d.title,
+                  content: d.content,
+                } as Article;
+              })
+              .sort((a, b) => {
+                if (a.gphin_score > b.gphin_score) return -1;
+                if (a.gphin_score < b.gphin_score) return 1;
+                return 0;
+              }),
+          } as Cluster;
+        }
+      } finally {
+        await session.close();
+      }
+    }),
+
+  clusters: publicProcedure
     .input(
       z.object({
         day: z.number().gte(1).lte(62),
@@ -140,12 +243,65 @@ export const postRouter = createTRPCRouter({
           MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
             WHERE c.id =~ id_pattern
         RETURN c, r, t
+        ORDER BY r.score DESC
         `,
           { period },
           // , threats: input.threats },
         );
         // AND t.text IN $threats
-        return JSON.parse(JSON.stringify(result)) as GraphResult;
+        const threats: Record<string, string> = {};
+        result.records.forEach((rec) => {
+          const t = rec.get("t") as Node;
+          if (!threats[t.elementId])
+            threats[t.elementId] = t.properties.text as string;
+        });
+
+        result.records.forEach((rec) => {
+          const c = rec.get("c") as Node;
+          const r = rec.get("r") as EdgeRecord;
+          const id =
+            r.startNodeElementId === c.elementId
+              ? r.endNodeElementId
+              : r.startNodeElementId;
+          c.properties.primary_threat = threats[id];
+        });
+        const g = await OgmaLib.parse.neo4j(result);
+        const graph = {
+          nodes: g.nodes.map((n) => {
+            const data = n.data?.neo4jProperties;
+            if (data && n.data?.neo4jLabels.includes("Threat")) {
+              return {
+                ...n,
+                data: {
+                  type: "threat",
+                  title: (data.text as string) ?? "No text",
+                } as Threat,
+              };
+            } else if (data && n.data?.neo4jLabels.includes("Cluster")) {
+              return {
+                ...n,
+                data: {
+                  type: "cluster",
+                  answers: JSON.parse(
+                    (data.answers as string) ?? "[]",
+                  ) as ClusterQA[],
+                  id: data.id,
+                  nr_articles: parseInt(data.nr_articles as string),
+                  node_size: data.node_size,
+                  start_date: new Date(),
+                  summary: data.summary,
+                  title: data.title,
+                  topic_id: data.topic_id,
+                  primary_threat: data.primary_threat,
+                } as Cluster,
+              };
+            } else return n;
+          }),
+          edges: g.edges,
+        };
+        return graph;
+
+        // return JSON.parse(JSON.stringify(result)) as GraphResult;
       } finally {
         await session.close();
       }

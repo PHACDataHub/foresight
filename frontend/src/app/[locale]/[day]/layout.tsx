@@ -34,7 +34,7 @@ export default async function LocaleDayLayout({
         />
         <HistoryChooser />
       </div>
-      <div className="mb-10 flex flex-1 flex-col items-center justify-center overflow-hidden border-2">
+      <div className="mb-10 flex flex-1 flex-col items-center justify-center overflow-hidden">
         <Graph />
       </div>
       {/* <TextView /> */}
