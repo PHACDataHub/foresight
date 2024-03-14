@@ -3,6 +3,7 @@
 // Import Disease Ontology
 //
 CALL n10s.rdf.import.fetch("https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/main/src/ontology/releases/doid.owl", "RDF/XML");
+// CALL n10s.rdf.import.fetch("https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/v2019-12-12/src/ontology/doid.owl", "RDF/XML");
 //
 WITH 
     "MATCH (r:Resource:Class)
@@ -59,7 +60,7 @@ YIELD total RETURN total;
 // Import processed Disease Ontology (with vector embeddings)
 //
 CALL apoc.periodic.iterate('
-	CALL apoc.load.json("file:///processed-disease-ontology.jsonl") YIELD value RETURN value AS doc
+	CALL apoc.load.json("file:///processed/processed-disease-ontology.jsonl") YIELD value RETURN value AS doc
 ','
 	WITH doc, apoc.coll.zip(doc.texts, doc.embeddings) AS text_embedding_list
         MATCH (r:Resource:Class {uri: doc.url})

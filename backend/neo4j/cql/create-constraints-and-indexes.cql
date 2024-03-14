@@ -23,9 +23,9 @@ CREATE CONSTRAINT id_article IF NOT EXISTS FOR (n:Article) REQUIRE n.id IS UNIQU
 CREATE TEXT INDEX title_article IF NOT EXISTS FOR (n:Article) ON (n.title);
 CREATE INDEX pub_date_article IF NOT EXISTS FOR (n:Article) ON (n.pub_date);
 CREATE TEXT INDEX pub_name_article IF NOT EXISTS FOR (n:Article) ON (n.pub_name);
+CREATE INDEX keywords_article IF NOT EXISTS FOR (n:Article) ON (n.keyword);
 //
 CREATE TEXT INDEX summary_article IF NOT EXISTS FOR (n:Article) ON (n.summary);
-CREATE INDEX is_don_article IF NOT EXISTS FOR (n:Article) ON (n.is_don);
 CREATE CONSTRAINT id_outlier IF NOT EXISTS FOR (n:Outlier) REQUIRE n.id IS UNIQUE;
 //
 //
@@ -39,7 +39,6 @@ CREATE TEXT INDEX summary_cluster IF NOT EXISTS FOR (n:Cluster) ON (n.summary);
 //
 CREATE CONSTRAINT id_cluster IF NOT EXISTS FOR (n:HierarchicalCluster) REQUIRE n.id IS UNIQUE;
 CREATE TEXT INDEX name_cluster IF NOT EXISTS FOR (n:HierarchicalCluster) ON (n.name);
-CREATE INDEX clusters_cluster IF NOT EXISTS FOR (n:HierarchicalCluster) ON (n.clusters);
 //
 //
 // Create vector index for embeddings

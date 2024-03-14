@@ -3,7 +3,7 @@
 // Import WHO Disease Outbreak News Articles
 //
 CALL apoc.periodic.iterate('
-	CALL apoc.load.json("file:///processed-who-dons.jsonl") YIELD value RETURN value AS doc
+	CALL apoc.load.json("file:///processed/processed-who-dons.jsonl") YIELD value RETURN value AS doc
 ','
 	WITH doc, SPLIT(doc.report_date, " ") AS splits
     	MERGE (n:DON {url: doc.url})
@@ -78,7 +78,7 @@ RETURN t.text;
 // Connect WHO Disease Outbreak News Articles
 //
 CALL apoc.periodic.iterate('
-    CALL apoc.load.json("file:///processed-who-dons.jsonl") YIELD value RETURN value AS doc
+    CALL apoc.load.json("file:///processed/processed-who-dons.jsonl") YIELD value RETURN value AS doc
 ','
     WITH doc, KEYS(doc.topics) AS threats
         MERGE (n:DON {url: doc.url})
@@ -114,7 +114,7 @@ CALL apoc.periodic.iterate("
         MERGE (c1)-[r:SIMILAR_D2D_CHUNK]->(c2)
         SET r.score = s;
 ",
-{params: {cutoff: 0.75}, batchSize:1000, parallel:false})
+{params: {cutoff: 0.71}, batchSize:1000, parallel:false})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ CALL apoc.periodic.iterate("
         SET r.score = sum,
             r.scores = coll;
 ",
-{params: {cutoff: 0.75}, batchSize:1000, parallel:false})
+{params: {cutoff: 0.71}, batchSize:1000, parallel:false})
 YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

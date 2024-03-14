@@ -13,9 +13,9 @@
         "neodash_disease_label": "COVID-19",
         "neodash_disease_label_display": "COVID-19",
         "neodash_start_date": {
-          "year": 2020,
-          "month": 1,
-          "day": 2
+          "year": 2019,
+          "month": 12,
+          "day": 31
         },
         "neodash_threats": [
           "",
@@ -481,7 +481,7 @@
           {
             "id": "0827c67b-a42c-482a-92d5-3dce7c9542fc",
             "title": "Clusters with detected threats",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nRETURN c, r, t\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nRETURN c, r, t\n\n\n\n\n\n\n\n",
             "width": 16,
             "height": 9,
             "x": 0,
@@ -507,35 +507,35 @@
                   "condition": "contains",
                   "value": "Wuhan",
                   "customization": "node color",
-                  "customizationValue": "#FF0000"
+                  "customizationValue": "#FF000088"
                 },
                 {
                   "field": "Cluster.title",
                   "condition": "contains",
                   "value": "pneumonia",
                   "customization": "node color",
-                  "customizationValue": "#FF0000"
+                  "customizationValue": "#FF000088"
                 },
                 {
                   "field": "Cluster.title",
                   "condition": "contains",
                   "value": "coronavirus",
                   "customization": "node color",
-                  "customizationValue": "#FF0000"
+                  "customizationValue": "#FF000088"
                 },
                 {
                   "field": "Cluster.title",
                   "condition": "contains",
                   "value": "Coronavirus",
                   "customization": "node color",
-                  "customizationValue": "#FF0000"
+                  "customizationValue": "#FF000088"
                 },
                 {
                   "field": "Cluster.title",
                   "condition": "contains",
                   "value": "Pneumonia",
                   "customization": "node color",
-                  "customizationValue": "red"
+                  "customizationValue": "#FF000088"
                 },
                 {
                   "field": "Cluster.id",
@@ -546,7 +546,7 @@
                 }
               ],
               "nodeColorScheme": "neodash",
-              "nodeSizeProp": "node_size",
+              "nodeSizeProp": "nr_articles",
               "nodeLabelColor": "#000000FF",
               "nodeLabelFontSize": 3,
               "defaultRelColor": "#a0a0a088",
@@ -555,23 +555,28 @@
             "schema": [
               [
                 "Cluster",
+                "end_date",
                 "summary",
+                "keywords",
                 "nr_articles",
                 "answers",
-                "id",
-                "topic_id",
+                "countries",
                 "title",
-                "node_size",
+                "labels",
+                "name",
+                "locations",
+                "topic_id",
+                "id",
+                "representative_docs",
                 "start_date"
               ],
               [
-                "DETECTED_THREAT",
-                "score"
+                "DETECTED_THREAT"
               ],
               [
                 "Threat",
-                "score",
-                "text"
+                "text",
+                "score"
               ]
             ]
           },
@@ -582,7 +587,7 @@
             "width": 8,
             "height": 2,
             "x": 0,
-            "y": 16,
+            "y": 27,
             "type": "select",
             "selection": {},
             "settings": {
@@ -601,7 +606,7 @@
             "width": 24,
             "height": 8,
             "x": 0,
-            "y": 25,
+            "y": 36,
             "type": "table",
             "selection": {},
             "settings": {
@@ -621,9 +626,9 @@
             "title": "Clusters without detected threats",
             "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\nMATCH (c:Cluster)\n  WHERE c.id =~ id_pattern\n    AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nRETURN c\n\n\n\n\n\n\n",
             "width": 12,
-            "height": 5,
+            "height": 7,
             "x": 0,
-            "y": 11,
+            "y": 18,
             "type": "graph",
             "selection": {
               "Cluster": "title"
@@ -641,61 +646,65 @@
               "showPropertiesOnClick": true,
               "styleRules": [
                 {
-                  "field": "Cluster.title",
+                  "field": "Article.title",
                   "condition": "contains",
                   "value": "Wuhan",
                   "customization": "node color",
-                  "customizationValue": "red"
+                  "customizationValue": "#FF000088"
                 },
                 {
-                  "field": "Cluster.title",
+                  "field": "Article.title",
                   "condition": "contains",
                   "value": "pneumonia",
                   "customization": "node color",
-                  "customizationValue": "red"
+                  "customizationValue": "#FF000088"
                 },
                 {
-                  "field": "Cluster.title",
+                  "field": "Article.title",
                   "condition": "contains",
                   "value": "coronavius",
                   "customization": "node color",
-                  "customizationValue": "#FF0000"
+                  "customizationValue": "#FF000088"
                 },
                 {
-                  "field": "Cluster.title",
+                  "field": "Article.title",
                   "condition": "contains",
                   "value": "Coronavirus",
                   "customization": "node color",
-                  "customizationValue": "red"
+                  "customizationValue": "#FF000088"
                 },
                 {
-                  "field": "Cluster.title",
+                  "field": "Article.title",
                   "condition": "contains",
                   "value": "Pneumonia",
                   "customization": "node color",
-                  "customizationValue": "red"
+                  "customizationValue": "#FF000088"
                 },
                 {
-                  "field": "Cluster.id",
+                  "field": "Article.title",
                   "condition": "!=",
                   "value": "0",
                   "customization": "node color",
                   "customizationValue": "#18830288"
                 }
               ],
-              "nodeSizeProp": "node_size"
+              "nodeSizeProp": "nr_articles"
             },
             "schema": [
               [
                 "Cluster",
+                "end_date",
                 "summary",
+                "keywords",
                 "nr_articles",
+                "name",
                 "answers",
-                "topic_id",
                 "id",
+                "topic_id",
+                "representative_docs",
                 "title",
-                "node_size",
-                "start_date"
+                "start_date",
+                "labels"
               ]
             ]
           },
@@ -704,9 +713,9 @@
             "title": "Summary",
             "query": "MATCH ((c:Cluster {id: $neodash_cluster_id}))\nRETURN c.summary\n\n\n",
             "width": 8,
-            "height": 5,
+            "height": 4,
             "x": 8,
-            "y": 16,
+            "y": 27,
             "type": "value",
             "selection": {},
             "settings": {
@@ -723,43 +732,51 @@
             "title": "Detected threats",
             "query": "MATCH (c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat) \nRETURN t.text AS threat, r2.score AS score ORDER BY score DESC\n\n\n\n",
             "width": 8,
-            "height": 5,
+            "height": 4,
             "x": 16,
-            "y": 16,
+            "y": 27,
             "type": "table",
             "selection": {},
             "settings": {
               "columnWidths": "[50,5]",
-              "refreshButtonEnabled": true
+              "refreshButtonEnabled": true,
+              "compact": true
             }
           },
           {
             "id": "27e589a2-63eb-44ac-9b45-31c780042e13",
             "title": "Q&A",
-            "query": "MATCH (c:Cluster {id: $neodash_cluster_id})\nWITH c, apoc.convert.fromJsonList(c.answers) AS qa_list\n  UNWIND qa_list AS qa\nWITH qa WHERE qa.score > 0.25\nRETURN qa.question AS question, qa.answer AS answer, qa.score AS score \n\n\n\n\n",
-            "width": 16,
-            "height": 4,
-            "x": 8,
-            "y": 21,
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id})\nWITH c, apoc.convert.fromJsonMap(c.answers) AS qa_map\nWITH c, qa_map, KEYS(qa_map) AS questions\n  UNWIND questions as question\nRETURN question AS Question, qa_map[question] as Answer\n\n\n\n\n\n",
+            "width": 8,
+            "height": 5,
+            "x": 16,
+            "y": 31,
             "type": "table",
             "selection": {},
-            "settings": {}
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "compact": true,
+              "allowDownload": true,
+              "columnWidths": "[50,50]"
+            }
           },
           {
             "id": "66cedbe2-6ff0-4fcb-82dd-7e8a2b68c227",
             "title": "Articles",
-            "query": "MATCH (a:Article)-[r1:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat)\nRETURN c, r1, a, r2, t LIMIT 3000\n\n\n\n",
+            "query": "MATCH (a:Article)-[r1:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat)\nRETURN a, r1, c, r2, t\n\n\n\n\n",
             "width": 8,
             "height": 7,
             "x": 0,
-            "y": 18,
+            "y": 29,
             "type": "graph",
             "selection": {
-              "Cluster": "title",
-              "IN_CLUSTER": "(label)",
               "Article": "pub_name",
+              "IN_CLUSTER": "(label)",
+              "Cluster": "name",
               "DETECTED_THREAT": "(label)",
-              "Threat": "text"
+              "Threat": "text",
+              "Outlier": "title"
             },
             "settings": {
               "allowDownload": true,
@@ -769,38 +786,95 @@
               "fullscreenEnabled": true,
               "refreshButtonEnabled": true,
               "nodeColorScheme": "neodash",
+              "nodeLabelFontSize": 2,
               "styleRules": [
                 {
-                  "field": "Article.id",
-                  "condition": "!=",
-                  "value": "0",
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
                   "customization": "node color",
-                  "customizationValue": "#EDCC2688"
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "yterious",
+                  "customization": "node color",
+                  "customizationValue": "#DA02F288"
                 }
               ],
-              "nodeLabelFontSize": 2
+              "nodeSizeProp": "probability"
             },
             "schema": [
+              [
+                "Article",
+                "pub_date",
+                "factiva_folder",
+                "gphin_state",
+                "probability",
+                "pub_time",
+                "pub_name",
+                "factiva_file_name",
+                "id",
+                "gphin_score",
+                "title",
+                "content",
+                "disease_question",
+                "summary",
+                "answers"
+              ],
+              [
+                "IN_CLUSTER",
+                "probability"
+              ],
               [
                 "Cluster",
                 "end_date",
                 "summary",
+                "keywords",
                 "nr_articles",
                 "answers",
+                "countries",
+                "title",
+                "labels",
+                "name",
+                "locations",
                 "topic_id",
                 "id",
-                "title",
-                "node_size",
+                "representative_docs",
                 "start_date"
               ],
               [
-                "IN_CLUSTER"
+                "DETECTED_THREAT"
               ],
               [
-                "Article",
+                "Threat",
+                "score",
+                "text"
+              ],
+              [
+                "Outlier",
+                "disease_question",
+                "summary",
                 "pub_date",
                 "gphin_state",
+                "probability",
                 "pub_time",
+                "answers",
                 "pub_name",
                 "id",
                 "gphin_score",
@@ -808,15 +882,6 @@
                 "content",
                 "factiva_folder",
                 "factiva_file_name"
-              ],
-              [
-                "DETECTED_THREAT",
-                "score"
-              ],
-              [
-                "Threat",
-                "score",
-                "text"
               ]
             ]
           },
@@ -849,7 +914,8 @@
                 }
               ],
               "nodeColorScheme": "neodash",
-              "columnWidths": "[95,5}"
+              "columnWidths": "[95,5}",
+              "compact": true
             },
             "schema": []
           },
@@ -858,9 +924,9 @@
             "title": "Clusters without detected threats",
             "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n",
             "width": 12,
-            "height": 5,
+            "height": 7,
             "x": 12,
-            "y": 11,
+            "y": 18,
             "type": "table",
             "selection": {},
             "settings": {
@@ -873,7 +939,327 @@
               "enableEditing": true,
               "layout": "force-directed",
               "nodeColorScheme": "neodash",
-              "showPropertiesOnClick": true
+              "showPropertiesOnClick": true,
+              "columnWidths": "[80,20]",
+              "compact": true
+            },
+            "schema": []
+          },
+          {
+            "id": "023292ed-328f-4d85-9b31-b470bcd62f9e",
+            "title": "Top 10 possible diseases in outliers",
+            "query": "MATCH (o:Outlier)\n  WHERE o.pub_date = DATE($neodash_start_date)\n    AND o.disease_question STARTS WITH 'Yes'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'No disease'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'No specific'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'Unclear'\nWITH o, apoc.convert.fromJsonMap(o.answers) AS answer_map\nRETURN answer_map['What disease is mentioned?'] AS possible_disease, COUNT(distinct(o)) AS count ORDER BY count DESC LIMIT 10\n\n\n\n",
+            "width": 16,
+            "height": 6,
+            "x": 8,
+            "y": 46,
+            "type": "pie",
+            "selection": {
+              "index": "possible_disease",
+              "value": "count",
+              "key": "(none)"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "nodeColorScheme": "neodash",
+              "showPropertiesOnClick": true,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                }
+              ],
+              "nodeSizeProp": "node_size"
+            },
+            "schema": []
+          },
+          {
+            "id": "0df1554b-bb7f-408a-b19e-93e059618753",
+            "title": "Outliers with possible diseases",
+            "query": "MATCH (o:Outlier)\n  WHERE o.pub_date = DATE($neodash_start_date)\n    AND o.disease_question STARTS WITH 'Yes'\nWITH o, apoc.convert.fromJsonMap(o.answers) AS answer_map\n  WHERE NOT (answer_map['What disease is mentioned?']) STARTS WITH 'No disease'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'No specific'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'Unclear'\nRETURN o.id AS id, o.title AS title, answer_map['What disease is mentioned?'] AS possible_disease, o.gphin_score AS score, o.gphin_state AS state ORDER BY state ASC, score DESC\n\n\n\n",
+            "width": 24,
+            "height": 6,
+            "x": 0,
+            "y": 52,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "nodeColorScheme": "neodash",
+              "showPropertiesOnClick": true,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                }
+              ],
+              "nodeSizeProp": "node_size",
+              "columnWidths": "[10,40,30,10,10]",
+              "compact": true
+            },
+            "schema": []
+          },
+          {
+            "id": "173a910b-dfb3-4004-9582-b22ef8b2fd76",
+            "title": "Map of development",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id})\nWITH c, c.countries AS countries\n  UNWIND countries AS country\nRETURN country, COUNT(DISTINCT(c.id)) AS spread\n\n\n\n\n\n",
+            "width": 8,
+            "height": 5,
+            "x": 8,
+            "y": 31,
+            "type": "areamap",
+            "selection": {
+              "index": "country",
+              "value": "spread"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "compact": true,
+              "allowDownload": true,
+              "columnWidths": "[50,50]"
+            },
+            "schema": []
+          },
+          {
+            "id": "fb2ab48c-4d4c-4f5a-bdb8-24daca0a53c1",
+            "title": "Outliers",
+            "query": "MATCH (o:Outlier)\n  WHERE o.pub_date = DATE($neodash_start_date)\n    AND o.disease_question STARTS WITH 'Yes'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'No disease'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'No specific'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'Unclear'\nWITH o, apoc.convert.fromJsonMap(o.answers) AS answer_map\nRETURN o\n\n\n\n",
+            "width": 8,
+            "height": 6,
+            "x": 0,
+            "y": 46,
+            "type": "graph",
+            "selection": {
+              "Article": "title",
+              "Outlier": "title"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "nodeColorScheme": "neodash",
+              "showPropertiesOnClick": true,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                }
+              ],
+              "defaultNodeSize": 5
+            },
+            "schema": [
+              [
+                "Article",
+                "summary",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "answers",
+                "pub_name",
+                "factiva_file_name",
+                "gphin_score",
+                "title",
+                "content",
+                "disease_question",
+                "pub_date",
+                "gphin_state",
+                "id"
+              ],
+              [
+                "Outlier",
+                "summary",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "answers",
+                "pub_name",
+                "factiva_file_name",
+                "gphin_score",
+                "title",
+                "content",
+                "disease_question",
+                "pub_date",
+                "gphin_state",
+                "id"
+              ]
+            ]
+          },
+          {
+            "id": "3da06678-95b5-49db-b5f7-8b6d6cb119cf",
+            "title": "Outlier analysis (for the daily view or the first day in the period only)",
+            "query": "- Graph view: highlight articles with one of 'Wuhan', 'pneumonia', 'coronavirus' in title\n- Top 10 possible diseases based on question answering. *Note that the output are grouped by content without deduplication*\n- List of outliers with title, possible disease, GPHIN score, and action taken.\n\n\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 44,
+            "type": "text",
+            "selection": {},
+            "settings": {},
+            "schema": []
+          },
+          {
+            "id": "0ed01afa-32b6-4997-9ed2-842b2ca1922f",
+            "title": "Cluster analysis",
+            "query": "- Cluster can be selected by id: `YYYY-MM-DD-<cluster-id>` where `cluster_id` is the identification of the cluster in the period.\n- Summary: short summarization based on aggregated content of (3, 5, or 10) *representative documents* of the clusters\n- Detected threats: public health threats identified within articles of the cluster\n- Map of development: which countries are being effected.\n- Q&A: common question and answers\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 25,
+            "type": "text",
+            "selection": {},
+            "settings": {},
+            "schema": []
+          },
+          {
+            "id": "1f4715b7-3614-42c8-a2ff-8e8a9c20abd7",
+            "title": "World map",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH c, apoc.convert.fromJsonList(c.locations) AS locations\n  UNWIND locations AS l\nRETURN {id: c.id, label: c.title, point: POINT({latitude: l.latitude, longitude: l.longitude})}\n\n\n\n\n\n\n\n",
+            "width": 24,
+            "height": 7,
+            "x": 0,
+            "y": 11,
+            "type": "map",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "compact": true,
+              "allowDownload": true,
+              "columnWidths": "[50,50]"
             },
             "schema": []
           }

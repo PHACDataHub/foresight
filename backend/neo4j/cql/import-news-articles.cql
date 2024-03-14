@@ -10,7 +10,7 @@ WITH days, month
     UNWIND days AS day
 WITH month + day AS pub_date
     CALL apoc.periodic.iterate('
-	    CALL apoc.load.json("file:///" + $infile) YIELD value RETURN value AS doc
+	    CALL apoc.load.json("file:///processed/" + $infile) YIELD value RETURN value AS doc
     ','
         WITH doc, SPLIT(SUBSTRING(doc.publicationdate, 0, 10), "-") AS splits
             MERGE (n:Article {id: doc.id})
@@ -54,16 +54,15 @@ WITH COLLECT(pub_date) AS days
 WITH days + [
     '2019-12-31-2020-01-02', '2020-01-01-2020-01-03', '2020-01-02-2020-01-04', '2020-01-03-2020-01-05',
     '2020-01-04-2020-01-06', '2020-01-05-2020-01-07', '2020-01-06-2020-01-08', 
-    '2019-12-31-2020-01-06'
-    // '2019-12-31-2020-01-06', '2019-12-31-2020-01-29' 
+    '2019-12-31-2020-01-06', '2019-12-31-2020-01-29' 
     ] AS days
     UNWIND days AS pub_date
     CALL apoc.periodic.iterate('
-        CALL apoc.load.json("file:///" + $pub_date + "-clusters.jsonl") YIELD value AS cluster_map
+        CALL apoc.load.json("file:///processed/enriched-" + $pub_date + "-cls.jsonl") YIELD value AS cluster_map
         WITH cluster_map, apoc.coll.sort(KEYS(cluster_map)) AS topics
             UNWIND topics AS topic
         WITH topic, cluster_map[topic] AS cluster
-        	WHERE cluster.label <> "Outlier Topic"
+        	WHERE cluster.labels <> "Outliers"
         RETURN topic, cluster
     ','
         WITH topic, cluster, 
@@ -74,64 +73,189 @@ WITH days + [
             CASE WHEN SIZE(end_date_splits) > 0 THEN DATE({year: TOINTEGER(end_date_splits[0]), month: TOINTEGER(end_date_splits[1]), day: TOINTEGER(end_date_splits[2])}) ELSE NULL END AS end_date
             MERGE (c:Cluster {id: $pub_date + "-" + TOSTRING(topic)})
                 SET c.summary = cluster.summary,
-                    c.answers = apoc.convert.toJson(cluster.answers),
-                    c.title = cluster.label,
+                    c.answers = apoc.convert.toJson(cluster.qa),
+                    c.title = CASE WHEN cluster.labels[0] IS NULL THEN cluster.name ELSE cluster.labels[0] END,
+                    c.labels = cluster.labels,
+                    c.keywords = cluster.keywords,
                     c.topic_id = topic,
+                    c.countries = CASE WHEN cluster.loc["countries"] IS NOT NULL THEN cluster.loc["countries"] ELSE NULL END,
+                    c.locations = CASE WHEN cluster.loc["locations"] IS NOT NULL THEN  apoc.convert.toJson(cluster.loc["locations"]) ELSE NULL END,
+                    c.representative_docs = [d IN cluster.representative_docs | d[1]],
                     c.start_date = start_date,
                     c.end_date =  end_date 
         WITH c, cluster
-            FOREACH (article_id IN cluster.id_list  |
-                MERGE (a:Article {id: article_id})
-                MERGE (c)<-[:IN_CLUSTER]-(a)
+            FOREACH (article IN cluster.articles  |
+                MERGE (a:Article {id: article[1]})
+                    SET a.probability = article[2]
+                MERGE (c)<-[:IN_CLUSTER {probability: article[2]}]-(a)
             )
-            FOREACH (threat IN KEYS(cluster.threats) |
+            FOREACH (threat IN cluster.threats |
                 MERGE (t:Threat {text: threat})
                 MERGE (c)-[r:DETECTED_THREAT]->(t)
-                    SET r.score = cluster.threats[threat]
             )
         RETURN c.id
     ',
     {params: {pub_date: pub_date}, batchSize:1000, parallel:false})
     YIELD total RETURN total;
 //
+MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)
+WITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS count
+SET c.nr_articles = count/10;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Import Outlier Articles
+//
+WITH
+    [i IN RANGE(1, 31) | CASE WHEN i < 10 THEN '0' + TOSTRING(i) ELSE TOSTRING(i) END] AS days,
+    ['2019-12-', '2020-01-'] AS months
+    UNWIND months AS month
+WITH days, month
+    UNWIND days AS day
+WITH month + day AS pub_date
+WITH COLLECT(pub_date) AS days
+    UNWIND days AS pub_date
+    CALL apoc.periodic.iterate('
+        CALL apoc.load.json("file:///processed/enriched-" + $pub_date + "-olq.jsonl") YIELD value AS cluster_map
+        WITH cluster_map, apoc.coll.sort(KEYS(cluster_map)) AS topics
+            UNWIND topics AS topic
+        WITH topic, cluster_map[topic] AS cluster
+        	WHERE cluster.labels = "Outliers"
+        RETURN cluster.enriched_articles AS articles, KEYS(cluster.enriched_articles) AS ids
+    ','
+        WITH articles, ids
+            UNWIND ids AS id
+        WITH id, articles[id] AS article
+            MERGE (n:Article {id: TOINTEGER(id)})
+                SET n:Outlier,
+                    n.probability = article.probability,
+                    n.disease_question = article.filter,
+                    n.summary = article.summary,
+                    n.answers = apoc.convert.toJson(article.qa)
+        RETURN id
+    ',
+    {params: {pub_date: pub_date}, batchSize:1000, parallel:false})
+    YIELD total RETURN total;
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Import Hierarchical Topics
 //
-CALL apoc.load.json("file:///processed-2019-12-31-htp.jsonl") YIELD value AS row
-WITH COLLECT(row) AS rows
-WITH rows,
-    REDUCE(m=0, r IN rows | CASE WHEN m = 0 OR m > TOINTEGER(r['Parent_ID']) THEN TOINTEGER(r['Parent_ID']) ELSE m END) AS min_id
-WITH rows, min_id
-    UNWIND rows AS row
-WITH row, min_id, 
-    TOINTEGER(row['Parent_ID']) AS parent_id,
-    TOINTEGER(row['Child_Left_ID']) AS child_left_id,
-    TOINTEGER(row['Child_Right_ID']) AS child_right_id
-    MERGE (p:HierarchicalCluster {id: parent_id})
-        ON CREATE SET p.clusters = row['Topics'], p.name = row['Parent_Name']
-    FOREACH (dummy IN CASE WHEN min_id > child_left_id THEN [1] ELSE [] END |
-        MERGE (c:Cluster {id: child_left_id})
-            ON CREATE SET c.name = row['Child_Left_Name']
-        MERGE (p)-[:CONTAINS {side: 'left'}]->(c)
-    )
-    FOREACH (dummy IN CASE WHEN min_id <= child_left_id THEN [1] ELSE [] END |
-        MERGE (c:HierarchicalCluster {id: child_left_id})
-            ON CREATE SET c.name = row['Child_Left_Name']
-        MERGE (p)-[:CONTAINS {side: 'left'}]->(c)
-    )
-    FOREACH (dummy IN CASE WHEN min_id > child_right_id THEN [1] ELSE [] END |
-        MERGE (c:Cluster {id: child_right_id})
-            ON CREATE SET c.name = row['Child_Right_Name']
-        MERGE (p)-[:CONTAINS {side: 'right'}]->(c)
-    )
-    FOREACH (dummy IN CASE WHEN min_id <= child_right_id THEN [1] ELSE [] END |
-        MERGE (c:HierarchicalCluster {id: child_right_id})
-            ON CREATE SET c.name = row['Child_Right_Name']
-        MERGE (p)-[:CONTAINS {side: 'right'}]->(c)            
-    )
+CALL apoc.periodic.iterate('
+    WITH
+        [i IN RANGE(1, 31) | CASE WHEN i < 10 THEN "0" + TOSTRING(i) ELSE TOSTRING(i) END] AS days,
+        ["2019-12-", "2020-01-"] AS months
+        UNWIND months AS month
+    WITH days, month
+        UNWIND days AS day
+    WITH month + day AS pub_date
+    WITH COLLECT(pub_date) AS days
+    WITH days + [
+        "2019-12-31-2020-01-02", "2020-01-01-2020-01-03", "2020-01-02-2020-01-04", "2020-01-03-2020-01-05",
+        "2020-01-04-2020-01-06", "2020-01-05-2020-01-07", "2020-01-06-2020-01-08", 
+        "2019-12-31-2020-01-06", "2019-12-31-2020-01-29" 
+        ] AS days
+        UNWIND days AS pub_date
+    RETURN pub_date
+','
+    WITH pub_date
+    CALL apoc.load.json("file:///processed/processed-" +  pub_date + "-htp.jsonl") YIELD value AS row
+    WITH COLLECT(row) AS rows, pub_date
+    WITH rows, pub_date,
+        REDUCE(m=0, r IN rows | CASE WHEN m = 0 OR m > TOINTEGER(r["Parent_ID"]) THEN TOINTEGER(r["Parent_ID"]) ELSE m END) AS min_id
+    WITH rows, min_id, pub_date
+        UNWIND rows AS row
+    WITH row, min_id, pub_date,
+        TOINTEGER(row["Parent_ID"]) AS parent_id,
+        TOINTEGER(row["Child_Left_ID"]) AS child_left_id,
+        TOINTEGER(row["Child_Right_ID"]) AS child_right_id
+        MERGE (p:HierarchicalCluster {id: pub_date + "-" + row["Parent_ID"]})
+            SET p.clusters = row["Topics"], p.name = row["Parent_Name"]
+        FOREACH (dummy IN CASE WHEN min_id > child_left_id THEN [1] ELSE [] END |
+            MERGE (c:Cluster {id: pub_date + "-" + row["Child_Left_ID"]})
+                SET c.name = row["Child_Left_Name"]
+            MERGE (p)-[:CONTAINS {side: "left"}]->(c)
+        )
+        FOREACH (dummy IN CASE WHEN min_id <= child_left_id THEN [1] ELSE [] END |
+            MERGE (c:HierarchicalCluster {id: pub_date + "-" + row["Child_Left_ID"]})
+                SET c.name = row["Child_Left_Name"]
+            MERGE (p)-[:CONTAINS {side: "left"}]->(c)
+        )
+        FOREACH (dummy IN CASE WHEN min_id > child_right_id THEN [1] ELSE [] END |
+            MERGE (c:Cluster {id: pub_date + "-" + child_right_id})
+                SET c.name = row["Child_Right_Name"]
+            MERGE (p)-[:CONTAINS {side: "right"}]->(c)
+        )
+        FOREACH (dummy IN CASE WHEN min_id <= child_right_id THEN [1] ELSE [] END |
+            MERGE (c:HierarchicalCluster {id: pub_date + "-" + row["Child_Right_ID"]})
+                SET c.name = row["Child_Right_Name"]
+            MERGE (p)-[:CONTAINS {side: "right"}]->(c)
+        )
+    RETURN DISTINCT(pub_date);
+',
+{batchSize:1000, parallel:false})
+YIELD total RETURN total;
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //
+// // Connect simmilar articles within the same cluster
+// //
+// CALL apoc.periodic.iterate("
+//     MATCH (c:Cluster)
+//         RETURN c
+// ","
+//     WITH c
+//         MATCH (c)<-[:IN_CLUSTER]-(a1:Article)<-[:PART_OF]-(c1:Chunk)
+//     WITH c, a1, c1
+//         CALL db.index.vector.queryNodes('text-chunk', 10, c1.embeddings)
+//             YIELD node AS c2, score AS s
+//     WITH c, a1, c1, c2, s
+//         WHERE c1 <> c2 AND NOT EXISTS((a1)<-[:PART_OF]-(c2)) AND s >= $cutoff
+//     WITH c, a1, c1, c2, s
+//         MATCH (c2)-[:PART_OF]->(a2:Article)-[:IN_CLUSTER]->(c)
+//             WHERE a1 <> a2 AND NOT EXISTS((a1)-[:SIMILAR_ARTICLE]-(a2))
+//     WITH c, a1, c1, c2, a2, s
+//         FOREACH (dummy IN CASE WHEN c1.text < c2.text THEN [1] ELSE [] END |
+//             MERGE (c2)-[r:SIMILAR_A2A_CHUNK]->(c1)
+//             SET r.score = s
+//         )
+//         FOREACH (dummy IN CASE WHEN c1.text > c2.text THEN [1] ELSE [] END |
+//             MERGE (c1)-[r:SIMILAR_A2A_CHUNK]->(c2)
+//             SET r.score = s
+//         )
+// ",
+// {params: {cutoff: 0.85}, batchSize:1000, parallel:true})
+// YIELD total RETURN total;
+// //
+// CALL apoc.periodic.iterate("
+//     MATCH (a1:Article)<-[:PART_OF]-(:Chunk)-[r:SIMILAR_A2A_CHUNK]-(:Chunk)-[:PART_OF]->(a2:Article)
+//         WHERE r.score >= $cutoff
+//     WITH DISTINCT([a1, a2]) AS pair, COLLECT(r.score) AS s_coll
+//     WITH pair[0] AS a1, pair[1] AS a2, apoc.coll.sort(s_coll) AS coll, apoc.coll.sum(s_coll) AS sum
+//     WITH DISTINCT(a1) AS a1, COLLECT([a2, coll, sum]) AS acs_coll
+//     WITH a1, REDUCE(l=[], e IN acs_coll | CASE WHEN SIZE(l) = 0 OR e[2] > l[2] THEN e ELSE l END) AS h
+//     RETURN a1, h[0] AS a2, h[1] AS coll, h[2] AS sum
+// ","
+//     WITH a1, a2, coll, sum
+//     FOREACH (dummy IN CASE WHEN a1.id < a2.id THEN [1] ELSE [] END |
+//         MERGE (a2)-[r:SIMILAR_ARTICLE]->(a1)
+//         SET r.score = sum + CASE WHEN r.score IS NULL THEN 0 ELSE r.score END,
+//             r.scores = apoc.coll.sort(coll + CASE WHEN r.scores IS NULL THEN [] ELSE r.scores END)
+//     )
+//     FOREACH (dummy IN CASE WHEN a1.id > a2.id THEN [1] ELSE [] END |
+//         MERGE (a1)-[r:SIMILAR_ARTICLE]->(a2)
+//         SET r.score = sum + CASE WHEN r.score IS NULL THEN 0 ELSE r.score END,
+//             r.scores = apoc.coll.sort(coll + CASE WHEN r.scores IS NULL THEN [] ELSE r.scores END)
+//     )
+// ;
+// ",
+// {params: {cutoff: 0.85}, batchSize:10000, parallel:false})
+// YIELD total RETURN total;
+// //
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
