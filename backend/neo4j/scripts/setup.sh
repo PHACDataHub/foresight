@@ -5,7 +5,7 @@ if [ -d "deployment/neo4j/data" ]; then
     exit 1
 fi
 
-./scripts/create_volumes.sh deployment/neo4j deployment/neo4j/data deployment/neo4j/import deployment/neo4j/logs deployment/neo4j/plugins deployment/embedding_model
+./scripts/create_volumes.sh deployment/neo4j deployment/neo4j/data deployment/neo4j/import deployment/neo4j/logs deployment/neo4j/plugins deployment/ollama
 
 if [[ $(uname -s) == 'Linux' ]]; then
     ./neo4j/scripts/prepare-dotenv.sh "5.15.0" "5.15.0" "5.15.0" "2.6.0" "2.4.2" neo4j "phac@2024" 24G 32G Foresight

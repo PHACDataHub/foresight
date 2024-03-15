@@ -1,0 +1,6 @@
+fastapi
+langchain
+langchain-community
+ollama
+pydantic
+uvicorn

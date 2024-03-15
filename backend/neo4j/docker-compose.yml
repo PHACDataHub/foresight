@@ -12,11 +12,51 @@ services:
 
 ################################################################################
 #
+# - live_qa
+# - ollama
 # - neo4j
 # - neodash_viewer (for dashboard viewers)
 # - neodash_editor (for dashboard editors)
 #
 ################################################################################
+
+  ollama:
+    image: ollama/ollama:latest
+    hostname: ollama
+    container_name: ollama
+    networks:
+      - backend
+    ports:
+      - 11434:11434
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - $PWD/deployment/ollama/ollama:/root/.ollama
+    pull_policy: always
+    tty: true
+    restart: always
+
+  ####################
+  # live_qa
+  ####################
+  live_qa:
+    image: live_qa:latest
+    container_name: live_qa
+    build:
+      context: $PWD/live_qa/
+      dockerfile: $PWD/live_qa/Dockerfile
+    depends_on:
+      - ollama
+    networks:
+      - backend
+    ports:
+      - 5005:8000
+    restart: always
 
   ####################
   # neo4j
@@ -45,6 +85,8 @@ services:
       - NEO4J_server_memory_heap_max__size=${NEO4J_SERVER_MEMORY_HEAP_MAX_SIZE}
       - NEO4J_apoc_export_file_enabled=true
       - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_http_timeout_connect=300000
+      - NEO4J_apoc_http_timeout_read=300000
       - NEO4J_apoc_import_file_use__neo4j__config=true
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
       - NEO4J_dbms_unmanaged__extension__classes=n10s.endpoint=/rdf
@@ -61,32 +103,32 @@ services:
       - $PWD/deployment/neo4j/plugins:/plugins
     restart: always
 
-  ####################
-  # neodash-viewer
-  ####################
-  neodash-viewer: 
-    image: nielsdejong/neodash:${NEODASH_VERSION}
-    hostname: neodash-viewer
-    container_name: neodash-viewer
-    depends_on:
-      - neo4j
-    networks:
-      - backend
-    ports:
-      - ${NEODASH_VIEWER_PORT}:5005
-    environment:
-      - ssoEnabled=false
-      - ssoDiscoveryUrl=
-      - standalone=true
-      - standaloneProtocol=neo4j
-      - standaloneHost=${EXTERNAL_IP}
-      - standalonePort=7687
-      - standaloneUsername=${NEO4J_USERNAME}
-      - standaloneDatabase=neo4j
-      - standaloneDashboardName=${NEODASH_DASHBOARD}
-      - standaloneDashboardDatabase=neo4j
-      - loggingMode=1
-    restart: always
+  # ####################
+  # # neodash-viewer
+  # ####################
+  # neodash-viewer: 
+  #   image: nielsdejong/neodash:${NEODASH_VERSION}
+  #   hostname: neodash-viewer
+  #   container_name: neodash-viewer
+  #   depends_on:
+  #     - neo4j
+  #   networks:
+  #     - backend
+  #   ports:
+  #     - ${NEODASH_VIEWER_PORT}:5005
+  #   environment:
+  #     - ssoEnabled=false
+  #     - ssoDiscoveryUrl=
+  #     - standalone=true
+  #     - standaloneProtocol=neo4j
+  #     - standaloneHost=${EXTERNAL_IP}
+  #     - standalonePort=7687
+  #     - standaloneUsername=${NEO4J_USERNAME}
+  #     - standaloneDatabase=neo4j
+  #     - standaloneDashboardName=${NEODASH_DASHBOARD}
+  #     - standaloneDashboardDatabase=neo4j
+  #     - loggingMode=1
+  #   restart: always
 
   ####################
   # neodash-editor

@@ -10,8 +10,8 @@
         "neodash_class_label_display": "Coronavirus infectious disease",
         "neodash_class_description": "",
         "neodash_class_description_display": "",
-        "neodash_disease_label": "COVID-19",
-        "neodash_disease_label_display": "COVID-19",
+        "neodash_disease_label": "Ebola hemorrhagic fever",
+        "neodash_disease_label_display": "Ebola hemorrhagic fever",
         "neodash_start_date": {
           "year": 2019,
           "month": 12,
@@ -411,8 +411,153 @@
           "month": 1,
           "day": 2
         },
-        "neodash_cluster_id": "2019-12-31-2020-01-02-0",
-        "neodash_cluster_id_display": "2019-12-31-2020-01-02-0"
+        "neodash_cluster_id": "2019-12-31-2020-01-02-133",
+        "neodash_cluster_id_display": "2019-12-31-2020-01-02-133",
+        "neodash_find_fact": "Where the event happened?",
+        "neodash_all_representative_docs": [
+          [
+            {
+              "type": "div",
+              "key": "k01006055476",
+              "ref": null,
+              "props": {
+                "children": [
+                  "1,006,055,476",
+                  {
+                    "type": "span",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "children": ", "
+                    },
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            },
+            {
+              "type": "div",
+              "key": "k11006055457",
+              "ref": null,
+              "props": {
+                "children": [
+                  "1,006,055,457",
+                  {
+                    "type": "span",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "children": ", "
+                    },
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            },
+            {
+              "type": "div",
+              "key": "k21006053550",
+              "ref": null,
+              "props": {
+                "children": [
+                  "1,006,053,550",
+                  {
+                    "key": null,
+                    "ref": null,
+                    "props": {},
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            }
+          ]
+        ],
+        "neodash_all_representative_docs_display": [
+          {
+            "type": "div",
+            "key": "k01006055476,1006055457,1006053550",
+            "ref": null,
+            "props": {
+              "children": [
+                [
+                  {
+                    "type": "div",
+                    "key": "k01006055476",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "1,006,055,476",
+                        {
+                          "type": "span",
+                          "key": null,
+                          "ref": null,
+                          "props": {
+                            "children": ", "
+                          },
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  },
+                  {
+                    "type": "div",
+                    "key": "k11006055457",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "1,006,055,457",
+                        {
+                          "type": "span",
+                          "key": null,
+                          "ref": null,
+                          "props": {
+                            "children": ", "
+                          },
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  },
+                  {
+                    "type": "div",
+                    "key": "k21006053550",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "1,006,053,550",
+                        {
+                          "key": null,
+                          "ref": null,
+                          "props": {},
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  }
+                ],
+                {
+                  "key": null,
+                  "ref": null,
+                  "props": {},
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          }
+        ],
+        "neodash_my_question": "Where  and when the event happened?",
+        "neodash_use_all_representative_articles": "True",
+        "neodash_time_and_place": "When and where the events happened?",
+        "neodash_how_many_people_were_effected?": "How many people were effec",
+        "neodash_impact_on_people": "Is it infectious? How intensive is it?",
+        "neodash_severity_and_urgency": "How severe is it and how soon should we take some action?"
       },
       "theme": "light",
       "disableRowLimiting": true,
@@ -429,7 +574,7 @@
             "width": 4,
             "height": 2,
             "x": 0,
-            "y": 0,
+            "y": 3,
             "type": "select",
             "selection": {},
             "settings": {
@@ -446,7 +591,7 @@
             "width": 4,
             "height": 2,
             "x": 4,
-            "y": 0,
+            "y": 3,
             "type": "select",
             "selection": {},
             "settings": {
@@ -463,7 +608,7 @@
             "width": 16,
             "height": 2,
             "x": 8,
-            "y": 0,
+            "y": 3,
             "type": "select",
             "selection": {},
             "settings": {
@@ -482,14 +627,13 @@
             "id": "0827c67b-a42c-482a-92d5-3dce7c9542fc",
             "title": "Clusters with detected threats",
             "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nRETURN c, r, t\n\n\n\n\n\n\n\n",
-            "width": 16,
+            "width": 12,
             "height": 9,
             "x": 0,
-            "y": 2,
+            "y": 5,
             "type": "graph",
             "selection": {
               "Cluster": "title",
-              "DETECTED_THREAT": "(label)",
               "Threat": "text"
             },
             "settings": {
@@ -584,10 +728,10 @@
             "id": "e7b66236-60c7-493d-9c8e-3f3373f9c97a",
             "title": "Cluster by identifier",
             "query": "MATCH (n:`Cluster`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
-            "width": 8,
+            "width": 6,
             "height": 2,
             "x": 0,
-            "y": 27,
+            "y": 33,
             "type": "select",
             "selection": {},
             "settings": {
@@ -606,7 +750,7 @@
             "width": 24,
             "height": 8,
             "x": 0,
-            "y": 36,
+            "y": 41,
             "type": "table",
             "selection": {},
             "settings": {
@@ -628,7 +772,7 @@
             "width": 12,
             "height": 7,
             "x": 0,
-            "y": 18,
+            "y": 24,
             "type": "graph",
             "selection": {
               "Cluster": "title"
@@ -699,42 +843,45 @@
                 "nr_articles",
                 "name",
                 "answers",
-                "id",
                 "topic_id",
-                "representative_docs",
+                "id",
                 "title",
-                "start_date",
-                "labels"
+                "representative_docs",
+                "labels",
+                "start_date"
               ]
             ]
           },
           {
             "id": "e9c74a13-4c38-42c8-b6af-cf871dc80c5b",
             "title": "Summary",
-            "query": "MATCH ((c:Cluster {id: $neodash_cluster_id}))\nRETURN c.summary\n\n\n",
-            "width": 8,
-            "height": 4,
-            "x": 8,
-            "y": 27,
+            "query": "MATCH ((c:Cluster {id: $neodash_cluster_id}))\nRETURN TRIM(c.summary)\n\n\n",
+            "width": 10,
+            "height": 2,
+            "x": 6,
+            "y": 33,
             "type": "value",
             "selection": {},
             "settings": {
               "fontSize": 14,
               "format": "yml",
-              "monospace": false,
+              "monospace": true,
               "fullscreenEnabled": true,
-              "refreshButtonEnabled": true
+              "refreshButtonEnabled": true,
+              "verticalAlign": "top",
+              "textAlign": "left",
+              "compact": true
             },
             "schema": []
           },
           {
             "id": "b5170405-c20f-489a-b118-711b0b171f77",
             "title": "Detected threats",
-            "query": "MATCH (c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat) \nRETURN t.text AS threat, r2.score AS score ORDER BY score DESC\n\n\n\n",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat) \nRETURN t.text AS threat\n\n\n\n",
             "width": 8,
             "height": 4,
             "x": 16,
-            "y": 27,
+            "y": 33,
             "type": "table",
             "selection": {},
             "settings": {
@@ -748,9 +895,9 @@
             "title": "Q&A",
             "query": "MATCH (c:Cluster {id: $neodash_cluster_id})\nWITH c, apoc.convert.fromJsonMap(c.answers) AS qa_map\nWITH c, qa_map, KEYS(qa_map) AS questions\n  UNWIND questions as question\nRETURN question AS Question, qa_map[question] as Answer\n\n\n\n\n\n",
             "width": 8,
-            "height": 5,
+            "height": 4,
             "x": 16,
-            "y": 31,
+            "y": 37,
             "type": "table",
             "selection": {},
             "settings": {
@@ -763,12 +910,12 @@
           },
           {
             "id": "66cedbe2-6ff0-4fcb-82dd-7e8a2b68c227",
-            "title": "Articles",
+            "title": "Articles in the cluster",
             "query": "MATCH (a:Article)-[r1:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat)\nRETURN a, r1, c, r2, t\n\n\n\n\n",
             "width": 8,
-            "height": 7,
+            "height": 6,
             "x": 0,
-            "y": 29,
+            "y": 35,
             "type": "graph",
             "selection": {
               "Article": "pub_name",
@@ -823,8 +970,8 @@
               [
                 "Article",
                 "pub_date",
-                "factiva_folder",
                 "gphin_state",
+                "factiva_folder",
                 "probability",
                 "pub_time",
                 "pub_name",
@@ -833,9 +980,9 @@
                 "gphin_score",
                 "title",
                 "content",
-                "disease_question",
                 "summary",
-                "answers"
+                "answers",
+                "disease_question"
               ],
               [
                 "IN_CLUSTER",
@@ -868,31 +1015,31 @@
               ],
               [
                 "Outlier",
-                "disease_question",
                 "summary",
-                "pub_date",
-                "gphin_state",
+                "factiva_folder",
                 "probability",
                 "pub_time",
                 "answers",
                 "pub_name",
-                "id",
+                "factiva_file_name",
                 "gphin_score",
                 "title",
                 "content",
-                "factiva_folder",
-                "factiva_file_name"
+                "disease_question",
+                "pub_date",
+                "gphin_state",
+                "id"
               ]
             ]
           },
           {
             "id": "46f0a2c9-2be1-45f3-88a8-8f4a4d924775",
-            "title": "Label and number of articles ",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS cluster, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n\n",
-            "width": 8,
+            "title": "Cluster's label and number of articles ",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS label, [i IN RANGE(1, SIZE(c.labels)) | c.labels[i]] AS alternatives, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n\n",
+            "width": 12,
             "height": 9,
-            "x": 16,
-            "y": 2,
+            "x": 12,
+            "y": 5,
             "type": "table",
             "selection": {},
             "settings": {
@@ -914,7 +1061,7 @@
                 }
               ],
               "nodeColorScheme": "neodash",
-              "columnWidths": "[95,5}",
+              "columnWidths": "[40,50,10]",
               "compact": true
             },
             "schema": []
@@ -922,11 +1069,11 @@
           {
             "id": "05f217c5-dd22-48b3-928c-ee2f591f61a6",
             "title": "Clusters without detected threats",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, [i IN RANGE(1, SIZE(c.labels)) | c.labels[i]] AS alternatives, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n",
             "width": 12,
             "height": 7,
             "x": 12,
-            "y": 18,
+            "y": 24,
             "type": "table",
             "selection": {},
             "settings": {
@@ -940,7 +1087,7 @@
               "layout": "force-directed",
               "nodeColorScheme": "neodash",
               "showPropertiesOnClick": true,
-              "columnWidths": "[80,20]",
+              "columnWidths": "[40,50,10]",
               "compact": true
             },
             "schema": []
@@ -952,7 +1099,7 @@
             "width": 16,
             "height": 6,
             "x": 8,
-            "y": 46,
+            "y": 59,
             "type": "pie",
             "selection": {
               "index": "possible_disease",
@@ -1025,7 +1172,7 @@
             "width": 24,
             "height": 6,
             "x": 0,
-            "y": 52,
+            "y": 65,
             "type": "table",
             "selection": {},
             "settings": {
@@ -1094,9 +1241,9 @@
             "title": "Map of development",
             "query": "MATCH (c:Cluster {id: $neodash_cluster_id})\nWITH c, c.countries AS countries\n  UNWIND countries AS country\nRETURN country, COUNT(DISTINCT(c.id)) AS spread\n\n\n\n\n\n",
             "width": 8,
-            "height": 5,
+            "height": 6,
             "x": 8,
-            "y": 31,
+            "y": 35,
             "type": "areamap",
             "selection": {
               "index": "country",
@@ -1118,7 +1265,7 @@
             "width": 8,
             "height": 6,
             "x": 0,
-            "y": 46,
+            "y": 59,
             "type": "graph",
             "selection": {
               "Article": "title",
@@ -1225,23 +1372,27 @@
             "width": 24,
             "height": 2,
             "x": 0,
-            "y": 44,
+            "y": 57,
             "type": "text",
             "selection": {},
-            "settings": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
             "schema": []
           },
           {
             "id": "0ed01afa-32b6-4997-9ed2-842b2ca1922f",
-            "title": "Cluster analysis",
-            "query": "- Cluster can be selected by id: `YYYY-MM-DD-<cluster-id>` where `cluster_id` is the identification of the cluster in the period.\n- Summary: short summarization based on aggregated content of (3, 5, or 10) *representative documents* of the clusters\n- Detected threats: public health threats identified within articles of the cluster\n- Map of development: which countries are being effected.\n- Q&A: common question and answers\n",
+            "title": "Period view",
+            "query": "- See all clusters of articles formed over a period of time from *start date* to *end date* (*if end date less than start date then it is consider as a single day view*)\n- Threat list: what are the public health threats that are assigned to Alice. All clusters are classified against them. Multiple threats can be detected in a single cluster.\n- Graph view of clusters and threats. Bigger clusters have more articles. Red cluster highlight special matches of keywords (Wuhan, pneumonia, coronavirus)\n- Cluster's label, alternative labels, and number of articles\n- World map view of clusters (detected locations - city, province, building, etc - *not perfect*)\n- Clusters without detected threats (*perhaps not of interest*)\n- Clusters without detected threat - labels, and number of articles",
             "width": 24,
-            "height": 2,
+            "height": 3,
             "x": 0,
-            "y": 25,
+            "y": 0,
             "type": "text",
             "selection": {},
-            "settings": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
             "schema": []
           },
           {
@@ -1249,9 +1400,9 @@
             "title": "World map",
             "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH c, apoc.convert.fromJsonList(c.locations) AS locations\n  UNWIND locations AS l\nRETURN {id: c.id, label: c.title, point: POINT({latitude: l.latitude, longitude: l.longitude})}\n\n\n\n\n\n\n\n",
             "width": 24,
-            "height": 7,
+            "height": 10,
             "x": 0,
-            "y": 11,
+            "y": 14,
             "type": "map",
             "selection": {},
             "settings": {
@@ -1260,6 +1411,177 @@
               "compact": true,
               "allowDownload": true,
               "columnWidths": "[50,50]"
+            },
+            "schema": []
+          },
+          {
+            "id": "feea12e5-ad43-4895-9a39-1eaad2cdf18e",
+            "title": "Use the first representative article to answer my second question",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH REDUCE(t='', d IN contents | CASE WHEN SIZE(d) > SIZE(t) AND t <> '' THEN t ELSE d END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:5005/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_impact_on_people})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "width": 10,
+            "height": 3,
+            "x": 14,
+            "y": 51,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "formFields": [
+                {
+                  "type": "Node Property",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "find_fact",
+                    "parameterName": "neodash_find_fact"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "refreshButtonEnabled": true,
+              "fontSize": 16,
+              "format": "yml",
+              "autorun": false,
+              "monospace": true
+            },
+            "schema": []
+          },
+          {
+            "id": "c0152056-00e0-46ef-82b7-ccb36a382a03",
+            "title": "Cluster analysis",
+            "query": "- Cluster can be selected by id: `YYYY-MM-DD-<cluster-id>` where `cluster_id` is the identification of the cluster in the period.\n- Summary: short summarization based on aggregated content of (3, 5, or 10) *representative documents* of the clusters\n- Detected threats: public health threats identified within articles of the cluster\n- Map of development: which countries are being effected.\n- Q&A: common question and answers\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 31,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "09ed6305-4e9c-476e-bdb4-14f771e9cd86",
+            "title": "More exploration - my first question",
+            "query": "RETURN true;",
+            "width": 6,
+            "height": 2,
+            "x": 0,
+            "y": 51,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "entityType": "Time and Place",
+              "parameterName": "neodash_time_and_place"
+            },
+            "schema": []
+          },
+          {
+            "id": "cfdf1af1-b356-4bad-a9f0-c96e01aaa06e",
+            "title": "Use summary to answer my first question",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:5005/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: c.summary, question: $neodash_time_and_place})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "width": 8,
+            "height": 3,
+            "x": 6,
+            "y": 51,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "formFields": [
+                {
+                  "type": "Node Property",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "find_fact",
+                    "parameterName": "neodash_find_fact"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "refreshButtonEnabled": true,
+              "format": "yml",
+              "fontSize": 16,
+              "autorun": false,
+              "monospace": true
+            },
+            "schema": []
+          },
+          {
+            "id": "011612ba-63cc-49d5-ae63-03bd4847696f",
+            "title": "More exploration - my second question",
+            "query": "RETURN true;",
+            "width": 6,
+            "height": 2,
+            "x": 0,
+            "y": 53,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "entityType": "Impact on people",
+              "parameterName": "neodash_impact_on_people"
+            },
+            "schema": []
+          },
+          {
+            "id": "b36d9f45-755b-4070-8185-50336f9ba0ee",
+            "title": "More exploration - my third question",
+            "query": "RETURN true;",
+            "width": 6,
+            "height": 2,
+            "x": 0,
+            "y": 55,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "entityType": "Severity and urgency",
+              "parameterName": "neodash_severity_and_urgency"
+            },
+            "schema": []
+          },
+          {
+            "id": "9b328c3c-4755-49da-a152-68b4f0479ef2",
+            "title": "Use the top three representative articles to answer my third question",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH [i IN RANGE(0, CASE WHEN SIZE(contents) > 2 THEN 2 ELSE SIZE(contents) END) | contents[i]] AS contents\nWITH REDUCE(t='', e IN contents | CASE WHEN t = '' THEN e ELSE t + '\\n\\n' + e END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:5005/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_severity_and_urgency})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "width": 18,
+            "height": 3,
+            "x": 6,
+            "y": 54,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "formFields": [
+                {
+                  "type": "Node Property",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "find_fact",
+                    "parameterName": "neodash_find_fact"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "refreshButtonEnabled": true,
+              "fontSize": 16,
+              "format": "yml",
+              "autorun": false,
+              "monospace": true
+            },
+            "schema": []
+          },
+          {
+            "id": "1265877e-cec4-4664-b263-6ba8d4ea39c7",
+            "title": "Chat with AI",
+            "query": "- Asking three different question, using summary of the cluster, its first representative article, its top three articles to answer\n- **You can ask what you want!** *Type your question!*",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 49,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
             },
             "schema": []
           }

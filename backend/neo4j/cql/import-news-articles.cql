@@ -213,7 +213,7 @@ YIELD total RETURN total;
 //     WITH c
 //         MATCH (c)<-[:IN_CLUSTER]-(a1:Article)<-[:PART_OF]-(c1:Chunk)
 //     WITH c, a1, c1
-//         CALL db.index.vector.queryNodes('text-chunk', 10, c1.embeddings)
+//         CALL db.index.vector.queryNodes('text-chunk', 3, c1.embeddings)
 //             YIELD node AS c2, score AS s
 //     WITH c, a1, c1, c2, s
 //         WHERE c1 <> c2 AND NOT EXISTS((a1)<-[:PART_OF]-(c2)) AND s >= $cutoff
@@ -230,7 +230,7 @@ YIELD total RETURN total;
 //             SET r.score = s
 //         )
 // ",
-// {params: {cutoff: 0.85}, batchSize:1000, parallel:true})
+// {params: {cutoff: 0.95}, batchSize:1000, parallel:true})
 // YIELD total RETURN total;
 // //
 // CALL apoc.periodic.iterate("
@@ -244,18 +244,18 @@ YIELD total RETURN total;
 // ","
 //     WITH a1, a2, coll, sum
 //     FOREACH (dummy IN CASE WHEN a1.id < a2.id THEN [1] ELSE [] END |
-//         MERGE (a2)-[r:SIMILAR_ARTICLE]->(a1)
+//         MERGE (a2)-[r:HAS_SIMILAR_CONTENT]->(a1)
 //         SET r.score = sum + CASE WHEN r.score IS NULL THEN 0 ELSE r.score END,
 //             r.scores = apoc.coll.sort(coll + CASE WHEN r.scores IS NULL THEN [] ELSE r.scores END)
 //     )
 //     FOREACH (dummy IN CASE WHEN a1.id > a2.id THEN [1] ELSE [] END |
-//         MERGE (a1)-[r:SIMILAR_ARTICLE]->(a2)
+//         MERGE (a1)-[r:HAS_SIMILAR_CONTENT]->(a2)
 //         SET r.score = sum + CASE WHEN r.score IS NULL THEN 0 ELSE r.score END,
 //             r.scores = apoc.coll.sort(coll + CASE WHEN r.scores IS NULL THEN [] ELSE r.scores END)
 //     )
 // ;
 // ",
-// {params: {cutoff: 0.85}, batchSize:10000, parallel:false})
+// {params: {cutoff: 0.95}, batchSize:10000, parallel:false})
 // YIELD total RETURN total;
 // //
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
