@@ -1147,7 +1147,7 @@
             "title": "Outliers with possible diseases",
             "query": "MATCH (o:Outlier)\n  WHERE o.pub_date = DATE($neodash_start_date)\n    AND o.disease_question STARTS WITH 'Yes'\nWITH o, apoc.convert.fromJsonMap(o.answers) AS answer_map\n  WHERE NOT (answer_map['What disease is mentioned?']) STARTS WITH 'No disease'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'No specific'\n    AND NOT apoc.convert.fromJsonMap(o.answers)['What disease is mentioned?'] STARTS WITH 'Unclear'\nRETURN o.id AS id, o.title AS title, answer_map['What disease is mentioned?'] AS possible_disease, o.gphin_score AS score, o.gphin_state AS state ORDER BY state ASC, score DESC\n\n\n\n",
             "width": 24,
-            "height": 6,
+            "height": 10,
             "x": 0,
             "y": 74,
             "type": "table",
