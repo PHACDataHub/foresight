@@ -411,8 +411,8 @@
           "month": 1,
           "day": 2
         },
-        "neodash_cluster_id": "2019-12-31-2020-01-02-133",
-        "neodash_cluster_id_display": "2019-12-31-2020-01-02-133",
+        "neodash_cluster_id": "2019-12-31-1",
+        "neodash_cluster_id_display": "2019-12-31-1",
         "neodash_find_fact": "Where the event happened?",
         "neodash_all_representative_docs": [
           [
@@ -634,6 +634,7 @@
             "type": "graph",
             "selection": {
               "Cluster": "title",
+              "DETECTED_THREAT": "(label)",
               "Threat": "text"
             },
             "settings": {
@@ -922,8 +923,7 @@
               "IN_CLUSTER": "(label)",
               "Cluster": "name",
               "DETECTED_THREAT": "(label)",
-              "Threat": "text",
-              "Outlier": "title"
+              "Threat": "text"
             },
             "settings": {
               "allowDownload": true,
@@ -970,8 +970,8 @@
               [
                 "Article",
                 "pub_date",
-                "gphin_state",
                 "factiva_folder",
+                "gphin_state",
                 "probability",
                 "pub_time",
                 "pub_name",
@@ -979,10 +979,7 @@
                 "id",
                 "gphin_score",
                 "title",
-                "content",
-                "summary",
-                "answers",
-                "disease_question"
+                "content"
               ],
               [
                 "IN_CLUSTER",
@@ -990,7 +987,6 @@
               ],
               [
                 "Cluster",
-                "end_date",
                 "summary",
                 "keywords",
                 "nr_articles",
@@ -1012,23 +1008,6 @@
                 "Threat",
                 "score",
                 "text"
-              ],
-              [
-                "Outlier",
-                "summary",
-                "factiva_folder",
-                "probability",
-                "pub_time",
-                "answers",
-                "pub_name",
-                "factiva_file_name",
-                "gphin_score",
-                "title",
-                "content",
-                "disease_question",
-                "pub_date",
-                "gphin_state",
-                "id"
               ]
             ]
           },
@@ -1037,9 +1016,9 @@
             "title": "Cluster's label and number of articles ",
             "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS label, [i IN RANGE(1, SIZE(c.labels)) | c.labels[i]] AS alternatives, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n\n",
             "width": 12,
-            "height": 9,
+            "height": 7,
             "x": 12,
-            "y": 5,
+            "y": 7,
             "type": "table",
             "selection": {},
             "settings": {
@@ -1417,7 +1396,7 @@
           {
             "id": "feea12e5-ad43-4895-9a39-1eaad2cdf18e",
             "title": "Use the first representative article to answer my second question",
-            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH REDUCE(t='', d IN contents | CASE WHEN SIZE(d) > SIZE(t) AND t <> '' THEN t ELSE d END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:5005/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_impact_on_people})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH REDUCE(t='', d IN contents | CASE WHEN SIZE(d) > SIZE(t) AND t <> '' THEN t ELSE d END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_impact_on_people})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
             "width": 10,
             "height": 3,
             "x": 14,
@@ -1479,7 +1458,7 @@
           {
             "id": "cfdf1af1-b356-4bad-a9f0-c96e01aaa06e",
             "title": "Use summary to answer my first question",
-            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:5005/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: c.summary, question: $neodash_time_and_place})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: c.summary, question: $neodash_time_and_place})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
             "width": 8,
             "height": 3,
             "x": 6,
@@ -1543,7 +1522,7 @@
           {
             "id": "9b328c3c-4755-49da-a152-68b4f0479ef2",
             "title": "Use the top three representative articles to answer my third question",
-            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH [i IN RANGE(0, CASE WHEN SIZE(contents) > 2 THEN 2 ELSE SIZE(contents) END) | contents[i]] AS contents\nWITH REDUCE(t='', e IN contents | CASE WHEN t = '' THEN e ELSE t + '\\n\\n' + e END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:5005/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_severity_and_urgency})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH [i IN RANGE(0, CASE WHEN SIZE(contents) > 2 THEN 2 ELSE SIZE(contents) END) | contents[i]] AS contents\nWITH REDUCE(t='', e IN contents | CASE WHEN t = '' THEN e ELSE t + '\\n\\n' + e END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_severity_and_urgency})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
             "width": 18,
             "height": 3,
             "x": 6,
@@ -1582,6 +1561,41 @@
             "selection": {},
             "settings": {
               "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "4ea2939f-0e4f-4853-9f09-a50b70072e78",
+            "title": "What does Alice read? Only the clusters and the outliers associated with threats assigned to her.",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH COUNT(DISTINCT(c)) AS t_clusters, COUNT(DISTINCT(a)) AS t_articles, id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH COUNT(DISTINCT(c)) AS a_clusters, COUNT(DISTINCT(a)) AS c_articles, t_clusters, t_articles\n  MATCH (a:Article)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  COUNT(DISTINCT(a)) AS a_articles, c_articles, a_clusters, t_articles, t_clusters\n  MATCH (a:Article:Outlier)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  a_articles, c_articles, a_clusters, t_articles, t_clusters, COUNT(DISTINCT(a)) AS o_articles\nRETURN\n  a_articles AS `#articles`, \n  c_articles AS `#clustered articles`,\n  a_clusters AS `#clusters`, \n  t_articles AS `#articles (T)`,\n  t_clusters AS `#clusters (T)`,\n  o_articles AS `#outliers (T)`,\n  (t_clusters + o_articles) AS `#Alice reads`,\n  100.0*(t_clusters + o_articles)/a_articles AS percent\n  \n",
+            "width": 12,
+            "height": 2,
+            "x": 12,
+            "y": 5,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "",
+                  "condition": "=",
+                  "value": "",
+                  "customization": "node color",
+                  "customizationValue": "black"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "columnWidths": "[13,13, 13,13,13,13,,11,11]",
+              "compact": true,
+              "backgroundColor": "#A0CFF888"
             },
             "schema": []
           }
