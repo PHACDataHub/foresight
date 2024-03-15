@@ -1,48 +1,14 @@
 import { useOgma } from "@linkurious/ogma-react";
+import { type Neo4JEdgeData } from "@linkurious/ogma";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "~/trpc/react";
 import { useStore } from "~/app/_store";
+import {
+  type AllDataTypes,
+  type Cluster,
+  type Threat,
+} from "~/server/api/routers/post";
 import ProgressBar from "./ProgressBar";
-
-export type Article = {
-  pub_date: Date;
-  gphin_state: string;
-  factiva_folder: string;
-  pub_time: Date;
-  pub_name: string;
-  factiva_file_name: string;
-  id: number;
-  gphin_score: number;
-  title: string;
-  content: string;
-};
-
-export type ClusterQA = {
-  score: number;
-  question: string;
-  answer: string;
-};
-
-export interface Cluster {
-  type: "cluster";
-  answers: ClusterQA[];
-  id: string;
-  nr_articles: number;
-  node_size: number;
-  start_date: Date;
-  summary: string;
-  title: string;
-  topic_id: string;
-  primary_threat: string;
-  threats?: { t: Threat; r: { score: number } }[];
-  articles?: Article[];
-}
-
-export interface Threat {
-  type: "threat";
-  title: string;
-  score?: number;
-}
 
 export type ForesightData = Cluster | Threat;
 
@@ -55,7 +21,7 @@ export default function DataLoader({
   onLoading?: (loading: boolean) => void;
   // threats: string[];
 }) {
-  const ogma = useOgma();
+  const ogma = useOgma<AllDataTypes, Neo4JEdgeData<Record<string, unknown>>>();
   const [totalSize, setTotalSize] = useState(0);
   const [progress, setProgress] = useState(0);
 
@@ -64,7 +30,7 @@ export default function DataLoader({
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
-  const { isLoading, data: rawGraph } = api.post.clusters.useQuery(
+  const { isLoading, data: rawGraph } = api.post.hierarchicalClusters.useQuery(
     { day, history },
     {
       refetchOnWindowFocus: false,

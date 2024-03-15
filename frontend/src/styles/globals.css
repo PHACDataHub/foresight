@@ -2,11 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-@media (min-width: 1900px) {
-  .container {
-    width: 1870px !important;
-  }
+
+.container {
+  width: calc(100vw - 30px) !important;
+  max-width: calc(100vw - 30px) !important;
 }
+
 
 .toolTip {
   max-width: 600px;

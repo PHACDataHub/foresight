@@ -4,84 +4,80 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import L from "leaflet";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import * as d3 from "d3";
 
 import {
   EdgeStyleRule,
   Geo,
-  NodeFilter,
-  NodeGrouping,
   NodeStyleRule,
   Ogma,
   Tooltip,
 } from "@linkurious/ogma-react";
 import OgmaLib, {
-  type NodeList,
   type Node as OgmaNode,
   type Point,
+  type RawNode,
 } from "@linkurious/ogma";
 
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
 import { useParams } from "next/navigation";
-import ThreatSelector from "~/app/_components/ThreatSelector";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
+import { type AllDataTypes } from "~/server/api/routers/post";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader, { type ForesightData } from "./DataLoader";
-import Hightlighter from "./Hightlighter";
 import NodeInfo from "./NodeInfo";
 // import TimeLine from "./TimeLine";
 
-const colors = d3.scaleOrdinal(d3.schemeCategory10);
+// const colors = d3.scaleOrdinal(d3.schemeCategory10);
 
 OgmaLib.libraries.leaflet = L;
 
-function hexToRgbA(hex: string, opacity = 1) {
-  let c: string[] | string;
-  if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
-    c = hex.substring(1).split("");
-    if (c.length == 3) {
-      c = [
-        c[0] ?? "0",
-        c[0] ?? "0",
-        c[1] ?? "0",
-        c[1] ?? "0",
-        c[2] ?? "0",
-        c[2] ?? "0",
-      ];
-    }
-    const h = Number("0x" + c.join(""));
-    
-    return (
-      "rgba(" +
-      [(h >> 16) & 255, (h >> 8) & 255, h & 255].join(",") +
-      `,${opacity})`
-    );
-  }
-  throw new Error("Bad Hex");
-}
+// function hexToRgbA(hex: string, opacity = 1) {
+//   let c: string[] | string;
+//   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+//     c = hex.substring(1).split("");
+//     if (c.length == 3) {
+//       c = [
+//         c[0] ?? "0",
+//         c[0] ?? "0",
+//         c[1] ?? "0",
+//         c[1] ?? "0",
+//         c[2] ?? "0",
+//         c[2] ?? "0",
+//       ];
+//     }
+//     const h = Number("0x" + c.join(""));
 
-function nodeSearch(node: OgmaNode, terms: string[]) {
-  const data: ForesightData = node.getData() as ForesightData;
-  if (!data) return false;
-  for (const term of terms) {
-    if (
-      typeof data.title === "string" &&
-      data.title.toLowerCase().includes(term)
-    )
-      return true;
-    if (data.type === "cluster") {
-      if (
-        typeof data.summary === "string" &&
-        data.summary.toLowerCase().includes(term)
-      )
-        return true;
-    }
-  }
-  return false;
-}
+//     return (
+//       "rgba(" +
+//       [(h >> 16) & 255, (h >> 8) & 255, h & 255].join(",") +
+//       `,${opacity})`
+//     );
+//   }
+//   throw new Error("Bad Hex");
+// }
+
+// function nodeSearch(node: OgmaNode, terms: string[]) {
+//   const data: ForesightData = node.getData() as ForesightData;
+//   if (!data) return false;
+//   for (const term of terms) {
+//     if (
+//       typeof data.title === "string" &&
+//       data.title.toLowerCase().includes(term)
+//     )
+//       return true;
+//     if (data.type === "cluster") {
+//       if (
+//         typeof data.summary === "string" &&
+//         data.summary.toLowerCase().includes(term)
+//       )
+//         return true;
+//     }
+//   }
+//   return false;
+// }
 
 // Helper function to get the type of a Node
 function getNodeType(node: OgmaNode): string {
@@ -91,35 +87,47 @@ function getNodeType(node: OgmaNode): string {
   return "unknown";
 }
 
-function getNodeFirstThreat(node: OgmaNode): string {
-  const edges = node.getAdjacentEdges();
+// function getNodeFirstThreat(node: OgmaNode): string {
+//   const edges = node.getAdjacentEdges();
 
-  for (let x = 0; x < edges.size; x += 1) {
-    const edge = edges.get(x);
-    if (getNodeType(edge.getSource()) === "Threat")
-      return getNodeTitle(edge.getSource());
-    if (getNodeType(edge.getTarget()) === "Threat")
-      return getNodeTitle(edge.getTarget());
-  }
-  return "NONE";
+//   for (let x = 0; x < edges.size; x += 1) {
+//     const edge = edges.get(x);
+//     if (getNodeType(edge.getSource()) === "Threat")
+//       return getNodeTitle(edge.getSource());
+//     if (getNodeType(edge.getTarget()) === "Threat")
+//       return getNodeTitle(edge.getTarget());
+//   }
+//   return "NONE";
+// }
+
+// function getNodeTitle(node: OgmaNode): string {
+//   const data: ForesightData = node.getData() as ForesightData;
+//   return data.title;
+// }
+
+// function getClusterNodeData(node: OgmaNode) {
+//   const data: ForesightData = node.getData() as ForesightData;
+//   if (data.type === "cluster") return data;
+//   return null;
+// }
+
+// function getNodeSummary(node: OgmaNode): string {
+//   const data: ForesightData = node.getData() as ForesightData;
+//   if (data.type === "cluster") return data.summary;
+//   if (data.type === "threat") return data.title;
+//   return "";
+// }
+
+export function getNodeData(node: OgmaNode) {
+  const n = node as OgmaNode<AllDataTypes>;
+  const data = n.getData();
+  return data;
 }
 
-function getNodeTitle(node: OgmaNode): string {
-  const data: ForesightData = node.getData() as ForesightData;
-  return data.title;
-}
-
-function getClusterNodeData(node: OgmaNode) {
-  const data: ForesightData = node.getData() as ForesightData;
-  if (data.type === "cluster") return data;
-  return null;
-}
-
-function getNodeSummary(node: OgmaNode): string {
-  const data: ForesightData = node.getData() as ForesightData;
-  if (data.type === "cluster") return data.summary;
-  if (data.type === "threat") return data.title;
-  return "";
+export function getRawNodeData(node: RawNode) {
+  const n = node as RawNode<AllDataTypes>;
+  const data = n.data;
+  return data;
 }
 
 export interface Country {
@@ -146,37 +154,37 @@ export default function Graph() {
   const { day } = useParams();
   const [dataLoading, setDataLoading] = useState(false);
 
-  const [grouping, setGrouping] = useState(true);
+  // const [grouping, setGrouping] = useState(false);
 
-  const { searchTerms, history } = useStore();
+  const { history } = useStore();
 
   const handleDataLoading = useCallback((loading: boolean) => {
     setDataLoading(loading);
   }, []);
 
-  const [threats, setThreats] = useState([
-    "Outbreaks of known infectious diseases",
-    "Emerging infectious diseases or novel pathogens",
-    "Reports on suspicious disease-related incidents",
-    "Foodborne illness outbreaks and recalls",
-    "Waterborne diseases and contamination alerts",
-    "Outbreaks linked to vaccine-preventable diseases",
-    "Unusual health patterns",
-    "Emerging pathogens",
-    "Anomalous disease clusters",
-  ]);
+  // const [threats, setThreats] = useState([
+  //   "Outbreaks of known infectious diseases",
+  //   "Emerging infectious diseases or novel pathogens",
+  //   "Reports on suspicious disease-related incidents",
+  //   "Foodborne illness outbreaks and recalls",
+  //   "Waterborne diseases and contamination alerts",
+  //   "Outbreaks linked to vaccine-preventable diseases",
+  //   "Unusual health patterns",
+  //   "Emerging pathogens",
+  //   "Anomalous disease clusters",
+  // ]);
 
   // Controls
   const [geoMode, setGeoMode] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [maximized, setMaximized] = useState(false);
 
-  const toggleGrouping = useCallback(() => {
-    setGrouping(!grouping);
-    if (layoutService.current) {
-      layoutService.current.refresh();
-    }
-  }, [grouping]);
+  // const toggleGrouping = useCallback(() => {
+  //   setGrouping(!grouping);
+  //   if (layoutService.current) {
+  //     layoutService.current.refresh();
+  //   }
+  // }, [grouping]);
 
   const requestSetTooltipPosition = useCallback((pos: Point) => {
     requestAnimationFrame(() => setTooltipPosition(pos));
@@ -222,74 +230,74 @@ export default function Graph() {
     }
   }, [height, width, maximized, resizeOgma]);
 
-  const nodeFilterCriteria = useCallback(
-    (node: OgmaNode) => {
-      const d = node.getData() as ForesightData;
-      if (!d) return false;
-      // return true;
-      // return !grouping || d.type !== "threat";
-      if (d.type === "threat") {
-        return threats.includes(d.title) && node.getAdjacentNodes().size > 0;
-      } else if (d.type === "cluster") {
-        return (
-          node.getAdjacentNodes().filter((n) => {
-            const adjNode = n.getData() as ForesightData;
-            return (
-              adjNode.type === "cluster" || threats.includes(adjNode.title)
-            );
-          }).size > 0
-        );
-      }
-      return false;
-    },
-    [threats],
-  );
+  // const nodeFilterCriteria = useCallback(
+  //   (node: OgmaNode) => {
+  //     const d = node.getData() as ForesightData;
+  //     if (!d) return false;
+  //     // return true;
+  //     // return !grouping || d.type !== "threat";
+  //     if (d.type === "threat") {
+  //       return threats.includes(d.title) && node.getAdjacentNodes().size > 0;
+  //     } else if (d.type === "cluster") {
+  //       return (
+  //         node.getAdjacentNodes().filter((n) => {
+  //           const adjNode = n.getData() as ForesightData;
+  //           return (
+  //             adjNode.type === "cluster" || threats.includes(adjNode.title)
+  //           );
+  //         }).size > 0
+  //       );
+  //     }
+  //     return false;
+  //   },
+  //   [threats],
+  // );
 
-  const groupIdFunction = useCallback((n: OgmaNode) => {
-    if (getNodeType(n) === "Threat") return getNodeTitle(n);
-    return getNodeFirstThreat(n);
-  }, []);
+  // const groupIdFunction = useCallback((n: OgmaNode) => {
+  //   if (getNodeType(n) === "Threat") return getNodeTitle(n);
+  //   return getNodeFirstThreat(n);
+  // }, []);
 
-  const groupingNodeGenerator = useCallback(
-    (nodes: NodeList, groupId: string) => {
-      return {
-        id: "special group " + groupId,
-        data: {
-          groupId: groupId,
-        },
-        attributes: {
-          text: {
-            content: groupId,
-            color: "black",
-            // opacity: 1,
-          },
-          color: hexToRgbA(colors(groupId), 0.32),
-        },
-      };
-    },
-    [],
-  );
+  // const groupingNodeGenerator = useCallback(
+  //   (nodes: NodeList, groupId: string) => {
+  //     return {
+  //       id: "special group " + groupId,
+  //       data: {
+  //         groupId: groupId,
+  //       },
+  //       attributes: {
+  //         text: {
+  //           content: groupId,
+  //           color: "black",
+  //           // opacity: 1,
+  //         },
+  //         color: hexToRgbA(colors(groupId), 0.32),
+  //       },
+  //     };
+  //   },
+  //   [],
+  // );
 
-  const groupingOnCreated = useCallback(
-    (
-      metaNode: OgmaNode,
-      visible: boolean,
-      subNodes: NodeList,
-      // subEdges: EdgeList,
-    ) => {
-      if (visible && ogmaRef.current) {
-        void subNodes.setAttributes(
-          OgmaLib.geometry.computeCentroid(subNodes.getAttributes(["x", "y"])),
-        );
-        return ogmaRef.current.layouts.force({
-          nodes: subNodes,
-          duration: 0,
-          useWebWorker: false,
-        });
-      }
-    },
-    [],
-  );
+  // const groupingOnCreated = useCallback(
+  //   (
+  //     metaNode: OgmaNode,
+  //     visible: boolean,
+  //     subNodes: NodeList,
+  //     // subEdges: EdgeList,
+  //   ) => {
+  //     if (visible && ogmaRef.current) {
+  //       void subNodes.setAttributes(
+  //         OgmaLib.geometry.computeCentroid(subNodes.getAttributes(["x", "y"])),
+  //       );
+  //       return ogmaRef.current.layouts.force({
+  //         nodes: subNodes,
+  //         duration: 0,
+  //         useWebWorker: false,
+  //       });
+  //     }
+  //   },
+  //   [],
+  // );
 
   if (typeof day !== "string") return "Day error";
 
@@ -301,7 +309,7 @@ export default function Graph() {
       <PanelResizeHandle />
       <Panel className="flex border">
         <div className="relative w-full flex-1" ref={ref}>
-          <ThreatSelector selected={threats} onChange={setThreats} />
+          {/* <ThreatSelector selected={threats} onChange={setThreats} /> */}
           <div className="absolute h-full max-h-full w-full max-w-full">
             <Ogma
               key={`ogma-${day}-${history}`}
@@ -350,11 +358,37 @@ export default function Graph() {
               }}
             >
               <DataLoader day={parseInt(day)} onLoading={handleDataLoading} />
-              <NodeFilter enabled criteria={nodeFilterCriteria} />
-              {!grouping && !dataLoading && <Hightlighter />}
-              {!dataLoading && (
+              <NodeStyleRule
+                attributes={{
+                  text: {
+                    scaling: true,
+                    content: (n) => {
+                      const data = getNodeData(n);
+                      if (data.type === "hierarchicalcluster") return data.name;
+                      if (data.type === "cluster") return data.title;
+                      if (data.type === "threat") return data.title;
+                    },
+                  },
+                  color: (n) => {
+                    const data = getNodeData(n);
+                    if (data.type === "hierarchicalcluster") return "#bacf99";
+                    if (data.type === "cluster") return "#8297ec";
+                    if (data.type === "threat") return "#ffb700";
+                  },
+                  radius: (n) => {
+                    const data = getNodeData(n);
+                    if (data.type === "hierarchicalcluster")
+                      return data.clusters.length / 2;
+                    if (data.type === "cluster") return data.nr_articles;
+                    if (data.type === "threat") return data.score ?? 1;
+                  },
+                }}
+              />
+              {/* <NodeFilter enabled criteria={nodeFilterCriteria} /> */}
+              {/* {!grouping && !dataLoading && <Hightlighter />} */}
+              {false && !dataLoading && (
                 <>
-                  <NodeGrouping
+                  {/* <NodeGrouping
                     enabled={grouping}
                     // selector={n => getNodeType(n) === "Cluster"}
                     groupIdFunction={groupIdFunction}
@@ -415,7 +449,7 @@ export default function Graph() {
                       //   startColor: "orange",
                       // }),
                     }}
-                  />
+                  /> */}
                 </>
               )}
 
@@ -444,7 +478,8 @@ export default function Graph() {
                 position={tooltipPositon}
               >
                 <div className="toolTip">
-                  {target?.isNode && getNodeSummary(target)}
+                  \ tool tip text
+                  {/* {target?.isNode && getNodeSummary(target)} */}
                 </div>
               </Tooltip>
               <LayoutService
@@ -473,10 +508,10 @@ export default function Graph() {
                       className={`glyphicon glyphicon-resize-${maximized ? "small" : "full"}`}
                     />
                   </button>
-                  <button className="btn btn-primary" onClick={toggleGrouping}>
+                  {/* <button className="btn btn-primary" onClick={toggleGrouping}>
                     {grouping && "Ungroup"}
                     {!grouping && "Group"}
-                  </button>
+                  </button> */}
 
                   <button
                     className="btn btn-primary hidden"

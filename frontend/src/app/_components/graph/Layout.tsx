@@ -40,15 +40,25 @@ const LayoutService = forwardRef(
         //   // gravity: 0.1,
         //   charge: 20,
         // });
-        void ogma.layouts.force({
+
+        void ogma.layouts.hierarchical({
           locate: true,
-          gpu: true,
-          // steps: 150,
-          // charge: 0.125,
-          // gravity: 0.01,
-          // edgeStrength: 1,
-          // theta: 0.9,
-        });
+          direction: "RL"
+        })
+        
+
+
+        // void ogma.layouts.force({
+        //   locate: true,
+        //   gpu: true,
+
+
+        //   // steps: 150,
+        //   // charge: 0.125,
+        //   // gravity: 0.01,
+        //   // edgeStrength: 1,
+        //   // theta: 0.9,
+        // });
       }
       // });
     }, [ogma.events, ogma.geo, ogma.layouts]);

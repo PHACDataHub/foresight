@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type ChangeEvent, useCallback, useState } from "react";
+import React, { type ChangeEvent, useCallback, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 
 // @ts-expect-error No type declarations
@@ -40,6 +40,17 @@ function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
     if (onChange) onChange(initialThreats);
   }, [initialThreats, onChange]);
 
+  const handleGroupSelect = useCallback(() => {
+    if (!threats) return;
+    const items = selected.length === threats.length ? [] : threats.map((t) => t.text);
+    if (onChange) onChange(items);
+  }, [onChange, selected.length, threats]);
+
+  const groupSelectText = useMemo(() => {
+    if (!threats || threats.length !== selected.length) return "Select All";
+    return "Select None";
+  }, [selected.length, threats])
+
   const header = useDelayedResizeObserver("def-appTop");
   const footer = useDelayedResizeObserver("wb-info");
 
@@ -52,15 +63,19 @@ function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
       foldWidth="66px"
     >
       {open && (
-        <div className="flex flex-col">
-          <div className="flex justify-between mr-10">
+        <div className="flex flex-col text-2xl">
+          <div className="mr-10 flex justify-between">
             <button className="btn btn-primary" onClick={handleOpenClick}>
               <span className="glyphicon glyphicon-chevron-right" />
             </button>
-
-            <button className="btn btn-danger" onClick={handleResetClick}>
-              Reset
-            </button>
+            <div className="flex space-x-5">
+              <button className="btn btn-primary" onClick={handleGroupSelect}>
+                {groupSelectText}
+              </button>
+              <button className="btn btn-danger" onClick={handleResetClick}>
+                Reset
+              </button>
+            </div>
           </div>
           <ul>
             {threats?.map((threat, idx) => (
@@ -72,7 +87,9 @@ function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
                   onChange={handleCheckClick}
                   checked={selected.includes(threat.text)}
                 />
-                <label className="small" htmlFor={`threat_box_${idx}`}>{threat.text}</label>
+                <label className="small" htmlFor={`threat_box_${idx}`}>
+                  {threat.text}
+                </label>
               </li>
             ))}
           </ul>
