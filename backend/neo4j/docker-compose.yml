@@ -55,7 +55,7 @@ services:
     networks:
       - backend
     ports:
-      - 5005:8000
+      - 8000:8000
     restart: always
 
   ####################
@@ -103,32 +103,32 @@ services:
       - $PWD/deployment/neo4j/plugins:/plugins
     restart: always
 
-  # ####################
-  # # neodash-viewer
-  # ####################
-  # neodash-viewer: 
-  #   image: nielsdejong/neodash:${NEODASH_VERSION}
-  #   hostname: neodash-viewer
-  #   container_name: neodash-viewer
-  #   depends_on:
-  #     - neo4j
-  #   networks:
-  #     - backend
-  #   ports:
-  #     - ${NEODASH_VIEWER_PORT}:5005
-  #   environment:
-  #     - ssoEnabled=false
-  #     - ssoDiscoveryUrl=
-  #     - standalone=true
-  #     - standaloneProtocol=neo4j
-  #     - standaloneHost=${EXTERNAL_IP}
-  #     - standalonePort=7687
-  #     - standaloneUsername=${NEO4J_USERNAME}
-  #     - standaloneDatabase=neo4j
-  #     - standaloneDashboardName=${NEODASH_DASHBOARD}
-  #     - standaloneDashboardDatabase=neo4j
-  #     - loggingMode=1
-  #   restart: always
+  ####################
+  # neodash-viewer
+  ####################
+  neodash-viewer: 
+    image: nielsdejong/neodash:${NEODASH_VERSION}
+    hostname: neodash-viewer
+    container_name: neodash-viewer
+    depends_on:
+      - neo4j
+    networks:
+      - backend
+    ports:
+      - ${NEODASH_VIEWER_PORT}:5005
+    environment:
+      - ssoEnabled=false
+      - ssoDiscoveryUrl=
+      - standalone=true
+      - standaloneProtocol=neo4j
+      - standaloneHost=${EXTERNAL_IP}
+      - standalonePort=7687
+      - standaloneUsername=${NEO4J_USERNAME}
+      - standaloneDatabase=neo4j
+      - standaloneDashboardName=${NEODASH_DASHBOARD}
+      - standaloneDashboardDatabase=neo4j
+      - loggingMode=1
+    restart: always
 
   ####################
   # neodash-editor
