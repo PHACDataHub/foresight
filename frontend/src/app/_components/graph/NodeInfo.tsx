@@ -1,5 +1,11 @@
-import { type Node as OgmaNode } from "@linkurious/ogma";
-import { type ChangeEvent, useCallback, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import Highlighter from "react-highlight-words";
 
 import {
@@ -10,30 +16,71 @@ import {
   AccordionItemPanel,
 } from "react-accessible-accordion";
 
+import {
+  faCircleInfo,
+  faMagnifyingGlass,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
 
 import "react-accessible-accordion/dist/fancy-example.css";
-import { type Article } from "~/server/api/routers/post";
+import { type Article, type Cluster } from "~/server/api/routers/post";
 import { getNodeData, getRawNodeData } from ".";
 
-export default function NodeInfo({
-  node,
-}: {
-  node: OgmaNode | null | undefined;
-}) {
-  const { searchTerms, setSearchTerms } = useStore();
+function ClusterLocations({ cluster }: { cluster: Cluster }) {
+  return (
+    <ul className="list-inline">
+      {cluster.locations.map((l, i) => (
+        <li key={`loc_${i}`}>
+          <span className="label label-info">{l.location}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default function NodeInfo() {
+  const {
+    searchTerms,
+    setSearchTerms,
+    clusters,
+    setLocateNode,
+    setOpenNode,
+    geoMode,
+    threats,
+    selectedNode,
+  } = useStore();
   const [search, setSearch] = useState(searchTerms.join(","));
 
-  const data = node && getNodeData(node);
+  const [question, setQuestion] = useState("");
+
+  const data = selectedNode && getNodeData(selectedNode);
   const id = (data?.type === "cluster" && data.id) || "";
 
-  const { data: rawGraph } = api.post.cluster.useQuery(
+  const { data: rawGraph, isFetching } = api.post.cluster.useQuery(
     {
       id,
     },
     { enabled: data?.type === "cluster" },
   );
+
+  const { data: answers, isFetching: isAnswerLoading } =
+    api.post.question.useQuery(
+      { cluster_id: id, question },
+      {
+        refetchOnWindowFocus: false,
+        enabled: data?.type === "cluster" && question.length > 0,
+      },
+    );
+
+  const handleQuestion = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setQuestion(e.currentTarget.value);
+      e.currentTarget.value = "";
+    }
+  }, []);
 
   const cluster = useMemo(() => {
     const c = rawGraph?.nodes.find(
@@ -78,8 +125,37 @@ export default function NodeInfo({
     [setSearchTerms],
   );
 
+  const filteredClusters = useMemo(() => {
+    return clusters?.filter(
+      (c) =>
+        (!geoMode ||
+          c.locations.filter(
+            (l) =>
+              typeof l.latitude === "number" && typeof l.longitude === "number",
+          ).length > 0) &&
+        c.threats &&
+        c.threats.filter((t) => threats.includes(t.title)).length > 0,
+    );
+  }, [clusters, geoMode, threats]);
+
+  const handleLocate = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      const node = e.currentTarget.value;
+      if (node) setLocateNode(node);
+    },
+    [setLocateNode],
+  );
+
+  const handleOpenCluster = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      const node = e.currentTarget.value;
+      if (node) setOpenNode(node);
+    },
+    [setOpenNode],
+  );
+
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col text-xl">
       <h3 className="mt-0 bg-blue-300 p-2">Search terms</h3>
       <label className="flex space-x-5 p-5 font-normal">
         <span>Search</span>
@@ -94,17 +170,50 @@ export default function NodeInfo({
         <>
           <h3 className="mt-0 bg-blue-300 p-2">hierarchicalCluster</h3>
           <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
-            <pre>
-              {JSON.stringify(hierarchicalCluster, null, 2)}
-            </pre>
+            <pre>{JSON.stringify(hierarchicalCluster, null, 2)}</pre>
           </div>
         </>
       )}
+      {!cluster && !selectedNode && filteredClusters && (
+        <>
+          <h3 className="mt-0 flex justify-between bg-blue-300 p-2">
+            <span>Detected Clusters</span>
+            <span>{filteredClusters.length}</span>
+          </h3>
+          <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
+            {filteredClusters.map((cluster) => (
+              <section key={`cluster${cluster.id}`}>
+                <div className="flex items-center justify-between">
+                  <h4>{cluster.title}</h4>
+                  <div className="flex space-x-2">
+                    <button
+                      value={cluster.id}
+                      className="btn btn-primary"
+                      onClick={handleOpenCluster}
+                    >
+                      <FontAwesomeIcon icon={faCircleInfo} />
+                    </button>
+                    <button
+                      value={cluster.id}
+                      className="btn btn-primary"
+                      onClick={handleLocate}
+                    >
+                      <FontAwesomeIcon icon={faMagnifyingGlass} />
+                    </button>
+                  </div>
+                </div>
+                <ClusterLocations cluster={cluster} />
+                <p>{cluster.summary}</p>
+              </section>
+            ))}
+          </div>
+        </>
+      )}
+      {selectedNode && isFetching && "Loading..."}
       {cluster && (
         <>
           <h3 className="mt-0 bg-blue-300 p-2">Selected Cluster</h3>
           <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
-            {!cluster && "Loading..."}
             {cluster && (
               <>
                 <h4 className="mt-0 flex items-end">
@@ -113,6 +222,16 @@ export default function NodeInfo({
                     textToHighlight={cluster.title}
                   />
                 </h4>
+                {cluster.labels.length > 1 && (
+                  <ul className="list-inline">
+                    {cluster.labels.map((label, i) => (
+                      <li key={`${cluster.id}-label-${i}`}>
+                        <span className="label label-primary">{label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <ClusterLocations cluster={cluster} />
                 {/* <ul className="list-inline">
                   {cluster.threats?.map((n, i) => {
                     return (
@@ -143,12 +262,25 @@ export default function NodeInfo({
                       </li>
                     ),
                   )}
+                  {question.length > 0 && (
+                    <li className="font-bold">
+                      {question}
+                      <ul className="ml-10" style={{ listStyleType: "square" }}>
+                        <li className="whitespace-pre-wrap font-normal">
+                          {isAnswerLoading && "Processing..."}
+                          {answers?.map((a, i) => (
+                            <p key={`cluster_${cluster.id}-a-${i}`}>{a}</p>
+                          ))}
+                        </li>
+                      </ul>
+                    </li>
+                  )}
                   <li>
                     <input
                       type="text"
                       className="w-full border p-2"
-                      disabled
                       placeholder="Ask your own question"
+                      onKeyUp={handleQuestion}
                     />
                   </li>
                 </ul>
@@ -162,7 +294,10 @@ export default function NodeInfo({
                     </h4>
                     <Accordion allowMultipleExpanded allowZeroExpanded>
                       {articles?.map((article) => (
-                        <article key={`article_${article.id}`} className="acc-group">
+                        <article
+                          key={`article_${article.id}`}
+                          className="acc-group"
+                        >
                           <AccordionItem>
                             <AccordionItemHeading>
                               <AccordionItemButton>

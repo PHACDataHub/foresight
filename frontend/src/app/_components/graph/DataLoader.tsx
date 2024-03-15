@@ -25,12 +25,12 @@ export default function DataLoader({
   const [totalSize, setTotalSize] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  const { history } = useStore();
+  const { history, setClusters, setLocateNode, setSelectedNode } = useStore();
 
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
-  const { isLoading, data: rawGraph } = api.post.hierarchicalClusters.useQuery(
+  const { isFetching: isLoading, data: rawGraph } = api.post.hierarchicalClusters.useQuery(
     { day, history },
     {
       refetchOnWindowFocus: false,
@@ -56,18 +56,19 @@ export default function DataLoader({
       setProgress(0);
       tick();
       ogma.clearGraph();
+      setSelectedNode(null);
     } else if (!isLoading && progressTimer.current !== null) {
       clearTimeout(progressTimer.current);
       progressTimer.current = null;
     }
-  }, [isLoading, ogma, onLoading, tick]);
+  }, [isLoading, ogma, onLoading, setSelectedNode, tick]);
 
   useEffect(() => {
     if (!rawGraph) return;
     const parse = async () => {
       setTotalSize(rawGraph.nodes.length + rawGraph.edges.length);
       await ogma.setGraph(rawGraph);
-      await ogma.view.locateRawGraph(rawGraph);
+      if (!ogma.geo.enabled) await ogma.view.locateRawGraph(rawGraph);
       ogma.events.once("idle", () => {
         setTotalSize(0);
         onLoading && onLoading(false);
@@ -76,6 +77,23 @@ export default function DataLoader({
     if (onLoading) onLoading(true);
     setTimeout(() => void parse(), 0);
   }, [rawGraph, isLoading, ogma, onLoading]);
+
+  useEffect(() => {
+    setLocateNode(undefined);
+    if (!rawGraph) {
+      setClusters(undefined);
+    } else {
+      setClusters(
+        rawGraph.nodes
+          .filter((n) => n.data?.type === "cluster")
+          .map((n) => n.data as Cluster).sort((a, b) => {
+            if (a.nr_articles > b.nr_articles) return -1;
+            if (a.nr_articles < b.nr_articles) return 1;
+            return 0;
+          }),
+      );
+    }
+  }, [rawGraph, setClusters, setLocateNode]);
 
   if (isLoading)
     return (

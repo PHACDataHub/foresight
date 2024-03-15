@@ -9,14 +9,11 @@ import Slider from "react-slide-out";
 import "react-slide-out/lib/index.css";
 import { api } from "~/trpc/react";
 import useDelayedResizeObserver from "~/app/_hooks/useDelayedResizeObserver";
+import { useStore } from "~/app/_store";
 
-type ThreatSelectorProps = {
-  selected: string[];
-  onChange?: (selected: string[]) => void;
-};
-
-function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
+function ThreatSelectorComponent() {
   const [open, setOpen] = useState(false);
+  const { threats: selected, setThreats } = useStore();
   const [initialThreats] = useState(selected);
   const { data: threats } = api.post.threats.useQuery(undefined, {
     refetchOnWindowFocus: false,
@@ -28,28 +25,28 @@ function ThreatSelectorComponent({ selected, onChange }: ThreatSelectorProps) {
 
   const handleCheckClick = useCallback(
     (evt: ChangeEvent<HTMLInputElement>) => {
-      if (!onChange) return;
       const items = selected.filter((s) => s !== evt.target.value);
       if (evt.target.checked) items.push(evt.target.value);
-      onChange(items);
+      setThreats(items);
     },
-    [onChange, selected],
+    [selected, setThreats],
   );
 
   const handleResetClick = useCallback(() => {
-    if (onChange) onChange(initialThreats);
-  }, [initialThreats, onChange]);
+    setThreats(initialThreats);
+  }, [initialThreats, setThreats]);
 
   const handleGroupSelect = useCallback(() => {
     if (!threats) return;
-    const items = selected.length === threats.length ? [] : threats.map((t) => t.text);
-    if (onChange) onChange(items);
-  }, [onChange, selected.length, threats]);
+    const items =
+      selected.length === threats.length ? [] : threats.map((t) => t.text);
+    setThreats(items);
+  }, [selected.length, setThreats, threats]);
 
   const groupSelectText = useMemo(() => {
     if (!threats || threats.length !== selected.length) return "Select All";
     return "Select None";
-  }, [selected.length, threats])
+  }, [selected.length, threats]);
 
   const header = useDelayedResizeObserver("def-appTop");
   const footer = useDelayedResizeObserver("wb-info");
@@ -116,10 +113,10 @@ function fallbackRender({ error }: FallbackProps) {
   );
 }
 
-export default function ThreatSelector(props: ThreatSelectorProps) {
+export default function ThreatSelector() {
   return (
     <ErrorBoundary fallbackRender={fallbackRender}>
-      <ThreatSelectorComponent {...props} />
+      <ThreatSelectorComponent />
     </ErrorBoundary>
   );
 }
