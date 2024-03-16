@@ -136,7 +136,7 @@ if __name__ == '__main__':
         if pub_date < start_date or pub_date > end_date:
             continue
   
-        # initial_time = datetime.now()
+        initial_time = datetime.now()
         
         # Load documents as jsonl
         doc_file_name = f"{path}/processed-{pub_date}-news-articles.jsonl"
@@ -146,11 +146,11 @@ if __name__ == '__main__':
             daily_documents[document['id']] = document
 
         daily_documents_dict[pub_date] = daily_documents
-        # performing_tasks(path, pub_date, daily_documents)
+        performing_tasks(path, pub_date, daily_documents)
 
-        # final_time = datetime.now()
-        # seconds = (final_time - initial_time).total_seconds()
-        # print(f"{seconds} seconds --- {len(daily_documents)} documents --- {seconds/len(daily_documents):0.2f} seconds per document.\n")
+        final_time = datetime.now()
+        seconds = (final_time - initial_time).total_seconds()
+        print(f"{seconds} seconds --- {len(daily_documents)} documents --- {seconds/len(daily_documents):0.2f} seconds per document.\n")
 
 
     for period_length, period_days in [ (3, range(30, 37)), (7, range(30, 31)), (30, range(30, 31)) ]:

@@ -411,8 +411,7 @@
           "month": 12,
           "day": 31
         },
-        "neodash_cluster_id": "2019-12-31-1",
-        "neodash_cluster_id_display": "2019-12-31-1",
+        "neodash_cluster_id_display": "2019-12-31-2020-01-02-0",
         "neodash_find_fact": "Where the event happened?",
         "neodash_all_representative_docs": [
           [
@@ -557,7 +556,8 @@
         "neodash_time_and_place": "When and where the events happened?",
         "neodash_how_many_people_were_effected?": "How many people were effec",
         "neodash_impact_on_people": "Is it infectious? How intensive is it?",
-        "neodash_severity_and_urgency": "How severe is it and how soon should we take some action?"
+        "neodash_severity_and_urgency": "How severe is it and how soon should we take some action?",
+        "neodash_cluster_id": "2019-12-31-2020-01-02-0"
       },
       "theme": "light",
       "disableRowLimiting": true,
@@ -634,7 +634,6 @@
             "type": "graph",
             "selection": {
               "Cluster": "title",
-              "DETECTED_THREAT": "(label)",
               "Threat": "text"
             },
             "settings": {
@@ -728,7 +727,7 @@
             "id": "e7b66236-60c7-493d-9c8e-3f3373f9c97a",
             "title": "Cluster by identifier",
             "query": "MATCH (n:`Cluster`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
-            "width": 6,
+            "width": 8,
             "height": 2,
             "x": 0,
             "y": 42,
@@ -855,9 +854,9 @@
             "id": "e9c74a13-4c38-42c8-b6af-cf871dc80c5b",
             "title": "Summary",
             "query": "MATCH ((c:Cluster {id: $neodash_cluster_id}))\nRETURN TRIM(c.summary)\n\n\n",
-            "width": 10,
-            "height": 2,
-            "x": 6,
+            "width": 8,
+            "height": 3,
+            "x": 8,
             "y": 42,
             "type": "value",
             "selection": {},
@@ -919,9 +918,10 @@
             "selection": {
               "Article": "pub_name",
               "IN_CLUSTER": "(label)",
-              "Cluster": "name",
+              "Cluster": "title",
               "DETECTED_THREAT": "(label)",
-              "Threat": "text"
+              "Threat": "text",
+              "Outlier": "title"
             },
             "settings": {
               "allowDownload": true,
@@ -968,8 +968,8 @@
               [
                 "Article",
                 "pub_date",
-                "factiva_folder",
                 "gphin_state",
+                "factiva_folder",
                 "probability",
                 "pub_time",
                 "pub_name",
@@ -977,7 +977,10 @@
                 "id",
                 "gphin_score",
                 "title",
-                "content"
+                "content",
+                "summary",
+                "answers",
+                "disease_question"
               ],
               [
                 "IN_CLUSTER",
@@ -985,6 +988,7 @@
               ],
               [
                 "Cluster",
+                "end_date",
                 "summary",
                 "keywords",
                 "nr_articles",
@@ -1006,6 +1010,23 @@
                 "Threat",
                 "score",
                 "text"
+              ],
+              [
+                "Outlier",
+                "summary",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "answers",
+                "pub_name",
+                "factiva_file_name",
+                "gphin_score",
+                "title",
+                "content",
+                "disease_question",
+                "pub_date",
+                "gphin_state",
+                "id"
               ]
             ]
           },
@@ -1076,7 +1097,7 @@
             "width": 16,
             "height": 6,
             "x": 8,
-            "y": 68,
+            "y": 80,
             "type": "pie",
             "selection": {
               "index": "possible_disease",
@@ -1149,7 +1170,7 @@
             "width": 24,
             "height": 10,
             "x": 0,
-            "y": 74,
+            "y": 86,
             "type": "table",
             "selection": {},
             "settings": {
@@ -1218,9 +1239,9 @@
             "title": "Map of development",
             "query": "MATCH (c:Cluster {id: $neodash_cluster_id})\nWITH c, c.countries AS countries\n  UNWIND countries AS country\nRETURN country, COUNT(DISTINCT(c.id)) AS spread\n\n\n\n\n\n",
             "width": 8,
-            "height": 6,
+            "height": 5,
             "x": 8,
-            "y": 44,
+            "y": 45,
             "type": "areamap",
             "selection": {
               "index": "country",
@@ -1242,7 +1263,7 @@
             "width": 8,
             "height": 6,
             "x": 0,
-            "y": 68,
+            "y": 80,
             "type": "graph",
             "selection": {
               "Article": "title",
@@ -1349,7 +1370,7 @@
             "width": 24,
             "height": 2,
             "x": 0,
-            "y": 66,
+            "y": 78,
             "type": "text",
             "selection": {},
             "settings": {
@@ -1398,7 +1419,7 @@
             "width": 10,
             "height": 3,
             "x": 14,
-            "y": 60,
+            "y": 72,
             "type": "value",
             "selection": {},
             "settings": {
@@ -1443,7 +1464,7 @@
             "width": 6,
             "height": 2,
             "x": 0,
-            "y": 60,
+            "y": 72,
             "type": "select",
             "selection": {},
             "settings": {
@@ -1460,7 +1481,7 @@
             "width": 8,
             "height": 3,
             "x": 6,
-            "y": 60,
+            "y": 72,
             "type": "value",
             "selection": {},
             "settings": {
@@ -1490,7 +1511,7 @@
             "width": 6,
             "height": 2,
             "x": 0,
-            "y": 62,
+            "y": 74,
             "type": "select",
             "selection": {},
             "settings": {
@@ -1507,7 +1528,7 @@
             "width": 6,
             "height": 2,
             "x": 0,
-            "y": 64,
+            "y": 76,
             "type": "select",
             "selection": {},
             "settings": {
@@ -1524,7 +1545,7 @@
             "width": 18,
             "height": 3,
             "x": 6,
-            "y": 63,
+            "y": 75,
             "type": "value",
             "selection": {},
             "settings": {
@@ -1554,7 +1575,7 @@
             "width": 24,
             "height": 2,
             "x": 0,
-            "y": 58,
+            "y": 70,
             "type": "text",
             "selection": {},
             "settings": {
@@ -1911,6 +1932,253 @@
                 "clusters"
               ]
             ]
+          },
+          {
+            "id": "aad1ffcf-9566-47d2-ac40-0689078caa3a",
+            "title": "Changes in time",
+            "query": "- The graph diagrams below show how the articles of *the cluster with id selected above* and their similarities evolve over time\n- Click on the `refresh` button on the middler to circle through the day",
+            "width": 16,
+            "height": 2,
+            "x": 0,
+            "y": 58,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "d8307f88-250b-467f-9a02-a62b4d93833e",
+            "title": "Articles from the start of the period to the date on the left above",
+            "query": "WITH SPLIT($neodash_cluster_id, '-') AS splits\nWITH splits, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\nWITH start_date\n  MATCH (d:DayCounter)\nWITH start_date, d.left_date AS end_date\nMATCH (c:Cluster {id: $neodash_cluster_id})<-[r:IN_CLUSTER]-(a:Article)\n  WHERE start_date <= a.pub_date <= end_date\nWITH a\n  OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)\nRETURN a, r, oa",
+            "width": 12,
+            "height": 10,
+            "x": 0,
+            "y": 60,
+            "type": "graph",
+            "selection": {
+              "Article": "title",
+              "Outlier": "title",
+              "SIMILAR_TO": "(label)"
+            },
+            "settings": {
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "nodeColorScheme": "neodash",
+              "nodeLabelFontSize": 2,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "yterious",
+                  "customization": "node color",
+                  "customizationValue": "#DA02F288"
+                }
+              ],
+              "nodeSizeProp": "probability"
+            },
+            "schema": [
+              [
+                "Article",
+                "pub_date",
+                "factiva_folder",
+                "gphin_state",
+                "probability",
+                "pub_time",
+                "pub_name",
+                "factiva_file_name",
+                "id",
+                "gphin_score",
+                "title",
+                "content",
+                "summary",
+                "answers",
+                "disease_question"
+              ],
+              [
+                "Outlier",
+                "summary",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "answers",
+                "pub_name",
+                "factiva_file_name",
+                "gphin_score",
+                "title",
+                "content",
+                "disease_question",
+                "pub_date",
+                "gphin_state",
+                "id"
+              ],
+              [
+                "SIMILAR_TO",
+                "score"
+              ]
+            ]
+          },
+          {
+            "id": "26c88763-1ad6-4e01-a553-73ade60cf21c",
+            "title": "Date on the left",
+            "query": "WITH SPLIT($neodash_cluster_id, '-') AS splits\nWITH splits, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\nWITH splits, start_date,\n  CASE WHEN SIZE(splits) >= 4 THEN DATE(splits[3] + '-' + splits[4] + '-' + splits[5]) \n    ELSE start_date END AS end_date\nWITH start_date, end_date, DURATION.inDays(start_date, end_date) AS days\n  MERGE (d:DayCounter)\n    SET d.left_date = \n      CASE WHEN d.left_date IS NULL OR d.left_date >= end_date \n        THEN start_date\n        ELSE d.left_date + DURATION({days:1})\n      END\nRETURN d.left_date\n\n\n\n",
+            "width": 4,
+            "height": 2,
+            "x": 16,
+            "y": 58,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "runButtonText": "Next day",
+              "refreshButtonEnabled": true,
+              "type": "Custom Query",
+              "entityType": "Next day",
+              "parameterName": "neodash_next_day",
+              "fontSize": 32
+            },
+            "schema": []
+          },
+          {
+            "id": "4ad6be50-ddab-46e7-b2cc-f19ee3eec451",
+            "title": "Date on the right",
+            "query": "WITH SPLIT($neodash_cluster_id, '-') AS splits\nWITH splits, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\nWITH splits, start_date,\n  CASE WHEN SIZE(splits) >= 4 THEN DATE(splits[3] + '-' + splits[4] + '-' + splits[5]) \n    ELSE start_date END AS end_date\nWITH start_date, end_date, DURATION.inDays(start_date, end_date) AS days\n  MERGE (d:DayCounter)\n    SET d.right_date = \n      CASE WHEN d.right_date IS NULL OR d.right_date >= end_date \n        THEN start_date\n        ELSE d.right_date + DURATION({days:1})\n      END\nRETURN d.right_date\n\n\n\n",
+            "width": 4,
+            "height": 2,
+            "x": 20,
+            "y": 58,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "runButtonText": "Next day",
+              "refreshButtonEnabled": true,
+              "type": "Custom Query",
+              "entityType": "Next day",
+              "parameterName": "neodash_next_day",
+              "fontSize": 32
+            },
+            "schema": []
+          },
+          {
+            "id": "9bae600b-f172-4319-96e8-32a0d3386272",
+            "title": "Articles from the start of the period to the date on the right above",
+            "query": "WITH SPLIT($neodash_cluster_id, '-') AS splits\nWITH splits, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\nWITH start_date\n  MATCH (d:DayCounter)\nWITH start_date, d.right_date AS end_date\nMATCH (c:Cluster {id: $neodash_cluster_id})<-[r:IN_CLUSTER]-(a:Article)\n  WHERE start_date <= a.pub_date <= end_date\nWITH a\n  OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)\nRETURN a, r, oa",
+            "width": 12,
+            "height": 10,
+            "x": 12,
+            "y": 60,
+            "type": "graph",
+            "selection": {
+              "Article": "title",
+              "Outlier": "title",
+              "SIMILAR_TO": "(label)"
+            },
+            "settings": {
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "nodeColorScheme": "neodash",
+              "nodeLabelFontSize": 2,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "yterious",
+                  "customization": "node color",
+                  "customizationValue": "#DA02F288"
+                }
+              ],
+              "nodeSizeProp": "probability"
+            },
+            "schema": [
+              [
+                "Article",
+                "pub_date",
+                "gphin_state",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "pub_name",
+                "factiva_file_name",
+                "id",
+                "gphin_score",
+                "title",
+                "content",
+                "summary",
+                "answers",
+                "disease_question"
+              ],
+              [
+                "Outlier",
+                "summary",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "answers",
+                "pub_name",
+                "factiva_file_name",
+                "gphin_score",
+                "title",
+                "content",
+                "disease_question",
+                "pub_date",
+                "gphin_state",
+                "id"
+              ],
+              [
+                "SIMILAR_TO",
+                "score"
+              ]
+            ]
           }
         ]
       },
@@ -2204,7 +2472,7 @@
           {
             "id": "04bd7e67-b538-4972-acc3-aa7cf8822551",
             "title": "Threat Graph",
-            "query": "MATCH (n:DON)-[r:IN_TOPIC]-(t:Topic)\nRETURN n, r, t\n\n\n\n\n\n\n",
+            "query": "MATCH (d)<-[r1:DETECTED_DISEASE]-(n:DON)-[r2:DETECTED_THREAT]->(t:Threat)\nRETURN n, r2, t, r1, d\n\n\n\n\n\n\n",
             "width": 24,
             "height": 8,
             "x": 0,
@@ -2212,27 +2480,74 @@
             "type": "graph",
             "selection": {
               "DON": "title",
-              "Topic": "text"
+              "DETECTED_THREAT": "(label)",
+              "Threat": "(label)",
+              "DETECTED_DISEASE": "(label)",
+              "Resource": "label",
+              "Class": "label"
             },
-            "settings": {},
+            "settings": {
+              "actionsRules": [
+                {
+                  "condition": "onNodeClick",
+                  "field": "DON",
+                  "value": "DON.url",
+                  "customization": "set variable",
+                  "customizationValue": "don_id"
+                }
+              ]
+            },
             "schema": [
               [
                 "DON",
                 "summary",
-                "topics",
                 "answers",
                 "countries",
                 "title",
-                "url",
                 "content",
+                "url",
                 "report_date"
               ],
               [
-                "IN_TOPIC"
+                "DETECTED_THREAT"
               ],
               [
-                "Topic",
+                "Threat",
+                "score",
                 "text"
+              ],
+              [
+                "DETECTED_DISEASE",
+                "score",
+                "scores"
+              ],
+              [
+                "Resource",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "deprecated",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
+              ],
+              [
+                "Class",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "deprecated",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
               ]
             ]
           },
