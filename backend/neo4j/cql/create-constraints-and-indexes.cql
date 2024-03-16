@@ -28,6 +28,10 @@ CREATE INDEX keywords_article IF NOT EXISTS FOR (n:Article) ON (n.keyword);
 CREATE TEXT INDEX summary_article IF NOT EXISTS FOR (n:Article) ON (n.summary);
 CREATE CONSTRAINT id_outlier IF NOT EXISTS FOR (n:Outlier) REQUIRE n.id IS UNIQUE;
 //
+// Relationship index
+//
+CREATE INDEX period_article_to_article IF NOT EXISTS FOR ()-[r:SIMILAR_TO]-() ON (r.period);
+//
 //
 // Clusters
 //
