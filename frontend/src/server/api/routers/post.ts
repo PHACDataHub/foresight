@@ -1,8 +1,14 @@
-import neo4j, { type QueryResult } from "neo4j-driver";
+import neo4j, {
+  type Node,
+  type Path,
+  type QueryResult,
+  type RecordShape,
+} from "neo4j-driver";
 import OgmaLib, {
   type Neo4JEdgeData,
   type Neo4JNodeData,
   type RawGraph,
+  type RawNode,
 } from "@linkurious/ogma";
 import { z } from "zod";
 import { env } from "~/env";
@@ -25,6 +31,28 @@ export interface Neo4JRecord<T1, T2, T3> {
   length: number;
   _fieldLookup: Record<string, number>;
   _fields: [T1, T2, T3];
+}
+
+export interface HierarchicalCluster {
+  type: "hierarchicalcluster";
+  clusters: number[];
+  id: string;
+  name: string;
+}
+
+export interface HierarchicalClusterRecord
+  extends Omit<HierarchicalCluster, "clusters"> {
+  clusters: Neo4JNumber[];
+}
+
+export interface Threat {
+  type: "threat";
+  title: string;
+  score?: number;
+}
+
+export interface ThreatRecord extends Omit<Threat, "title"> {
+  text: string;
 }
 
 export type ClusterQA = {
@@ -54,18 +82,10 @@ export interface Cluster {
   summary: string;
   title: string;
   topic_id: string;
-}
+  threats?: Threat[];
 
-export interface HierarchicalCluster {
-  type: "hierarchicalcluster";
-  clusters: number[];
-  id: string;
-  name: string;
-}
-
-export interface HierarchicalClusterRecord
-  extends Omit<HierarchicalCluster, "clusters"> {
-  clusters: Neo4JNumber[];
+  // TODO: fix this
+  location: ClusterLocation;
 }
 
 export interface ClusterRecord
@@ -119,17 +139,6 @@ export interface EdgeRecord {
   type: string;
 }
 
-export interface Threat {
-  type: "threat";
-  title: string;
-  score?: number;
-}
-
-export interface ThreatRecord extends Omit<Threat, "score" | "title"> {
-  score?: Neo4JNumber;
-  text: string;
-}
-
 export interface GraphResult extends Pick<QueryResult, "summary"> {
   records: Neo4JRecord<ClusterRecord, EdgeRecord, ThreatRecord>[];
 }
@@ -146,78 +155,95 @@ const translateGraph = (
     Neo4JNodeData<Record<string, unknown>>,
     Neo4JEdgeData<Record<string, unknown>>
   >,
+  nodeTranslate: (obj: RawNode<AllDataTypes>) => RawNode<AllDataTypes> = (
+    obj,
+  ) => obj,
 ): RawGraph<AllDataTypes, Neo4JEdgeData<Record<string, unknown>>> => {
   const g = graph as unknown as RawGraph<
     Neo4JNodeData<AllRecordTypes>,
     Neo4JEdgeData<Record<string, unknown>>
   >;
   return {
-    nodes: g.nodes.map((n) => {
-      if (n.data?.neo4jLabels.includes("Threat")) {
-        const source = n.data?.neo4jProperties as ThreatRecord;
-        const data: Threat = {
-          type: "threat",
-          title: source.text,
-          score: source.score?.low,
-        };
-        return { ...n, data };
-      } else if (n.data?.neo4jLabels.includes("Cluster")) {
-        const source = n.data?.neo4jProperties as ClusterRecord;
-        const data: Cluster = {
-          type: "cluster",
-          answers: JSON.parse(source.answers) as Record<string, string>,
-          countries: source.countries,
-          id: source.id,
-          keywords: source.keywords,
-          labels: source.labels,
-          locations: JSON.parse(source.locations ?? "[]") as ClusterLocation[],
-          name: source.name,
-          nr_articles: parseInt(source.nr_articles),
-          start_date: new Date(
-            source.start_date.year.low,
-            source.start_date.month.low,
-            source.start_date.day.low,
-          ),
-          representative_docs: source.representative_docs.map((n) => n.low),
-          summary: source.summary,
-          title: source.title,
-          topic_id: source.topic_id,
-        };
-        return { ...n, data };
-      } else if (n.data?.neo4jLabels.includes("HierarchicalCluster")) {
-        const source = n.data?.neo4jProperties as HierarchicalClusterRecord;
-        const data: HierarchicalCluster = {
-          type: "hierarchicalcluster",
-          clusters: source.clusters.map((n) => n.low),
-          id: source.id,
-          name: source.name,
-        };
-        return { ...n, data };
-      } else if (n.data?.neo4jLabels.includes("Article")) {
-        const source = n.data?.neo4jProperties as ArticleRecord;
-        const data: Article = {
-          type: "article",
-          content: source.content,
-          factiva_file_name: source.factiva_file_name,
-          factiva_folder: source.factiva_folder,
-          gphin_score: source.gphin_score,
-          gphin_state: source.gphin_state,
-          id: parseInt(source.id),
-          probability: source.probability,
-          pub_date: new Date(
-            source.pub_date.year.low,
-            source.pub_date.month.low,
-            source.pub_date.day.low,
-          ),
-          pub_name: source.pub_name,
-          pub_time: new Date(source.pub_time),
-          title: source.title,
-        };
-        return { ...n, data };
-      } else {
-        throw new Error("Unsupported node type!");
-      }
-    }),
+    nodes: g.nodes
+      .map((n) => {
+        if (n.data?.neo4jLabels.includes("Threat")) {
+          const source = n.data?.neo4jProperties as ThreatRecord;
+          const data: Threat = {
+            type: "threat",
+            title: source.text,
+            score: source.score,
+          };
+          return { ...n, data };
+        } else if (n.data?.neo4jLabels.includes("Cluster")) {
+          const source = n.data?.neo4jProperties as ClusterRecord;
+          const data: Cluster = {
+            type: "cluster",
+            answers: JSON.parse(source.answers) as Record<string, string>,
+            countries: source.countries,
+            id: source.id,
+            keywords: source.keywords,
+            labels: source.labels,
+            locations: JSON.parse(
+              source.locations ?? "[]",
+            ) as ClusterLocation[],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            location: JSON.parse(source.locations ?? "[]").filter(
+              (l: { latitude?: number, longitude?: number }) =>
+                typeof l.latitude === "number" &&
+                typeof l.longitude === "number",
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            )[0],
+            // location: JSON.parse(
+            //   source.locations ?? "[]",
+            // )[0],
+            name: source.name,
+            nr_articles: parseInt(source.nr_articles),
+            start_date: new Date(
+              source.start_date.year.low,
+              source.start_date.month.low,
+              source.start_date.day.low,
+            ),
+            representative_docs: source.representative_docs.map((n) => n.low),
+            summary: source.summary,
+            title: source.title,
+            topic_id: source.topic_id,
+          };
+          return { ...n, data };
+        } else if (n.data?.neo4jLabels.includes("HierarchicalCluster")) {
+          const source = n.data?.neo4jProperties as HierarchicalClusterRecord;
+          const data: HierarchicalCluster = {
+            type: "hierarchicalcluster",
+            clusters: source.clusters.map((n) => n.low),
+            id: source.id,
+            name: source.name,
+          };
+          return { ...n, data };
+        } else if (n.data?.neo4jLabels.includes("Article")) {
+          const source = n.data?.neo4jProperties as ArticleRecord;
+          const data: Article = {
+            type: "article",
+            content: source.content,
+            factiva_file_name: source.factiva_file_name,
+            factiva_folder: source.factiva_folder,
+            gphin_score: source.gphin_score,
+            gphin_state: source.gphin_state,
+            id: parseInt(source.id),
+            probability: source.probability,
+            pub_date: new Date(
+              source.pub_date.year.low,
+              source.pub_date.month.low,
+              source.pub_date.day.low,
+            ),
+            pub_name: source.pub_name,
+            pub_time: new Date(source.pub_time),
+            title: source.title,
+          };
+          return { ...n, data };
+        } else {
+          throw new Error("Unsupported node type!");
+        }
+      })
+      .map((n) => nodeTranslate(n)),
     edges: g.edges,
   };
 };
@@ -356,6 +382,36 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+  question: publicProcedure
+    .input(
+      z.object({
+        cluster_id: z.string(),
+        question: z.string(),
+      }),
+    )
+    .query(async ({ input: { cluster_id, question } }) => {
+      const session = driver.session();
+      try {
+        const result = await session.run(
+          `
+        MATCH (c:Cluster {id: $cluster_id}) 
+        WITH c
+          CALL apoc.load.jsonParams(
+            "http://34.118.173.82:8000/answer_question", 
+            {method: "POST", \`Content-Type\`:"application/json"}, 
+            apoc.convert.toJson({fulltext: c.summary, question: $question})) YIELD value 
+        RETURN value['answer'] AS answer
+      
+      `,
+          { cluster_id, question },
+        );
+        const answer = result.records.at(0)?.get("answer") as string[];
+        return answer;
+      } finally {
+        await session.close();
+      }
+    }),
+
   hierarchicalClusters: publicProcedure
     .input(
       z.object({
@@ -393,15 +449,48 @@ export const postRouter = createTRPCRouter({
         WITH $period + '-\\d+' AS id_pattern
           MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
             WHERE c.id =~ id_pattern
-        WITH c
+        WITH c, collect(t) as threats
           MATCH path=(c)<-[:CONTAINS*..]-(:HierarchicalCluster)
-        RETURN path
+        RETURN path, threats
         `,
           { period },
           // , threats: input.threats },
         );
         // AND t.text IN $threats
-        return translateGraph(await OgmaLib.parse.neo4j(result));
+        const threats: Record<string, Threat[]> = {};
+        const noThreats = {
+          ...result,
+          records: result.records.map((r) => {
+            const nr: RecordShape = { ...r, keys: ["path"] };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const threat = translateGraph({
+              nodes:
+                (nr._fields as Node[][]).pop()?.map((t) => ({
+                  data: {
+                    neo4jLabels: t.labels,
+                    neo4jProperties: t.properties,
+                  },
+                })) ?? [],
+              edges: [],
+            }).nodes;
+
+            if (threat) {
+              const path = r.get("path") as Path;
+              const cluster = path.start.identity.low;
+              threats[cluster] = threat.map((t) => t.data as Threat);
+            }
+            nr.length = 1;
+            nr._fieldLookup = { path: 0 };
+            return nr;
+          }),
+        };
+        return translateGraph(await OgmaLib.parse.neo4j(noThreats), (node) => {
+          if (node.data?.type === "cluster" && node.id) {
+            const threat = threats[node.id];
+            return { ...node, data: { ...node.data, threats: threat } };
+          }
+          return node;
+        });
 
         // return JSON.parse(JSON.stringify(result)) as GraphResult;
       } finally {

@@ -1,13 +1,9 @@
 "use client";
 
 import { useOgma } from "@linkurious/ogma-react";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
+import { useStore } from "~/app/_store";
 
 export interface LayoutServiceRef {
   refresh: () => void;
@@ -16,12 +12,12 @@ export interface LayoutServiceRef {
 const LayoutService = forwardRef(
   (
     {
-      // threats,
+      threats,
       fullScreen,
       dataLoaded,
       onExitFullScreen,
     }: {
-      // threats: string[];
+      threats: string[];
       dataLoaded: boolean;
       fullScreen: boolean;
       onExitFullScreen?: () => void;
@@ -30,6 +26,27 @@ const LayoutService = forwardRef(
   ) => {
     const ogma = useOgma();
     const timer = useRef<NodeJS.Timeout | null>(null);
+
+    const { locateNode, treeDirection, geoMode, openNode, setSelectedNode } = useStore();
+
+    useEffect(() => {
+      if (locateNode) {
+        const nodes = ogma
+          .getNodes()
+          .filter((n) => (n.getData() as { id: string }).id === locateNode);
+        void nodes.locate();
+        void nodes.pulse();
+      }
+    }, [locateNode, ogma]);
+
+    useEffect(() => {
+      if (openNode) {
+        const nodes = ogma
+          .getNodes()
+          .filter((n) => (n.getData() as { id: string }).id === openNode);
+          setSelectedNode(nodes.get(0));
+      }
+    }, [openNode, ogma, setSelectedNode]);
 
     const updateLayout = useDebounceCallback(() => {
       // ogma.events.once("idle", () => {
@@ -43,15 +60,12 @@ const LayoutService = forwardRef(
 
         void ogma.layouts.hierarchical({
           locate: true,
-          direction: "RL"
-        })
-        
-
+          direction: treeDirection,
+        });
 
         // void ogma.layouts.force({
         //   locate: true,
         //   gpu: true,
-
 
         //   // steps: 150,
         //   // charge: 0.125,
@@ -59,30 +73,14 @@ const LayoutService = forwardRef(
         //   // edgeStrength: 1,
         //   // theta: 0.9,
         // });
-      }
+      } 
       // });
-    }, [ogma.events, ogma.geo, ogma.layouts]);
+    }, [ogma.events, ogma.geo, ogma.layouts, treeDirection]);
 
-    // const updateLabelSize = useCallback(() => {
-    //   ogma.events.once("idle", () => {
-    //     if (!ogma.geo.enabled()) {
-    //       const z = ogma.view.getZoom();
-    //       const size = Math.min(Math.max(15, z * 8), 40);
-    //       const cls =
-    //         ogma.styles.getClass("textZoom") ??
-    //         ogma.styles.createClass({
-    //           name: "textZoom",
-    //         });
-    //       cls.update({
-    //         nodeAttributes: {
-    //           text: {
-    //             size,
-    //           },
-    //         },
-    //       });
-    //     }
-    //   });
-    // }, [ogma.events, ogma.geo, ogma.styles, ogma.view]);
+    useEffect(() => {
+      updateLayout();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [treeDirection, threats, geoMode]);
 
     useEffect(() => {
       const pollFullscreen = () => {
@@ -115,26 +113,11 @@ const LayoutService = forwardRef(
       const onNodesAdded = () => {
         updateLayout();
       };
-      ogma.events.on(
-        [
-          "addNodes",
-          "removeNodes",
-          // "transformationEnabled",
-          // "transformationDisabled"
-        ],
-        onNodesAdded,
-      );
-
-      // const onZoom = () => {
-      //   updateLabelSize();
-      // };
-
-      // ogma.events.on("viewChanged", onZoom);
+      ogma.events.on(["addNodes", "removeNodes"], onNodesAdded);
 
       // cleanup
       return () => {
         ogma.events.off(onNodesAdded);
-        // ogma.events.off(onZoom);
       };
     }, [ogma, ref, updateLayout]);
 

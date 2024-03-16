@@ -8,15 +8,24 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import {
   EdgeStyleRule,
   Geo,
+  NeighborGeneration,
+  NodeFilter,
   NodeStyleRule,
   Ogma,
-  Tooltip,
 } from "@linkurious/ogma-react";
 import OgmaLib, {
+  type NodeList,
   type Node as OgmaNode,
-  type Point,
   type RawNode,
 } from "@linkurious/ogma";
+
+import {
+  faExpand,
+  faMap,
+  faMinimize,
+  faRotate,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
@@ -24,11 +33,11 @@ import { useParams } from "next/navigation";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
 import { type AllDataTypes } from "~/server/api/routers/post";
+import ThreatSelector from "~/app/_components/ThreatSelector";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
-import DataLoader, { type ForesightData } from "./DataLoader";
+import DataLoader from "./DataLoader";
 import NodeInfo from "./NodeInfo";
-// import TimeLine from "./TimeLine";
 
 // const colors = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -59,66 +68,7 @@ OgmaLib.libraries.leaflet = L;
 //   throw new Error("Bad Hex");
 // }
 
-// function nodeSearch(node: OgmaNode, terms: string[]) {
-//   const data: ForesightData = node.getData() as ForesightData;
-//   if (!data) return false;
-//   for (const term of terms) {
-//     if (
-//       typeof data.title === "string" &&
-//       data.title.toLowerCase().includes(term)
-//     )
-//       return true;
-//     if (data.type === "cluster") {
-//       if (
-//         typeof data.summary === "string" &&
-//         data.summary.toLowerCase().includes(term)
-//       )
-//         return true;
-//     }
-//   }
-//   return false;
-// }
-
-// Helper function to get the type of a Node
-function getNodeType(node: OgmaNode): string {
-  const data: ForesightData = node.getData() as ForesightData;
-  if (data.type === "cluster") return "Cluster";
-  if (data.type === "threat") return "Threat";
-  return "unknown";
-}
-
-// function getNodeFirstThreat(node: OgmaNode): string {
-//   const edges = node.getAdjacentEdges();
-
-//   for (let x = 0; x < edges.size; x += 1) {
-//     const edge = edges.get(x);
-//     if (getNodeType(edge.getSource()) === "Threat")
-//       return getNodeTitle(edge.getSource());
-//     if (getNodeType(edge.getTarget()) === "Threat")
-//       return getNodeTitle(edge.getTarget());
-//   }
-//   return "NONE";
-// }
-
-// function getNodeTitle(node: OgmaNode): string {
-//   const data: ForesightData = node.getData() as ForesightData;
-//   return data.title;
-// }
-
-// function getClusterNodeData(node: OgmaNode) {
-//   const data: ForesightData = node.getData() as ForesightData;
-//   if (data.type === "cluster") return data;
-//   return null;
-// }
-
-// function getNodeSummary(node: OgmaNode): string {
-//   const data: ForesightData = node.getData() as ForesightData;
-//   if (data.type === "cluster") return data.summary;
-//   if (data.type === "threat") return data.title;
-//   return "";
-// }
-
-export function getNodeData(node: OgmaNode) {
+export function getNodeData(node: OgmaNode): AllDataTypes | undefined {
   const n = node as OgmaNode<AllDataTypes>;
   const data = n.getData();
   return data;
@@ -137,66 +87,88 @@ export interface Country {
   name: string;
 }
 
+export function findAlongPath(
+  n: OgmaNode,
+  direction: "in" | "out",
+  comp: (node: OgmaNode) => boolean,
+): NodeList {
+  const nodes = n.getAdjacentNodes({ direction });
+  let found = nodes.filter(comp);
+  nodes.forEach(
+    (ni) => (found = found.concat(findAlongPath(ni, direction, comp))),
+  );
+  return found;
+}
+
 export default function Graph() {
-  // const [popupOpen, setPopupOpen] = useState(false);
-  // const [clickedNode, setClickedNode] = useState<OgmaNode>();
   const ref = useRef<HTMLDivElement | null>(null);
-  const timelineRef = useRef<HTMLDivElement | null>(null);
   const ogmaRef = useRef<OgmaLib | null>(null);
   const layoutService = useRef<LayoutServiceRef | null>(null);
   const { height, width } = useResizeObserver({ ref, box: "border-box" });
-  const [tooltipPositon, setTooltipPosition] = useState<Point>({
-    x: 0,
-    y: 0,
-  });
-  const [target, setTarget] = useState<OgmaNode | null>();
-  const [selectedNode, setSelectedNode] = useState<OgmaNode | null>();
   const { day } = useParams();
   const [dataLoading, setDataLoading] = useState(false);
 
-  // const [grouping, setGrouping] = useState(false);
-
-  const { history } = useStore();
+  const {
+    searchTerms,
+    toggleTreeDirection,
+    geoMode,
+    setGeoMode,
+    threats,
+    setSelectedNode,
+  } = useStore();
 
   const handleDataLoading = useCallback((loading: boolean) => {
     setDataLoading(loading);
   }, []);
 
-  // const [threats, setThreats] = useState([
-  //   "Outbreaks of known infectious diseases",
-  //   "Emerging infectious diseases or novel pathogens",
-  //   "Reports on suspicious disease-related incidents",
-  //   "Foodborne illness outbreaks and recalls",
-  //   "Waterborne diseases and contamination alerts",
-  //   "Outbreaks linked to vaccine-preventable diseases",
-  //   "Unusual health patterns",
-  //   "Emerging pathogens",
-  //   "Anomalous disease clusters",
-  // ]);
-
   // Controls
-  const [geoMode, setGeoMode] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(false);
   const [maximized, setMaximized] = useState(false);
 
-  // const toggleGrouping = useCallback(() => {
-  //   setGrouping(!grouping);
-  //   if (layoutService.current) {
-  //     layoutService.current.refresh();
-  //   }
-  // }, [grouping]);
+  const isNodeFiltered = (n: OgmaNode) => {
+    const data = getNodeData(n);
+    if (
+      data?.type === "cluster" &&
+      data.threats &&
+      data.threats.filter((t) => threats.includes(t.title)).length === 0
+    )
+      return true;
+    if (data?.type === "hierarchicalcluster") {
+      const clusters = findAlongPath(
+        n,
+        "out",
+        (a) => getNodeData(a)?.type === "cluster",
+      )?.filter((a) => !isNodeFiltered(a));
+      if (!clusters || clusters?.size === 0) return true;
+    }
+  };
 
-  const requestSetTooltipPosition = useCallback((pos: Point) => {
-    requestAnimationFrame(() => setTooltipPosition(pos));
-  }, []);
+  const isHaloed = useCallback(
+    (n: OgmaNode) => {
+      const data = getNodeData(n);
+      if (data?.type === "cluster") {
+        for (const term of searchTerms) {
+          if (
+            data.summary.toLowerCase().includes(term) ||
+            data.title.toLowerCase().includes(term)
+          )
+            return true;
+        }
+      } else if (data?.type === "hierarchicalcluster") {
+        const clusters = findAlongPath(
+          n,
+          "out",
+          (node) => getNodeData(node)?.type === "cluster",
+        ).filter((node) => isHaloed(node));
+        if (clusters.size > 1) return true;
+      }
+      return false;
+    },
+    [searchTerms],
+  );
 
   const handleGeoBtnClick = useCallback(() => {
     setGeoMode(!geoMode);
-  }, [geoMode]);
-
-  const handleTimelineBtnClick = useCallback(() => {
-    setShowTimeline(!showTimeline);
-  }, [showTimeline]);
+  }, [geoMode, setGeoMode]);
 
   const handleMaximizeClick = useCallback(() => {
     setMaximized(!maximized);
@@ -230,89 +202,20 @@ export default function Graph() {
     }
   }, [height, width, maximized, resizeOgma]);
 
-  // const nodeFilterCriteria = useCallback(
-  //   (node: OgmaNode) => {
-  //     const d = node.getData() as ForesightData;
-  //     if (!d) return false;
-  //     // return true;
-  //     // return !grouping || d.type !== "threat";
-  //     if (d.type === "threat") {
-  //       return threats.includes(d.title) && node.getAdjacentNodes().size > 0;
-  //     } else if (d.type === "cluster") {
-  //       return (
-  //         node.getAdjacentNodes().filter((n) => {
-  //           const adjNode = n.getData() as ForesightData;
-  //           return (
-  //             adjNode.type === "cluster" || threats.includes(adjNode.title)
-  //           );
-  //         }).size > 0
-  //       );
-  //     }
-  //     return false;
-  //   },
-  //   [threats],
-  // );
-
-  // const groupIdFunction = useCallback((n: OgmaNode) => {
-  //   if (getNodeType(n) === "Threat") return getNodeTitle(n);
-  //   return getNodeFirstThreat(n);
-  // }, []);
-
-  // const groupingNodeGenerator = useCallback(
-  //   (nodes: NodeList, groupId: string) => {
-  //     return {
-  //       id: "special group " + groupId,
-  //       data: {
-  //         groupId: groupId,
-  //       },
-  //       attributes: {
-  //         text: {
-  //           content: groupId,
-  //           color: "black",
-  //           // opacity: 1,
-  //         },
-  //         color: hexToRgbA(colors(groupId), 0.32),
-  //       },
-  //     };
-  //   },
-  //   [],
-  // );
-
-  // const groupingOnCreated = useCallback(
-  //   (
-  //     metaNode: OgmaNode,
-  //     visible: boolean,
-  //     subNodes: NodeList,
-  //     // subEdges: EdgeList,
-  //   ) => {
-  //     if (visible && ogmaRef.current) {
-  //       void subNodes.setAttributes(
-  //         OgmaLib.geometry.computeCentroid(subNodes.getAttributes(["x", "y"])),
-  //       );
-  //       return ogmaRef.current.layouts.force({
-  //         nodes: subNodes,
-  //         duration: 0,
-  //         useWebWorker: false,
-  //       });
-  //     }
-  //   },
-  //   [],
-  // );
-
   if (typeof day !== "string") return "Day error";
 
   return (
     <PanelGroup autoSaveId="example" direction="horizontal">
       <Panel defaultSize={50} className="flex flex-col border">
-        <NodeInfo node={selectedNode} />
+        <NodeInfo />
       </Panel>
       <PanelResizeHandle />
       <Panel className="flex border">
         <div className="relative w-full flex-1" ref={ref}>
-          {/* <ThreatSelector selected={threats} onChange={setThreats} /> */}
+          <ThreatSelector />
           <div className="absolute h-full max-h-full w-full max-w-full">
             <Ogma
-              key={`ogma-${day}-${history}`}
+              // key={`ogma-${day}-${history}`}
               ref={ogmaRef}
               options={
                 {
@@ -339,203 +242,143 @@ export default function Graph() {
                     if (target && target.isNode) {
                       void target.locate();
                     }
-                  })
-                  .on("mousemove", () => {
-                    const ptr = ogma.getPointerInformation();
-                    requestSetTooltipPosition(
-                      ogma.view.screenToGraphCoordinates({
-                        x: ptr.x,
-                        y: ptr.y,
-                      }),
-                    );
-                    if (
-                      !ptr.target ||
-                      (ptr.target.isNode &&
-                        getNodeType(ptr.target) === "Cluster")
-                    )
-                      setTarget(ptr.target);
                   });
               }}
             >
               <DataLoader day={parseInt(day)} onLoading={handleDataLoading} />
-              <NodeStyleRule
-                attributes={{
-                  text: {
-                    scaling: true,
-                    content: (n) => {
-                      const data = getNodeData(n);
-                      if (data.type === "hierarchicalcluster") return data.name;
-                      if (data.type === "cluster") return data.title;
-                      if (data.type === "threat") return data.title;
-                    },
-                  },
-                  color: (n) => {
-                    const data = getNodeData(n);
-                    if (data.type === "hierarchicalcluster") return "#bacf99";
-                    if (data.type === "cluster") return "#8297ec";
-                    if (data.type === "threat") return "#ffb700";
-                  },
-                  radius: (n) => {
-                    const data = getNodeData(n);
-                    if (data.type === "hierarchicalcluster")
-                      return data.clusters.length / 2;
-                    if (data.type === "cluster") return data.nr_articles;
-                    if (data.type === "threat") return data.score ?? 1;
-                  },
-                }}
-              />
-              {/* <NodeFilter enabled criteria={nodeFilterCriteria} /> */}
-              {/* {!grouping && !dataLoading && <Hightlighter />} */}
-              {false && !dataLoading && (
-                <>
-                  {/* <NodeGrouping
-                    enabled={grouping}
-                    // selector={n => getNodeType(n) === "Cluster"}
-                    groupIdFunction={groupIdFunction}
-                    nodeGenerator={groupingNodeGenerator}
-                    showContents={() => true}
-                    onCreated={groupingOnCreated}
-                  />
-                  <NodeStyleRule
-                    attributes={{
-                      text: {
-                        scaling: true,
-                      },
-                      innerStroke: { width: 0.1, scalingMethod: "scaled" },
-                      // opacity: n => getNodeType(n) === "Threat" ? 0 : 1,
-                      color: (n) => {
-                        if (n.getData("groupId")) {
-                          return undefined;
-                        }
-                        if (getNodeType(n) === "Threat") return "#997766";
-                        const threat = getNodeFirstThreat(n);
-                        return colors(threat);
-                      },
-                      radius: (n) => {
-                        if (n.getData("groupId")) return undefined;
-                        const s = getClusterNodeData(n)?.node_size;
-                        if (s) return s;
-                        const adj: number[] = n
-                          .getAdjacentNodes()
-                          .getData("node_size")
-                          .filter((o) => typeof o === "number")
-                          .map((o) => o as number);
-                        const sum = adj.reduce((p, c) => p + c, 0);
-                        if (sum > 0) return sum / adj.length;
-                        return 20;
-                      },
-                      halo: (n) => {
-                        if (nodeSearch(n, searchTerms)) {
-                          const s = getClusterNodeData(n)?.node_size;
-                          const width = s ? s / 2 + 2 : 105;
-                          return {
-                            color: "yellow", // 'white',
-                            width,
-                            strokeColor: "#ccc",
-                          };
-                        }
-                      },
-                      // text: {
-                      //   content: (n) => getNodeTitle(n),
-                      //   size: 15,
-                      // },
-                      // pulse: (n) => ({
-                      //   enabled: nodeSearch(n, searchTerms),
-                      //   endRatio: 1.7,
-                      //   width: 2,
-                      //   interval: 0,
-                      //   startRatio: 1.2,
-                      //   endColor: "red",
-                      //   startColor: "orange",
-                      // }),
-                    }}
-                  /> */}
-                </>
-              )}
-
               <EdgeStyleRule
                 attributes={{
                   shape: {
                     head: "arrow",
                   },
-                  color: "#ccc",
                   width: 1,
+                  color: (e) => {
+                    const dataSource = getNodeData(e.getSource());
+                    const dataTarget = getNodeData(e.getTarget());
+                    const types = [
+                      "hierarchicalcluster",
+                      "cluster",
+                      "threat",
+                      "article",
+                    ];
+                    if (
+                      !types.includes(dataSource?.type ?? "") ||
+                      !types.includes(dataTarget?.type ?? "")
+                    )
+                      return "#d9dae2";
+                  },
                 }}
               />
-
-              {/* <Popup
-          position={() => (clickedNode ? clickedNode.getPosition() : null)}
-          onClose={() => setPopupOpen(false)}
-          isOpen={clickedNode && popupOpen}
-        >
-          {clickedNode && (
-            <div className="x">{`Node ${clickedNode.getId()}:`}</div>
-          )}
-        </Popup> */}
-              <Tooltip
-                visible={!!target && maximized}
-                placement="top"
-                position={tooltipPositon}
-              >
-                <div className="toolTip">
-                  \ tool tip text
-                  {/* {target?.isNode && getNodeSummary(target)} */}
-                </div>
-              </Tooltip>
+              <NodeStyleRule
+                attributes={{
+                  text: {
+                    // scaling: true,
+                    size: 15,
+                    content: (n) => {
+                      const data = getNodeData(n);
+                      if (data?.type === "hierarchicalcluster")
+                        return data.name;
+                      if (data?.type === "cluster") return data.title;
+                      if (data?.type === "threat") return data.title;
+                    },
+                  },
+                  color: (n) => {
+                    const data = getNodeData(n);
+                    if (data?.type === "hierarchicalcluster") return "#bacf99";
+                    if (data?.type === "cluster") return "#8297ec";
+                    if (data?.type === "threat") return "#ffb700";
+                    return "#d9dae2";
+                  },
+                  radius: (n) => {
+                    const data = getNodeData(n);
+                    if (data?.type === "hierarchicalcluster")
+                      return data.clusters.length / 2;
+                    if (data?.type === "cluster") return data.nr_articles;
+                    if (data?.type === "threat")
+                      return data.score ? data.score * 5 : 2.5;
+                  },
+                  halo: (n) => {
+                    if (isHaloed(n))
+                      return {
+                        color: "yellow",
+                        strokeColor: "#ccc",
+                        width: 10,
+                      };
+                  },
+                }}
+              />
+              <NodeFilter enabled criteria={(n) => !isNodeFiltered(n)} />
               <LayoutService
                 ref={layoutService}
-                // threats={threats}
+                threats={threats}
                 dataLoaded={dataLoading}
                 fullScreen={maximized}
                 onExitFullScreen={handleMaximizeClick}
               />
-              {/* <TimeLine container={timelineRef} /> */}
+              <NeighborGeneration
+                enabled={geoMode}
+                selector={(n) => getNodeData(n)?.type === "cluster"}
+                neighborIdFunction={(n) => {
+                  const data = getNodeData(n);
+                  if (data?.type === "cluster") {
+                    return data.locations
+                      .filter(
+                        (l) =>
+                          typeof l.latitude === "number" &&
+                          typeof l.longitude === "number",
+                      )
+                      .map((l) => JSON.stringify(l));
+                  }
+                  return null;
+                }}
+                nodeGenerator={(id, nodes) => {
+                  const n = nodes.get(0);
+                  if (!n) return {};
+                  return {
+                    data: {
+                      ...(n.getData() as object),
+                      location: JSON.parse(id) as object,
+                    },
+                  };
+                }}
+              />
               <Geo
                 enabled={geoMode}
-                longitudePath="geo.longitude"
-                latitudePath="geo.latitude"
+                longitudePath="location.longitude"
+                latitudePath="location.latitude"
                 minZoomLevel={2}
                 sizeRatio={0.8}
               />
               <>
-                <div className="control-buttons space-y-2">
+                <div className="control-buttons space-x-2">
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleGeoBtnClick}
+                    title="Map view"
+                  >
+                    <span className="wb-inv">View clusters on a map</span>
+                    <FontAwesomeIcon icon={faMap} />
+                  </button>
+                  <button
+                    className={`btn btn-primary${geoMode ? " hidden" : ""}`}
+                    onClick={toggleTreeDirection}
+                    title="Rotate"
+                  >
+                    <span className="wb-inv">Rotate Tree View</span>
+                    <FontAwesomeIcon icon={faRotate} />
+                  </button>
+
                   <button
                     className="btn btn-primary"
                     onClick={handleMaximizeClick}
+                    title="Fullscreen"
                   >
-                    <span className="wb-inv">Make Graph View Full Screen</span>
-                    <span
-                      className={`glyphicon glyphicon-resize-${maximized ? "small" : "full"}`}
-                    />
-                  </button>
-                  {/* <button className="btn btn-primary" onClick={toggleGrouping}>
-                    {grouping && "Ungroup"}
-                    {!grouping && "Group"}
-                  </button> */}
-
-                  <button
-                    className="btn btn-primary hidden"
-                    onClick={handleGeoBtnClick}
-                  >
-                    Geo Mode
-                  </button>
-                  <button
-                    className="btn btn-primary hidden"
-                    onClick={handleTimelineBtnClick}
-                  >
-                    Timeline
+                    <span className="wb-inv">Switch to Full Screen View</span>
+                    <FontAwesomeIcon icon={maximized ? faMinimize : faExpand} />
                   </button>
                 </div>
               </>
             </Ogma>
-            <div
-              id="timeline"
-              ref={timelineRef}
-              style={{
-                opacity: showTimeline ? 1 : 0,
-                pointerEvents: showTimeline ? "initial" : "none",
-              }}
-            />
           </div>
         </div>
       </Panel>

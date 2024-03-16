@@ -30,7 +30,7 @@ export default function AppWrapper({
         isApplication={true}
         showPostContent={false}
       >
-        <div className="flex flex-1 flex-col">{children}</div>
+        <div className="mr-[60px] flex flex-1 flex-col">{children}</div>
       </AppTemplate>
     </div>
   );
