@@ -86,7 +86,8 @@ WITH days + [
         WITH c, cluster
             FOREACH (article IN cluster.articles  |
                 MERGE (a:Article {id: article[1]})
-                    SET a.probability = article[2]
+                    SET a.probability = article[2],
+                        a.prob_size = article[2] * 10 
                 MERGE (c)<-[:IN_CLUSTER {probability: article[2]}]-(a)
             )
             FOREACH (threat IN cluster.threats |
@@ -130,6 +131,7 @@ WITH COLLECT(pub_date) AS days
             MERGE (n:Article {id: TOINTEGER(id)})
                 SET n:Outlier,
                     n.probability = article.probability,
+                    n.prob_size = article.probability * 10,
                     n.disease_question = article.filter,
                     n.summary = article.summary,
                     n.answers = apoc.convert.toJson(article.qa)
@@ -202,60 +204,41 @@ YIELD total RETURN total;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// //
-// // Connect simmilar articles within the same cluster
-// //
-// CALL apoc.periodic.iterate("
-//     MATCH (c:Cluster)
-//         RETURN c
-// ","
-//     WITH c
-//         MATCH (c)<-[:IN_CLUSTER]-(a1:Article)<-[:PART_OF]-(c1:Chunk)
-//     WITH c, a1, c1
-//         CALL db.index.vector.queryNodes('text-chunk', 3, c1.embeddings)
-//             YIELD node AS c2, score AS s
-//     WITH c, a1, c1, c2, s
-//         WHERE c1 <> c2 AND NOT EXISTS((a1)<-[:PART_OF]-(c2)) AND s >= $cutoff
-//     WITH c, a1, c1, c2, s
-//         MATCH (c2)-[:PART_OF]->(a2:Article)-[:IN_CLUSTER]->(c)
-//             WHERE a1 <> a2 AND NOT EXISTS((a1)-[:SIMILAR_ARTICLE]-(a2))
-//     WITH c, a1, c1, c2, a2, s
-//         FOREACH (dummy IN CASE WHEN c1.text < c2.text THEN [1] ELSE [] END |
-//             MERGE (c2)-[r:SIMILAR_A2A_CHUNK]->(c1)
-//             SET r.score = s
-//         )
-//         FOREACH (dummy IN CASE WHEN c1.text > c2.text THEN [1] ELSE [] END |
-//             MERGE (c1)-[r:SIMILAR_A2A_CHUNK]->(c2)
-//             SET r.score = s
-//         )
-// ",
-// {params: {cutoff: 0.95}, batchSize:1000, parallel:true})
-// YIELD total RETURN total;
-// //
-// CALL apoc.periodic.iterate("
-//     MATCH (a1:Article)<-[:PART_OF]-(:Chunk)-[r:SIMILAR_A2A_CHUNK]-(:Chunk)-[:PART_OF]->(a2:Article)
-//         WHERE r.score >= $cutoff
-//     WITH DISTINCT([a1, a2]) AS pair, COLLECT(r.score) AS s_coll
-//     WITH pair[0] AS a1, pair[1] AS a2, apoc.coll.sort(s_coll) AS coll, apoc.coll.sum(s_coll) AS sum
-//     WITH DISTINCT(a1) AS a1, COLLECT([a2, coll, sum]) AS acs_coll
-//     WITH a1, REDUCE(l=[], e IN acs_coll | CASE WHEN SIZE(l) = 0 OR e[2] > l[2] THEN e ELSE l END) AS h
-//     RETURN a1, h[0] AS a2, h[1] AS coll, h[2] AS sum
-// ","
-//     WITH a1, a2, coll, sum
-//     FOREACH (dummy IN CASE WHEN a1.id < a2.id THEN [1] ELSE [] END |
-//         MERGE (a2)-[r:HAS_SIMILAR_CONTENT]->(a1)
-//         SET r.score = sum + CASE WHEN r.score IS NULL THEN 0 ELSE r.score END,
-//             r.scores = apoc.coll.sort(coll + CASE WHEN r.scores IS NULL THEN [] ELSE r.scores END)
-//     )
-//     FOREACH (dummy IN CASE WHEN a1.id > a2.id THEN [1] ELSE [] END |
-//         MERGE (a1)-[r:HAS_SIMILAR_CONTENT]->(a2)
-//         SET r.score = sum + CASE WHEN r.score IS NULL THEN 0 ELSE r.score END,
-//             r.scores = apoc.coll.sort(coll + CASE WHEN r.scores IS NULL THEN [] ELSE r.scores END)
-//     )
-// ;
-// ",
-// {params: {cutoff: 0.95}, batchSize:10000, parallel:false})
-// YIELD total RETURN total;
-// //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Connect simmilar articles within the same cluster
+//
+WITH
+    [i IN RANGE(1, 31) | CASE WHEN i < 10 THEN "0" + TOSTRING(i) ELSE TOSTRING(i) END] AS days,
+    ["2019-12-", "2020-01-"] AS months
+    UNWIND months AS month
+WITH days, month
+    UNWIND days AS day
+WITH month + day AS pub_date
+WITH COLLECT(pub_date) AS days
+WITH days + [
+    "2019-12-31-2020-01-02", "2020-01-01-2020-01-03", "2020-01-02-2020-01-04", "2020-01-03-2020-01-05",
+    "2020-01-04-2020-01-06", "2020-01-05-2020-01-07", "2020-01-06-2020-01-08", 
+    "2019-12-31-2020-01-06", "2019-12-31-2020-01-29" 
+    ] AS days
+    UNWIND days AS pub_date
+    CALL apoc.periodic.iterate('
+        CALL apoc.load.json("file:///processed/processed-" + $pub_date + "-smf.jsonl") YIELD value AS cluster_list
+        WITH cluster_list["id_list"] AS similarity_list
+            WHERE SIZE(similarity_list) > 0
+        RETURN similarity_list
+    ',' 
+        WITH similarity_list
+            UNWIND similarity_list AS similarity
+        WITH similarity[0] AS start_id, similarity[1] AS end_id, similarity[2] AS score
+            MERGE (s:Article {id: start_id})
+            MERGE (e:Article {id: end_id})
+            MERGE (s)-[r:SIMILAR_TO]-(e)
+                SET r.score = score,
+                    r.period = $pub_date
+        RETURN COUNT(*) AS number_of_similarities
+    ',
+    {params: {pub_date: pub_date}, batchSize:1000, parallel:false})
+    YIELD total RETURN total;
+//
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

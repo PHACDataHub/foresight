@@ -34,10 +34,10 @@ def save_jsonl(documents, file_name, single=False):
             print(f"\n[{file_name}] - Wrote {len(documents)} documents.")
 
 
-def compute_similarity_task(tid_documents_list, similarity_threshold, queue):
+def compute_similarity_task(tid_documents_list, similarity_threshold, content_similarity_ratio, queue):
     count = 0
     for tid, documents in tid_documents_list:
-        similarity_list = [tid, []]
+        similarity_dict = dict()
         for i, f_document in enumerate(documents):
             f_doc_id, f_embeddings_list = f_document['id'], f_document['embeddings']
             for s_document in documents[i+1:]:
@@ -64,18 +64,28 @@ def compute_similarity_task(tid_documents_list, similarity_threshold, queue):
                     if len(f_ids) == total_f_length or len(s_ids) ==  total_s_length:
                         break
                 
-                if total_score >= similarity_threshold * min(total_f_length, total_s_length):
+                min_length = min(total_f_length, total_s_length)
+                len_f_ids = len(f_ids)
+                if (len_f_ids == 1 and min_length == 1) or \
+                    (2 <= min_length <=3 and len_f_ids >= content_similarity_ratio * min_length) or \
+                    (len_f_ids >= 3):
                     if total_s_length < total_f_length:
-                        similarity_list[1].append([s_doc_id, f_doc_id, total_score])
+                        key_id, val_id = s_doc_id, f_doc_id
                     else:
-                        similarity_list[1].append([f_doc_id, s_doc_id, total_score])
+                        key_id, val_id = f_doc_id, s_doc_id
+                    if key_id not in similarity_dict or similarity_dict[key_id][1] < total_score/min_length:
+                        similarity_dict[key_id] = [val_id, total_score/min_length]
                     # print(f"{f_doc_id} --- {s_doc_id} --- {total_score}", flush=True)
                     count = increase_count(count, '.')
 
-        queue.put(similarity_list)
+            similarity_list = []
+            for key_id, val in similarity_dict.items():
+                similarity_list.append([key_id, val[0], val[1]])
+
+        queue.put({"topic": tid, "id_list": similarity_list})
 
 
-def compute_similarity(input_documents, topic_dict, similarity_threshold=0.85):
+def compute_similarity(input_documents, topic_dict, similarity_threshold, content_similarity_ratio):
     n_workers = 4
     n_topics = 0
     sub_lists = {i: [] for i in range(0, n_workers)}
@@ -96,7 +106,7 @@ def compute_similarity(input_documents, topic_dict, similarity_threshold=0.85):
     workers = []
     for i in range(0, n_workers):
         # device_id = 'mps' if device == 'mps' else i
-        workers.append(Thread(target=compute_similarity_task, args=(sub_lists[i], similarity_threshold, output_queue,)))
+        workers.append(Thread(target=compute_similarity_task, args=(sub_lists[i], similarity_threshold, content_similarity_ratio, output_queue,)))
         
     for i in range(0, n_workers):
         workers[i].start()
@@ -117,17 +127,21 @@ def compute_similarity(input_documents, topic_dict, similarity_threshold=0.85):
     return output_documents
 
 
-def performing_tasks(path, period, documents):
+def performing_tasks(path, period, documents, similarity_threshold, content_similarity_ratio):
     # Compute similarity between articles in each of the clusters
     loc_file_name = f"{path}/enriched-{period}-cls.jsonl"
     topic_dict = load_jsonl(loc_file_name, single=True)
-    topic_dict = compute_similarity(documents, topic_dict)
-    smr_file_name = f"{path}/processed-{period}-smr.jsonl"
-    save_jsonl(topic_dict, smr_file_name, single=True)
+    topic_dict = compute_similarity(documents, topic_dict, similarity_threshold, content_similarity_ratio)
+    smf_file_name = f"{path}/processed-{period}-smf.jsonl"
+    save_jsonl(topic_dict, smf_file_name, single=True)
 
 
 if __name__ == '__main__':
-    path, device, start_date, end_date = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    path, start_date, end_date = sys.argv[1], sys.argv[2], sys.argv[3]
+    if len(sys.argv) > 5:
+        similarity_threshold, content_similarity_ratio = float(sys.argv[4]), float(sys.argv[5])
+    else:
+        similarity_threshold, content_similarity_ratio = 0.8, 0.5
 
     date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)]
     daily_documents_dict = dict()
@@ -146,7 +160,7 @@ if __name__ == '__main__':
             daily_documents[document['id']] = document
 
         daily_documents_dict[pub_date] = daily_documents
-        performing_tasks(path, pub_date, daily_documents)
+        performing_tasks(path, pub_date, daily_documents, similarity_threshold, content_similarity_ratio)
 
         final_time = datetime.now()
         seconds = (final_time - initial_time).total_seconds()
@@ -161,7 +175,7 @@ if __name__ == '__main__':
             start_period, end_period = date_list[i], date_list[i+period_length-1]
             period = f"{start_period}-{end_period}"
             period_documents = {k: v for j in range(0, period_length) for k, v in daily_documents_dict[date_list[i+j]].items()}
-            performing_tasks(path, period, period_documents)
+            performing_tasks(path, period, period_documents, similarity_threshold, content_similarity_ratio)
 
             final_time = datetime.now()
             seconds = (final_time - initial_time).total_seconds()
