@@ -28,7 +28,7 @@
 
 ## [B. Story of Alice](#b-story-of-alice)
 
-*Alice is an epidemiologist. She is specialized in detecting, analyzing, and informing about disease outbreaks.*
+*Alice is an epidemiologist. She is specialized in detecting, analyzing, and informing about **disease outbreaks**.*
 
 *Every day at 9:00 AM, she starts the day by reading news articles that are accumulated over night. News articles continuously arrive in real-time, so as she works through her shift, more and more can come to her screen.*
 
