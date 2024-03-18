@@ -124,16 +124,16 @@ This way any data source can be plugged into any pipeline or platform, being use
 
 There are likely two types of news sources: accessible with or without credentials, in order words paid subscriptions or publicly freely available. There is another question regarding republication of full text with or without commercial value. 
 
-*Paid subscriptions*: Dow Jones delivers daily/real-time news articles each can be a full text article, a video or an audio content, or only a link to a webpage (that would have the full content but would have certain policy related to usage) which can have text, audio, or video content. Note that these articles can be revised in time, updated, deleted, or new articles created in different languages.
+*Paid subscriptions* (**using part of GPHIN archive**): Dow Jones delivers daily/real-time news articles each can be a full text article, a video or an audio content, or only a link to a webpage (that would have the full content but would have certain policy related to usage) which can have text, audio, or video content. Note that these articles can be revised in time, updated, deleted, or new articles created in different languages.
 
-It is important to consider identical (by 95% of content, even in different languages, by different publishers), part of (85% of one is another, or similar (85%-95% of key paragraphs), etc.
+It is important to consider identical (by 95% of content, even in different languages, by different publishers), part of 85% of one is another, or similar (85%-95% of key paragraphs), etc.
 
-*Freely subscriptions*:
-- (Video) Youtube channels
+*Freely subscriptions* (**not implemented now**):
+- (Video) Youtube channels 
 - (Audio) Podcasts
 - (Text) RSS feeds
 
-*(manually collected) Freely accessible*:
+*(manually collected) Freely accessible* (**not implemented now**):
     - (Text/Video/Audio) web pages (URLs)
 
 *Ingestion Pipeline*:
@@ -299,7 +299,7 @@ Each of the 26 clusters, for example the `Viral Pneumonia Outbreak in Wuhan` (hi
 
 **Thus, instead of reading 3749 articles, which can easily costs her a month, Alice's work is to concentrating on these 26 clusters and a few outliers later, which can be done in a few hours.**
 
-*She can also be sure that the remaining articles are not within her interests*
+*She can also be sure that the remaining articles are not within her interests.*
 
 #### F.1.3. Understanding the hierarchical relations among all clusters, clusters with detected threats, and Alice's clusters
 
@@ -320,6 +320,8 @@ The differences highlighted as below.
 #### F.1.4. Worldmap view of detected clusters
 
 Instead of only seeing the location of each articles, the `World map of clusters with detected threats` view provides a view of recognized locations of the detected clusters.
+
+*Note that some location detection are not correct, for now.*
 
 <table cellspacing="0" cellpadding="0" border="0">
     <tr>
