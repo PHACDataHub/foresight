@@ -53,15 +53,15 @@ Initiating Small-Scale Projects:
 4. **User-Driven Success**: Acknowledge that the platform's success is predominantly contingent upon the contributions and engagement of the users, rather than solely on the proficiency of our development efforts. This platform would serve as an innovative hub for domain experts, facilitating the proposal of ideas, experiments, and tests. Moreover, it would empower these professionals to execute their plans with a degree of automation, optimizing the storytelling potential for the constantly evolving Minimum Viable Product (MVP).
 5. **From Success to Scalability**: Leverage successful small-scale implementations as a springboard to develop a GPHIN-like platforms, all while maintaining our integral role and connection within the community.
 
-## IV. Defining a Full Prototype
+## IV. [Defining a Full Prototype for the Playground](#iv-defining-a-full-prototype-for-the-playground)
 
 1. **Broadening Detection Scope**
     - Extend our capabilities to identify relevant content across diverse formats, including news articles, documents, and videos, ensuring a comprehensive collection of pertinent data.
     - *Specific Outputs*:
         - Ingest News Provider articles (e.g., Factiva, RSS).
-        - (**not implemented for now**) Ingest RSS, Public Health Documents and Videos (related to health and public health).
+        - Ingest RSS, Public Health Documents and Videos (related to health and public health).
             - For Videos, leverage AI to understand what the video is about and produce text description
-        - (**not implemented for now**) Harvest and Ingest HC and PHAC standards and policies for establishing ground truths.
+        - Harvest and Ingest HC and PHAC standards and policies for establishing ground truths.
 2. **Enhanced Visualization for At-a-Glance Detection of Events**
     - Integrate the detected information with our existing knowledge base, employing visualization tools to depict relationships and contexts, aiding in a more intuitive understanding of the data.
     - Web-based interfaces leveraging modern data infrastructures.
@@ -103,4 +103,7 @@ Initiating Small-Scale Projects:
 ## V. A new journey begins!
 
 **Milestones:**
+
 1. [The story of Alice](./doc/milestone-1.md).
+
+*Note: some of the features in [Defining a Full Prototype for the Playground](#iv-defining-a-full-prototype-for-the-playground) are implemented yet.*
