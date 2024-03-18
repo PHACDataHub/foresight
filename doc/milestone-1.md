@@ -314,7 +314,7 @@ The differences highlighted as below.
 
 The differences highlighted as below. 
 - On the *All clusters* diagram on the left, some *non-threats* are shown, these clusters would not be the interest of any public health analysts (for now).
-- On the *Only clusters with detected threats* diagram in the middle, some *threats not assigned to Alice* are shown, these clusters are associated with different threats than the ones Alice's assigned to.
+- On the *Only clusters with detected threats* diagram in the middle (some *threats not assigned to Alice*) are shown, these clusters are associated with different threats than the ones Alice's assigned to.
 - On the *Only Alice's clusters,* *a subtree of disease-related clusters* is show. In practice, there would be many different subtrees with this property, but *each of them contains consistently related disease outbreak clusters*. This would in addition, helps Alice to work better with her cluster.
 
 #### F.1.4. Worldmap view of detected clusters
