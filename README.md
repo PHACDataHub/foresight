@@ -115,19 +115,19 @@ Initiating Small-Scale Projects: Demonstrate that the platform can accommodate t
 Consuming data-as-products to produce events-as-products.
 
 **AI-assisted analytical platform**:
-    - AI-assisted UI allow users via:
-        - Workspace:
-            - To see millions of data points, multi-perspective from high-level overview to all properties and relations of a single data point. 
-            - To work with a number of data points as a single entity.
-            - To interactively ask questions and receive answers in natural language.
-            - To explore, analyze, share insights, build, and report profile of events
-            - Bring in domain knowledge, master data, private information and so on at any time for better detection and analysis.
-        - Real-time dashboard: executive, daily, plus past days, by topic, by event clusters, by geography
-        - Work session are recorded as defined. Relevant items are bookmarked. Opinion-required events are automatically shared. Insights are up-to-date in real-time. Produced events become immediately available for consumption.
-    - An event sourcing architecture that seamlessly create, deliver, and synchronize data points across all users
-    - An analytical engine that is essentially multi-workflow processing pipeline with on-demand AI/NLP tasks
-    - A myriad of DaPs from domain knowledge, master data, private information and so on
-    - A self-monitoring platform that (i) increase or decrease system resources based on workload; (ii) keep data in sync with standby for disaster prevention; (iii) keep track of user sessions and data in motion according to governance policy.
+- AI-assisted UI allow users via:
+    - Workspace:
+        - To see millions of data points, multi-perspective from high-level overview to all properties and relations of a single data point. 
+        - To work with a number of data points as a single entity.
+        - To interactively ask questions and receive answers in natural language.
+        - To explore, analyze, share insights, build, and report profile of events
+        - Bring in domain knowledge, master data, private information and so on at any time for better detection and analysis.
+    - Real-time dashboard: executive, daily, plus past days, by topic, by event clusters, by geography
+    - Work session are recorded as defined. Relevant items are bookmarked. Opinion-required events are automatically shared. Insights are up-to-date in real-time. Produced events become immediately available for consumption.
+- An event sourcing architecture that seamlessly create, deliver, and synchronize data points across all users
+- An analytical engine that is essentially multi-workflow processing pipeline with on-demand AI/NLP tasks
+- A myriad of DaPs from domain knowledge, master data, private information and so on
+- A self-monitoring platform that (i) increase or decrease system resources based on workload; (ii) keep data in sync with standby for disaster prevention; (iii) keep track of user sessions and data in motion according to governance policy.
 
 **Milestones:**
 1. [The story of Alice](./doc/milestone-1.md).
