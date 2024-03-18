@@ -13,9 +13,9 @@
         "neodash_disease_label": "Ebola hemorrhagic fever",
         "neodash_disease_label_display": "Ebola hemorrhagic fever",
         "neodash_start_date": {
-          "year": 2020,
-          "month": 1,
-          "day": 2
+          "year": 2019,
+          "month": 12,
+          "day": 31
         },
         "neodash_threats": [
           "",
@@ -407,9 +407,9 @@
           }
         ],
         "neodash_end_date": {
-          "year": 2020,
-          "month": 1,
-          "day": 4
+          "year": 2019,
+          "month": 12,
+          "day": 31
         },
         "neodash_cluster_id_display": "2020-01-02-2020-01-04-0",
         "neodash_find_fact": "Where the event happened?",
@@ -634,7 +634,6 @@
             "type": "graph",
             "selection": {
               "Cluster": "title",
-              "DETECTED_THREAT": "(label)",
               "Threat": "text"
             },
             "settings": {
@@ -695,12 +694,13 @@
               "nodeLabelColor": "#000000FF",
               "nodeLabelFontSize": 3,
               "defaultRelColor": "#a0a0a088",
-              "relLabelFontSize": 1
+              "relLabelFontSize": 1,
+              "frozen": false,
+              "nodePositions": {}
             },
             "schema": [
               [
                 "Cluster",
-                "end_date",
                 "summary",
                 "keywords",
                 "nr_articles",
@@ -838,7 +838,6 @@
             "schema": [
               [
                 "Cluster",
-                "end_date",
                 "summary",
                 "keywords",
                 "nr_articles",
@@ -920,8 +919,7 @@
             "type": "graph",
             "selection": {
               "Article": "pub_name",
-              "SIMILAR_TO": "(label)",
-              "Outlier": "title"
+              "Outlier": "pub_name"
             },
             "settings": {
               "allowDownload": true,
@@ -1032,7 +1030,7 @@
           {
             "id": "46f0a2c9-2be1-45f3-88a8-8f4a4d924775",
             "title": "Cluster's label and number of articles within Alice's assignment",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS label, [i IN RANGE(1, SIZE(c.labels)) | c.labels[i]] AS alternatives, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n\n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS label, c.id AS id, [i IN RANGE(1, SIZE(c.labels)) | c.labels[i]] AS alternatives, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n\n",
             "width": 12,
             "height": 7,
             "x": 12,
@@ -1058,7 +1056,7 @@
                 }
               ],
               "nodeColorScheme": "neodash",
-              "columnWidths": "[40,50,10]",
+              "columnWidths": "[35,12, 48,5]",
               "compact": true
             },
             "schema": []
@@ -1587,7 +1585,7 @@
           {
             "id": "4ea2939f-0e4f-4853-9f09-a50b70072e78",
             "title": "What does Alice read? Only the clusters and the outliers associated with threats assigned to her.",
-            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH COUNT(DISTINCT(c)) AS t_clusters, COUNT(DISTINCT(a)) AS t_articles, id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH COUNT(DISTINCT(c)) AS a_clusters, COUNT(DISTINCT(a)) AS c_articles, t_clusters, t_articles\n  MATCH (a:Article)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  COUNT(DISTINCT(a)) AS a_articles, c_articles, a_clusters, t_articles, t_clusters\n  MATCH (a:Article:Outlier)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  a_articles, c_articles, a_clusters, t_articles, t_clusters, COUNT(DISTINCT(a)) AS o_articles\nRETURN\n  a_articles AS `#articles`, \n  c_articles AS `#clustered articles`,\n  a_clusters AS `#clusters`, \n  t_articles AS `#articles (T)`,\n  t_clusters AS `#clusters (T)`,\n  o_articles AS `#outliers (T)`,\n  (t_clusters + o_articles) AS `#Alice reads`,\n  TOSTRING(ROUND(10000.0*t_clusters/a_articles)/100.0) +'%' AS `Clusters`,\n  TOSTRING(ROUND(10000.0*(t_clusters + o_articles)/a_articles)/100.0) +'%' AS `+Outliers`\n  \n",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH COUNT(DISTINCT(c)) AS t_clusters, COUNT(DISTINCT(a)) AS t_articles, id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH COUNT(DISTINCT(c)) AS a_clusters, COUNT(DISTINCT(a)) AS c_articles, t_clusters, t_articles\n  MATCH (a:Article)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  COUNT(DISTINCT(a)) AS a_articles, c_articles, a_clusters, t_articles, t_clusters\n  MATCH (a:Article:Outlier)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  a_articles, c_articles, a_clusters, t_articles, t_clusters, COUNT(DISTINCT(a)) AS o_articles\nRETURN\n  a_articles AS `#articles`, \n  c_articles AS `#clustered articles`,\n  a_clusters AS `#clusters`, \n  t_articles AS `#articles (T)`,\n  t_clusters AS `#clusters (T)`,\n  o_articles AS `#outliers (T)`,\n  (t_clusters + o_articles) AS `#Alice reads`,\n  TOSTRING(ROUND(10000.0*t_clusters/a_articles)/100.0) +'%' AS `Clusters`,\n  TOSTRING(ROUND(10000.0*o_articles/a_articles)/100.0) +'%' AS `+Outliers`\n  \n",
             "width": 12,
             "height": 2,
             "x": 12,
@@ -1702,20 +1700,19 @@
             "schema": [
               [
                 "Cluster",
-                "end_date",
                 "summary",
                 "keywords",
                 "nr_articles",
-                "answers",
-                "countries",
-                "title",
-                "labels",
                 "name",
-                "locations",
+                "answers",
                 "topic_id",
                 "id",
+                "title",
                 "representative_docs",
-                "start_date"
+                "labels",
+                "start_date",
+                "countries",
+                "locations"
               ],
               [
                 "HierarchicalCluster",
@@ -1914,7 +1911,6 @@
             "schema": [
               [
                 "Cluster",
-                "end_date",
                 "summary",
                 "keywords",
                 "nr_articles",
@@ -1963,7 +1959,6 @@
             "type": "graph",
             "selection": {
               "Article": "pub_date",
-              "SIMILAR_TO": "(label)",
               "Outlier": "title"
             },
             "settings": {
@@ -2104,9 +2099,8 @@
             "y": 60,
             "type": "graph",
             "selection": {
-              "Article": "pub_date",
-              "SIMILAR_TO": "(label)",
-              "Outlier": "title"
+              "Article": "title",
+              "Outlier": "pub_date"
             },
             "settings": {
               "allowDownload": true,
@@ -2250,7 +2244,7 @@
             "selection": {
               "Article": "pub_date",
               "SIMILAR_TO": "(label)",
-              "Outlier": "title"
+              "Outlier": "pub_date"
             },
             "settings": {
               "allowDownload": true,
@@ -2294,13 +2288,6 @@
                   "field": "Article.title",
                   "condition": "contains",
                   "value": "pneumonia",
-                  "customization": "node color",
-                  "customizationValue": "#FF000088"
-                },
-                {
-                  "field": "Article.title",
-                  "condition": "contains",
-                  "value": "Pneumonia",
                   "customization": "node color",
                   "customizationValue": "#FF000088"
                 },
