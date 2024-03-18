@@ -80,7 +80,7 @@ Initiating Small-Scale Projects:
         - Show innovative ways to detect signals, aberrations, anomalies, hazards … at a glance.
         - Develop enhanced business process flows for GPHIN analysts.
         - Prove that we can detect emergent events that can’t be achieved with the current GPHIN.
-        - Detect weak signals from different sources of data (e.g. patient population HER repositories).
+        - Detect weak signals from different sources of data (e.g. patient population EHR repositories).
         - Create dynamic data analysis and data exploration dashboards.
         - Test and demonstrate data exploration through human language querying.
 3. **Streamlined Data Management**
