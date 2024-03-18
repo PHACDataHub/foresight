@@ -55,12 +55,13 @@ Our processing capabilities will be significantly enhanced, moving from handling
 ### III.B Future States
 
 Addressing the transition to a more comprehensive public health surveillance system requires clear communication and collaboration with all involved parties. Succinctly, this can be stated as follows:
-Initiating Small-Scale Projects: Demonstrate that the platform can accommodate the needs and desires of experts, stakeholders, and participating entities, starting with manageable, small-scale initiatives.
 
-1. **Empowering User Ownership**: Ensure that users, be they experts or stakeholders, retain control and ownership over the initiatives and functionalities they wish to implement and experiment with.
-2. **Stewardship of the Platform**: Emphasize our role as custodians of the platform, facilitating the execution of user-driven initiatives and ensuring a supportive environment for innovation.
-3. **User-Driven Success**: Acknowledge that the platform's success is predominantly contingent upon the contributions and engagement of the users, rather than solely on the proficiency of our development efforts. This platform would serve as an innovative hub for domain experts, facilitating the proposal of ideas, experiments, and tests. Moreover, it would empower these professionals to execute their plans with a degree of automation, optimizing the storytelling potential for the constantly evolving Minimum Viable Product (MVP).
-4. **From Success to Scalability**: Leverage successful small-scale implementations as a springboard to develop a GPHIN-like platform, all while maintaining our integral role and connection within the community.
+Initiating Small-Scale Projects: 
+1. **Demonstrate** that the platform can accommodate the needs and desires of experts, stakeholders, and participating entities, starting with manageable, small-scale initiatives.
+2. **Empowering User Ownership**: Ensure that users, be they experts or stakeholders, retain control and ownership over the initiatives and functionalities they wish to implement and experiment with.
+3. **Stewardship of the Platform**: Emphasize our role as custodians of the platform, facilitating the execution of user-driven initiatives and ensuring a supportive environment for innovation.
+4. **User-Driven Success**: Acknowledge that the platform's success is predominantly contingent upon the contributions and engagement of the users, rather than solely on the proficiency of our development efforts. This platform would serve as an innovative hub for domain experts, facilitating the proposal of ideas, experiments, and tests. Moreover, it would empower these professionals to execute their plans with a degree of automation, optimizing the storytelling potential for the constantly evolving Minimum Viable Product (MVP).
+5. **From Success to Scalability**: Leverage successful small-scale implementations as a springboard to develop a GPHIN-like platform, all while maintaining our integral role and connection within the community.
 
 ## IV. Defining an Alpha Prototype
 
