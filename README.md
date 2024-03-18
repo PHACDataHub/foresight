@@ -1,6 +1,6 @@
 # FORESIGHT<sup>PHAC</sup>
 
-## The Next Frontier in Public Health Intelligence
+## I. The Next Frontier in Public Health Intelligence
 
 With the advent of novel technologies, our approach towards problem-solving is undergoing a paradigm shift, enabling more profound and multifaceted analyses. The Global Public Health Intelligence Network (GPHIN) represents an initial foray into leveraging technology for public health surveillance, yet it merely skims the surface of potential applications. Current capabilities extend far beyond, with the capacity to process from seven thousand to millions of articles and billions of data points every day, highlighting *the critical need for automation and efficiency enhancement in data processing and analysis*.
 
@@ -16,7 +16,7 @@ The scope of information sources for public health surveillance should extend we
 
 Finally, we need to move from one dimensional to multi-dimensional visual data analysis tools. Drawing an analogy with newspaper layout decisions, where determining what makes the front page is crucial, our goal is to sift through the extensive information available, highlighting the most pertinent and impactful data. This approach ensures that critical information is promptly identified and addressed, fostering a proactive and informed public health response. Imagine *the profound insights and rapid response capabilities* we could unlock by simultaneously visualizing all of the front pages across various dimensions and perspectives, transforming our analysis into a rich, comprehensive tapestry of information.
 
-## Introduction
+## II. Introduction
 
 The Global Public Health Intelligence Network (GPHIN) has been an essential early-warning, event-based surveillance (EBS) system since 1997. Its primary objective is to provide a heightened understanding of potential public health threats worldwide. These threats span a range of concerns, from chemical, biological, radiological, and nuclear dangers to infectious disease outbreaks.
 GPHIN operates on two primary pillars:
@@ -30,11 +30,11 @@ On average, GPHIN processes approximately 7,000 articles per day. These articles
 
 We can do more, do it better, and cover more ground – all more efficiently than ever before. We have proven this.
 
-## A playground for everyone
+## III. A playground for everyone
 
 Currently, the Global Public Health Intelligence Network (GPHIN) operates as a preliminary tool in public health surveillance. While it has laid the foundational groundwork, there is a considerable journey from its current state to the envisioned end state of a comprehensive, state-of-the-art AI system. The transformation entails *augmenting processing capabilities, refining the precision of threat detection, and enhancing user interaction and customization.*
 
-### Initial End State
+### III.A. Initial End State
 
 The envisioned end state of the playground is to create *a comprehensive, state-of-the-art artificial intelligence system focused on public health, incorporating advanced natural language processing (NLP) to identify potential threats from wide-ranging perspectives*. Achieving this state requires a deep understanding of domain-specific knowledge, proficiency in AI and NLP technologies, and robust implementation capabilities.
 
@@ -52,7 +52,7 @@ Our processing capabilities will be significantly enhanced, moving from handling
 
 ***News articles are but the start.***
 
-### Future States
+### III.B Future States
 
 Addressing the transition to a more comprehensive public health surveillance system requires clear communication and collaboration with all involved parties. Succinctly, this can be stated as follows:
 Initiating Small-Scale Projects: Demonstrate that the platform can accommodate the needs and desires of experts, stakeholders, and participating entities, starting with manageable, small-scale initiatives.
@@ -62,9 +62,8 @@ Initiating Small-Scale Projects: Demonstrate that the platform can accommodate t
 3. **User-Driven Success**: Acknowledge that the platform's success is predominantly contingent upon the contributions and engagement of the users, rather than solely on the proficiency of our development efforts. This platform would serve as an innovative hub for domain experts, facilitating the proposal of ideas, experiments, and tests. Moreover, it would empower these professionals to execute their plans with a degree of automation, optimizing the storytelling potential for the constantly evolving Minimum Viable Product (MVP).
 4. **From Success to Scalability**: Leverage successful small-scale implementations as a springboard to develop a GPHIN-like platform, all while maintaining our integral role and connection within the community.
 
-## Defining an Alpha Prototype
+## IV. Defining an Alpha Prototype
 
-### Scope
 1. **Broadening Detection Scope**
     - Extend our capabilities to identify relevant content across diverse formats, including news articles, documents, and videos, ensuring a comprehensive collection of pertinent data.
     - *Specific Outputs*:
@@ -110,24 +109,7 @@ Initiating Small-Scale Projects: Demonstrate that the platform can accommodate t
     - Risk Assessment: Evaluate potential risks associated with each decision, preparing for possible challenges and planning mitigative measures.
 
 
-## What is Foresight Playground?
-
-Consuming data-as-products to produce events-as-products.
-
-**AI-assisted analytical platform**:
-- AI-assisted UI allow users via:
-    - Workspace:
-        - To see millions of data points, multi-perspective from high-level overview to all properties and relations of a single data point. 
-        - To work with a number of data points as a single entity.
-        - To interactively ask questions and receive answers in natural language.
-        - To explore, analyze, share insights, build, and report profile of events
-        - Bring in domain knowledge, master data, private information and so on at any time for better detection and analysis.
-    - Real-time dashboard: executive, daily, plus past days, by topic, by event clusters, by geography
-    - Work session are recorded as defined. Relevant items are bookmarked. Opinion-required events are automatically shared. Insights are up-to-date in real-time. Produced events become immediately available for consumption.
-- An event sourcing architecture that seamlessly create, deliver, and synchronize data points across all users
-- An analytical engine that is essentially multi-workflow processing pipeline with on-demand AI/NLP tasks
-- A myriad of DaPs from domain knowledge, master data, private information and so on
-- A self-monitoring platform that (i) increase or decrease system resources based on workload; (ii) keep data in sync with standby for disaster prevention; (iii) keep track of user sessions and data in motion according to governance policy.
+## V. A new journey begins!
 
 **Milestones:**
 1. [The story of Alice](./doc/milestone-1.md).
