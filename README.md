@@ -42,7 +42,7 @@ Our processing capabilities will be significantly enhanced, moving from handling
 
 ***News articles are but the start.***
 
-### III.B Future States
+### B Future States
 
 Addressing the transition to a more comprehensive public health surveillance system requires clear communication and collaboration with all involved parties. Succinctly, this can be stated as follows:
 
