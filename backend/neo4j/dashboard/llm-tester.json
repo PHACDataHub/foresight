@@ -1,0 +1,393 @@
+{
+    "title": "Foresight",
+    "version": "2.4",
+    "settings": {
+      "pagenumber": 0,
+      "editable": true,
+      "fullscreenEnabled": false,
+      "parameters": {
+        "neodash_context": "The Best Olive Oil You Can Buy at the Store\n\nBy Michael Sullivan\n\nUpdated August 31, 2023\n\nDrizzling good olive oil over perfectly ripe tomatoes and mopping it up with a crusty knob of bread is one of the greatest pleasures of summertime. But that moment will quickly sour if the oil you’re using is rancid.\nOut of the dizzying variety of olive oil brands at your local supermarket, we wanted to find the ones that are actually worth buying. Many bottles have been sitting on store shelves far longer than they should, with oil that’s past its prime or cut with inferior oils.\n\nAfter researching over 40 bottles of oil and speaking with a trained olive oil taster to help define our criteria, we tested 15 olive oils available at national grocery store chains across the country. We focused on those with printed harvest dates, which are the most reliable way to make sure your oil is fresh.\n\nOur goal was to find good all-purpose extra-virgin olive oils that could be used for cooking (which EVOO is great for, by the way) but also for salad dressings and bread dipping. Here are the ones that stood out in our tests.",
+        "neodash_llm_name": "mistral",
+        "neodash_llm_name_display": "mistral",
+        "neodash_selected_llm": "medllama2",
+        "neodash_short_text": "Today is March 19, 2024.",
+        "neodash_long_text": "The Best Olive Oil You Can Buy at the Store\n\nBy Michael Sullivan\n\nUpdated August 31, 2023\n\nDrizzling good olive oil over perfectly ripe tomatoes and mopping it up with a crusty knob of bread is one of the greatest pleasures of summertime. But that moment will quickly sour if the oil you’re using is rancid.\nOut of the dizzying variety of olive oil brands at your local supermarket, we wanted to find the ones that are actually worth buying. Many bottles have been sitting on store shelves far longer than they should, with oil that’s past its prime or cut with inferior oils.\n\nAfter researching over 40 bottles of oil and speaking with a trained olive oil taster to help define our criteria, we tested 15 olive oils available at national grocery store chains across the country. We focused on those with printed harvest dates, which are the most reliable way to make sure your oil is fresh.\n\nOur goal was to find good all-purpose extra-virgin olive oils that could be used for cooking (which EVOO is great for, by the way) but also for salad dressings and bread dipping. Here are the ones that stood out in our tests.",
+        "neodash_question": "What day was yesterday?",
+        "neodash_unlabeled_text": "According to the CDFA, “cold pressed” means the olives were pressed or crushed using a mechanical, hydraulic, or centrifugal press at a temperature that doesn’t lead to significant thermal alterations of the oil. Olive oil expert Kathryn Tomajan said this term is a holdover from before most oils were extracted using stainless steel crushers and centrifuges. Many people still think they need to look for this terminology on the label, so producers continue to include it.\n\nYou may also see the terms “first pressed” or “first extracted,” which Tomajan said implies that the oil is extracted from fresh olives only—never a second extraction from olive pomace. But this terminology is also redundant, as any extra virgin olive oil is, by definition, always both cold- and first-extracted.",
+        "neodash_keywords": "cooking, ingredient, preservation",
+        "neodash_unclassified_text": "An outbreak of unknown pneumonia in Wuhan, China, has resulted in 59 reported cases as of January 2, 2020. Hong Kong public hospitals have seen an increase of eight suspected cases in a single day, including a two-year-old boy.\nThe cause of the pneumonia is not yet known, but some experts suspect it may be related to  the new coronavirus.\nThe Wuhan Municipal Health and Health Committee has announced that seven of the reported cases are serious. The number of reported cases increased by 60% in just four days. Hong Kong scholars believe there may be a connection to the new coronavirus based on mainland sources, but human transmission is also a possibility.\nTwo more cases of fever have been reported in Hong Kong after returning from Wuhan, and three of those cases were confirmed as influenza A(H3). The Centre for Health Protection has expanded monitoring and requires patients who have traveled to Wuhan to report.",
+        "neodash_categories": "Outbreaks of known infectious diseases;\nEmerging infectious diseases or novel pathogens;\nHurricanes, earthquakes, floods, wildfires, and their health impacts;\nEffects on health infrastructure and services during disasters;\nAir pollution levels and associated health risks;\nWater contamination issues and their health implications;\nChemical spills or industrial accidents affecting public health;\nHealth implications of accidents in industrial settings;\nPotential biological attacks or bioterrorism threats;\nReports on suspicious disease-related incidents;\n Reports on suspicious drug-related incidents; \nFoodborne illness outbreaks and recalls;\nWaterborne diseases and contamination alerts;\nIncidents involving radiation exposure and their health consequences;\nExtreme weather events and health advisories;\nHealth implications of changing climate patterns;\nOutbreaks linked to vaccine-preventable diseases;\nControversies or developments in vaccination policies; \nSecurity breaches or cyberattacks on healthcare systems;\nRisks to patient data and healthcare services;\nEvaluations of healthcare system readiness during emergencies;\nReports on hospital capacity during crises or emergencies;\nDrug recalls, counterfeit drugs, and safety concerns;\nIssues with medical device safety, recalls, and their impact on health;\nUnusual health patterns;\nEmerging pathogens;\nAbnormal environmental indicators;\nUnforeseen health outcomes;\nAnomalous disease clusters;\nUnrecognized health risks;\nAtypical health incidents\n",
+        "neodash_your_name": "Nghia Doan"
+      },
+      "theme": "light"
+    },
+    "pages": [
+      {
+        "title": "A few popular tasks",
+        "reports": [
+          {
+            "id": "8eab3dc1-1712-4bf9-b97e-59e81b5a29b3",
+            "title": "Your name is the key of your session!",
+            "query": "RETURN true;",
+            "width": 10,
+            "height": 2,
+            "x": 14,
+            "y": 0,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "backgroundColor": "#FD797988",
+              "entityType": "Your name",
+              "parameterName": "neodash_your_name"
+            },
+            "schema": []
+          },
+          {
+            "id": "92a6fa45-7895-4a1a-8ccd-a64afdf76952",
+            "title": "Question answering",
+            "query": "CALL apoc.load.jsonParams(\n  \"http://35.215.43.115:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: $neodash_short_text, question: $neodash_question})) YIELD value \nWITH value\n  MERGE (a:Answer {id: $neodash_your_name}) \n    SET a.answer = value['answer'];",
+            "width": 14,
+            "height": 4,
+            "x": 0,
+            "y": 4,
+            "type": "forms",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "formFields": [
+                {
+                  "type": "Free Text",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "short_text",
+                    "parameterName": "neodash_short_text",
+                    "multiline": true
+                  },
+                  "query": "RETURN true;"
+                },
+                {
+                  "type": "Free Text",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "question",
+                    "parameterName": "neodash_question"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "clearParametersAfterSubmit": false,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "64918f6c-dc4d-4bf9-ba3d-6560bea234f1",
+            "title": "Answer",
+            "query": "MERGE (a:Answer {id: $neodash_your_name})\n  RETURN a.answer AS answer;\n\n\n",
+            "width": 10,
+            "height": 4,
+            "x": 14,
+            "y": 4,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "format": "yml",
+              "monospace": true,
+              "fontSize": 15
+            },
+            "schema": []
+          },
+          {
+            "id": "28dc7d2a-61ce-403f-bc28-b89c89fbee67",
+            "title": "Simple Q&A",
+            "query": "- On the left panel below (i) Paste or type a short text for the context; (ii) Input your question\n- The answer will appear on the right.\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 2,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#F8CD5688"
+            },
+            "schema": []
+          },
+          {
+            "id": "b0db886d-10bb-4f10-b1b5-5053db8e4291",
+            "title": "Summarize a text",
+            "query": "- On the left panel below paste or type a text.\n- The summary will appear on the right.\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 8,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#F8CD5688"
+            },
+            "schema": []
+          },
+          {
+            "id": "c7e727c2-118d-4157-ad02-bf614fcd27e4",
+            "title": "Text summarization",
+            "query": "CALL apoc.load.jsonParams(\n  \"http://35.215.43.115:8000/summarize_text\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: $neodash_long_text, question: $neodash_question})) YIELD value \nWITH value\n  MERGE (a:Answer {id: $neodash_your_name}) \n    SET a.text = $neodash_long_text, a.summary = value['summary'];",
+            "width": 14,
+            "height": 5,
+            "x": 0,
+            "y": 10,
+            "type": "forms",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "formFields": [
+                {
+                  "type": "Free Text",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "long_text",
+                    "parameterName": "neodash_long_text",
+                    "multiline": true
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "clearParametersAfterSubmit": false,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "26a46f93-4477-4bdf-838e-5b07204aa2a2",
+            "title": "Summary",
+            "query": "MERGE (a:Answer {id: $neodash_your_name})\nRETURN a.summary AS summary\n\n\n\n",
+            "width": 10,
+            "height": 5,
+            "x": 14,
+            "y": 10,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "format": "yml",
+              "fontSize": 15,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "614a5177-211c-411b-8c2f-bc803417097f",
+            "title": "Label a text",
+            "query": "- On the left panel below (i) paste or type a text, (ii) add a list of keywords, separated by comma (,)\n- The label will appear on the right.\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 15,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#F8CD5688"
+            },
+            "schema": []
+          },
+          {
+            "id": "1b3730bf-13d9-4019-bf2c-66751288b817",
+            "title": "Text labeling",
+            "query": "CALL apoc.load.jsonParams(\n  \"http://35.215.43.115:8000/label_text\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: $neodash_unlabeled_text, keywords: $neodash_keywords})) YIELD value \nWITH value\n  MERGE (a:Answer {id: $neodash_your_name}) \n    SET a.labels = value['labels'];",
+            "width": 14,
+            "height": 5,
+            "x": 0,
+            "y": 17,
+            "type": "forms",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "formFields": [
+                {
+                  "type": "Free Text",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "unlabeled_text",
+                    "parameterName": "neodash_unlabeled_text",
+                    "multiline": true
+                  },
+                  "query": "RETURN true;"
+                },
+                {
+                  "type": "Free Text",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "keywords",
+                    "parameterName": "neodash_keywords"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "clearParametersAfterSubmit": false,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "17ef3e35-942b-4411-aa4d-9817358983e0",
+            "title": "Labels",
+            "query": "MERGE (a:Answer {id: $neodash_your_name})\nRETURN a.labels AS labels\n\n\n\n",
+            "width": 10,
+            "height": 5,
+            "x": 14,
+            "y": 17,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "format": "yml",
+              "fontSize": 15,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "bbb1f2c9-b30c-45e7-8617-14a32834ebef",
+            "title": "Classify a text",
+            "query": "- On the left panel below (i) paste or type a text, (ii) add a list of categories to classify the text against, separated by semicolon (;). *Note that this is multi-label classifications*\n- The list of categories will appear on the right.\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 22,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#F8CD5688"
+            },
+            "schema": []
+          },
+          {
+            "id": "3d97341a-e6ad-44b2-9d0c-363836c920b4",
+            "title": "Text classification",
+            "query": "CALL apoc.load.jsonParams(\n  \"http://35.215.43.115:8000/classify_text\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: $neodash_unclassified_text, categories: $neodash_categories})) YIELD value \nWITH value\n  MERGE (a:Answer {id: $neodash_your_name}) \n    SET a.categories = value['categories'];",
+            "width": 14,
+            "height": 7,
+            "x": 0,
+            "y": 24,
+            "type": "forms",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "formFields": [
+                {
+                  "type": "Free Text",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "unclassified_text",
+                    "parameterName": "neodash_unclassified_text",
+                    "multiline": true
+                  },
+                  "query": "RETURN true;"
+                },
+                {
+                  "type": "Free Text",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "categories",
+                    "parameterName": "neodash_categories",
+                    "multiline": true
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "clearParametersAfterSubmit": false,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "cb91b372-868a-4352-8244-69bb56c6a7fe",
+            "title": "Categories",
+            "query": "MERGE (a:Answer {id: $neodash_your_name})\nRETURN a.categories AS categories\n\n\n\n",
+            "width": 10,
+            "height": 7,
+            "x": 14,
+            "y": 24,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "format": "yml",
+              "fontSize": 15,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "10a3e24f-0bd0-4b29-ac68-190ad06c7270",
+            "title": "Choice of LLMs",
+            "query": "MATCH (n:LLM) \nRETURN n.name AS name",
+            "width": 7,
+            "height": 2,
+            "x": 0,
+            "y": 0,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "backgroundColor": "#FA660388",
+              "entityType": "LLM",
+              "propertyType": "name",
+              "propertyTypeDisplay": "name",
+              "parameterName": "neodash_llm_name",
+              "compact": true,
+              "actionsRules": [
+                {
+                  "condition": "Click",
+                  "field": "name",
+                  "value": "name",
+                  "customization": "set variable",
+                  "customizationValue": "selected_llm"
+                }
+              ],
+              "refreshButtonEnabled": true,
+              "transposed": false
+            },
+            "schema": []
+          },
+          {
+            "id": "930c1c8e-7eb7-4d48-94e1-0699f9514ff5",
+            "title": "Load selected LLM",
+            "query": "CALL apoc.load.jsonParams(\n  \"http://35.215.43.115:8000/load_model\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({model_name: $neodash_selected_llm})) YIELD value \nWITH value\nRETURN $neodash_selected_llm AS name, CASE WHEN value['result'] = 'OK' THEN 'yes' ELSE value['result'] END AS loaded",
+            "width": 7,
+            "height": 2,
+            "x": 7,
+            "y": 0,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "backgroundColor": "#FA660388",
+              "entityType": "LLM",
+              "propertyType": "name",
+              "propertyTypeDisplay": "name",
+              "parameterName": "neodash_llm_name",
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          }
+        ]
+      }
+    ],
+    "parameters": {},
+    "extensions": {
+      "active": true,
+      "activeReducers": [],
+      "advanced-charts": {
+        "active": true
+      },
+      "styling": {
+        "active": true
+      },
+      "actions": {
+        "active": true
+      },
+      "forms": {
+        "active": true
+      }
+    },
+    "uuid": "2d4de18a-2e6b-491a-8542-31dea38ad0e0"
+  }
