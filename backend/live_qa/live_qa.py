@@ -79,7 +79,7 @@ class UserInput(BaseModel):
     question: str
 
 model_name = 'mistral:instruct'
-# ollama.pull(model_name)
+ollama.pull(model_name)
 qa_chain_llm, sm_chain_llm, output_parser, text_splitter = create_llm_chain(model_name)
 answer = compute_answer("Today is March 14, 2024", "What day was yesterday?", qa_chain_llm, sm_chain_llm, output_parser, text_splitter)
 

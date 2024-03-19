@@ -634,6 +634,7 @@
             "type": "graph",
             "selection": {
               "Cluster": "title",
+              "DETECTED_THREAT": "(label)",
               "Threat": "text"
             },
             "settings": {
@@ -710,8 +711,8 @@
                 "labels",
                 "name",
                 "locations",
-                "topic_id",
                 "id",
+                "topic_id",
                 "representative_docs",
                 "start_date"
               ],
@@ -843,8 +844,8 @@
                 "nr_articles",
                 "name",
                 "answers",
-                "topic_id",
                 "id",
+                "topic_id",
                 "title",
                 "representative_docs",
                 "labels",
@@ -1094,7 +1095,7 @@
             "width": 16,
             "height": 6,
             "x": 8,
-            "y": 77,
+            "y": 80,
             "type": "pie",
             "selection": {
               "index": "possible_disease",
@@ -1167,7 +1168,7 @@
             "width": 24,
             "height": 10,
             "x": 0,
-            "y": 83,
+            "y": 86,
             "type": "table",
             "selection": {},
             "settings": {
@@ -1260,7 +1261,7 @@
             "width": 8,
             "height": 6,
             "x": 0,
-            "y": 77,
+            "y": 80,
             "type": "graph",
             "selection": {
               "Article": "title",
@@ -1369,7 +1370,7 @@
             "width": 24,
             "height": 2,
             "x": 0,
-            "y": 75,
+            "y": 78,
             "type": "text",
             "selection": {},
             "settings": {
@@ -1415,10 +1416,10 @@
             "id": "feea12e5-ad43-4895-9a39-1eaad2cdf18e",
             "title": "Use the first representative article to answer my second question",
             "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH REDUCE(t='', d IN contents | CASE WHEN SIZE(d) > SIZE(t) AND t <> '' THEN t ELSE d END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_impact_on_people})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
-            "width": 10,
-            "height": 3,
-            "x": 14,
-            "y": 69,
+            "width": 9,
+            "height": 6,
+            "x": 6,
+            "y": 72,
             "type": "value",
             "selection": {},
             "settings": {
@@ -1461,7 +1462,7 @@
             "title": "More exploration - my first question",
             "query": "RETURN true;",
             "width": 6,
-            "height": 2,
+            "height": 3,
             "x": 0,
             "y": 69,
             "type": "select",
@@ -1477,7 +1478,7 @@
             "id": "cfdf1af1-b356-4bad-a9f0-c96e01aaa06e",
             "title": "Use summary to answer my first question",
             "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: c.summary, question: $neodash_time_and_place})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
-            "width": 8,
+            "width": 9,
             "height": 3,
             "x": 6,
             "y": 69,
@@ -1508,9 +1509,9 @@
             "title": "More exploration - my second question",
             "query": "RETURN true;",
             "width": 6,
-            "height": 2,
+            "height": 3,
             "x": 0,
-            "y": 71,
+            "y": 72,
             "type": "select",
             "selection": {},
             "settings": {
@@ -1525,9 +1526,9 @@
             "title": "More exploration - my third question",
             "query": "RETURN true;",
             "width": 6,
-            "height": 2,
+            "height": 3,
             "x": 0,
-            "y": 73,
+            "y": 75,
             "type": "select",
             "selection": {},
             "settings": {
@@ -1541,10 +1542,10 @@
             "id": "9b328c3c-4755-49da-a152-68b4f0479ef2",
             "title": "Use the top three representative articles to answer my third question",
             "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH [i IN RANGE(0, CASE WHEN SIZE(contents) > 2 THEN 2 ELSE SIZE(contents) END) | contents[i]] AS contents\nWITH REDUCE(t='', e IN contents | CASE WHEN t = '' THEN e ELSE t + '\\n\\n' + e END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://34.118.173.82:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_severity_and_urgency})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
-            "width": 18,
-            "height": 3,
-            "x": 6,
-            "y": 72,
+            "width": 9,
+            "height": 9,
+            "x": 15,
+            "y": 69,
             "type": "value",
             "selection": {},
             "settings": {
@@ -1705,8 +1706,8 @@
                 "nr_articles",
                 "name",
                 "answers",
-                "topic_id",
                 "id",
+                "topic_id",
                 "title",
                 "representative_docs",
                 "labels",
@@ -1805,7 +1806,6 @@
             "schema": [
               [
                 "Cluster",
-                "end_date",
                 "summary",
                 "keywords",
                 "nr_articles",
@@ -1815,8 +1815,8 @@
                 "labels",
                 "name",
                 "locations",
-                "topic_id",
                 "id",
+                "topic_id",
                 "representative_docs",
                 "start_date"
               ],
@@ -1920,8 +1920,8 @@
                 "labels",
                 "name",
                 "locations",
-                "topic_id",
                 "id",
+                "topic_id",
                 "representative_docs",
                 "start_date"
               ],
@@ -2701,7 +2701,7 @@
                 {
                   "condition": "onNodeClick",
                   "field": "DON",
-                  "value": "DON.url",
+                  "value": "url",
                   "customization": "set variable",
                   "customizationValue": "don_id"
                 }
@@ -2839,9 +2839,7 @@
       "styling": {
         "active": true
       },
-      "actions": {
-        "active": true
-      },
+      "actions": {},
       "query-translator": {},
       "forms": {
         "active": true

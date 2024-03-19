@@ -233,7 +233,7 @@ WITH days + [
         WITH similarity[0] AS start_id, similarity[1] AS end_id, similarity[2] AS score
             MERGE (s:Article {id: start_id})
             MERGE (e:Article {id: end_id})
-            MERGE (s)-[r:SIMILAR_TO]-(e)
+            MERGE (s)-[r:SIMILAR_TO]->(e)
                 SET r.score = score,
                     r.period = $pub_date
         RETURN COUNT(*) AS number_of_similarities
