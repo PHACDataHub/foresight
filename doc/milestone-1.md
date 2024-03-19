@@ -494,6 +494,15 @@ Connected components formed with article's titles shown.
 
 <img src="./img/2019-12-31-2020-01-02-0-time-travel-title.png" alt="2019-12-31 to 2020-01-02, time travel title" width="100%"/>
 
+#### F.3.3. December 31, 2019 to January 06, 2020
+
+**See change in time** using hierarchical cluster view.
+
+Below are the connected components formed over time.
+
+<img src="./img/2019-12-31-2020-01-06-time-travel-date.png" alt="2019-12-31 to 2020-01-02, time travel" width="100%"/>
+
+
 ### F.4 Chat with AI
 
 *Chat with AI* helps Alice to ask some questions against the cluster.
