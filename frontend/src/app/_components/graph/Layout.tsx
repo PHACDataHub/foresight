@@ -187,6 +187,7 @@ const LayoutService = forwardRef(
       ogma.events
         .on("click", ({ target }) => {
           setSelectedNode(target && target.isNode ? target : null);
+          if (target && target.isNode) setLayout("force");
           setFocus(null);
         })
         .on("doubleclick", async ({ target }) => {
@@ -215,7 +216,7 @@ const LayoutService = forwardRef(
       return () => {
         ogma.events.off(onNodesAdded);
       };
-    }, [ogma, ref, setFocus, setSelectedNode, updateLayout]);
+    }, [ogma, ref, setFocus, setLayout, setSelectedNode, updateLayout]);
 
     useImperativeHandle(ref, () => ({
       refresh: updateLayout,
