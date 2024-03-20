@@ -61,18 +61,16 @@ function ThreatSelectorComponent() {
     >
       {open && (
         <div className="flex flex-col text-2xl">
-          <div className="mr-10 flex justify-between">
+          <div className="flex justify-end space-x-5">
+            <button className="btn btn-primary" onClick={handleGroupSelect}>
+              {groupSelectText}
+            </button>
+            <button className="btn btn-danger" onClick={handleResetClick}>
+              Reset
+            </button>
             <button className="btn btn-primary" onClick={handleOpenClick}>
               <span className="glyphicon glyphicon-chevron-right" />
             </button>
-            <div className="flex space-x-5">
-              <button className="btn btn-primary" onClick={handleGroupSelect}>
-                {groupSelectText}
-              </button>
-              <button className="btn btn-danger" onClick={handleResetClick}>
-                Reset
-              </button>
-            </div>
           </div>
           <ul>
             {threats?.map((threat, idx) => (
@@ -94,9 +92,11 @@ function ThreatSelectorComponent() {
       )}
 
       {!open && (
-        <button className="btn btn-primary" onClick={handleOpenClick}>
-          <span className="glyphicon glyphicon-chevron-left" />
-        </button>
+        <div className="flex justify-end space-x-5">
+          <button className="btn btn-primary" onClick={handleOpenClick}>
+            <span className="glyphicon glyphicon-chevron-left" />
+          </button>
+        </div>
       )}
     </Slider>
   );

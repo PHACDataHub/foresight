@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import AppWrapper from "~/app/_components/AppWrapper";
 import Graph from "~/app/_components/graph";
+import HighlightTerms from "~/app/_components/HighlightTerms";
 import HistoryChooser from "~/app/_components/HistoryChooser";
 import TimeTravel from "~/app/_components/TimeTravel";
 
@@ -32,6 +33,7 @@ export default async function LocaleDayLayout({
             travelText: timeTravelMsg("travelText"),
           }}
         />
+        <HighlightTerms />
         <HistoryChooser />
       </div>
       <div className="mb-10 flex flex-1 flex-col items-center justify-center overflow-hidden">

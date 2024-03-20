@@ -106,12 +106,14 @@ export interface ClusterRecord
 
 export type Article = {
   type: "article";
+  outlier: boolean;
   content: string;
   factiva_file_name: string;
   factiva_folder: string;
   gphin_score: number;
   gphin_state: string;
   id: number;
+  prob_size: number;
   probability: number;
   pub_date: Date;
   pub_name: string;
@@ -188,10 +190,10 @@ const translateGraph = (
             ) as ClusterLocation[],
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             location: JSON.parse(source.locations ?? "[]").filter(
-              (l: { latitude?: number, longitude?: number }) =>
+              (l: { latitude?: number; longitude?: number }) =>
                 typeof l.latitude === "number" &&
                 typeof l.longitude === "number",
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             )[0],
             // location: JSON.parse(
             //   source.locations ?? "[]",
@@ -200,7 +202,7 @@ const translateGraph = (
             nr_articles: parseInt(source.nr_articles),
             start_date: new Date(
               source.start_date.year.low,
-              source.start_date.month.low,
+              source.start_date.month.low - 1,
               source.start_date.day.low,
             ),
             representative_docs: source.representative_docs.map((n) => n.low),
@@ -222,17 +224,20 @@ const translateGraph = (
           const source = n.data?.neo4jProperties as ArticleRecord;
           const data: Article = {
             type: "article",
+            outlier: n.data.neo4jLabels.includes("Outlier"),
             content: source.content,
             factiva_file_name: source.factiva_file_name,
             factiva_folder: source.factiva_folder,
             gphin_score: source.gphin_score,
             gphin_state: source.gphin_state,
             id: parseInt(source.id),
+            prob_size: source.prob_size,
             probability: source.probability,
             pub_date: new Date(
               source.pub_date.year.low,
-              source.pub_date.month.low,
+              source.pub_date.month.low - 1,
               source.pub_date.day.low,
+              5
             ),
             pub_name: source.pub_name,
             pub_time: new Date(source.pub_time),
@@ -292,9 +297,9 @@ export const postRouter = createTRPCRouter({
       try {
         const result = await session.run(
           `
-        MATCH (c:Cluster {id: $id})-[]-(a:Article)
-          OPTIONAL MATCH (c)-[]-(t:Threat)
-        RETURN c,a,t
+        MATCH (c:Cluster {id: $id})-[r]-(a:Article)
+          OPTIONAL MATCH (c)-[rt]-(t:Threat)
+        RETURN c,r,a,t,rt
         `,
           { id: input.id },
         );
@@ -389,7 +394,10 @@ export const postRouter = createTRPCRouter({
         question: z.string(),
       }),
     )
-    .query(async ({ input: { cluster_id, question } }) => {
+    .mutation(async ({ input: { cluster_id, question } }) => {
+      if (question.length < 3) {
+        return ["Question is too short."];
+      }
       const session = driver.session();
       try {
         const result = await session.run(
@@ -407,6 +415,33 @@ export const postRouter = createTRPCRouter({
         );
         const answer = result.records.at(0)?.get("answer") as string[];
         return answer;
+      } finally {
+        await session.close();
+      }
+    }),
+
+  articles: publicProcedure
+    .input(
+      z.object({
+        cluster_id: z.string()
+      }),
+    )
+    .query(async ({ input }) => {
+      const session = driver.session();
+
+      try {
+        const result = await session.run(
+          `
+          MATCH (a:Article)-[r:IN_CLUSTER]->(c:Cluster {id: $cluster_id})
+          WITH c, COLLECT(a) AS ac
+            OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)
+              WHERE a IN ac AND oa IN ac
+          RETURN a, r, oa
+        `,
+          { cluster_id: input.cluster_id },
+        );
+
+        return translateGraph(await OgmaLib.parse.neo4j(result));
       } finally {
         await session.close();
       }
@@ -479,7 +514,7 @@ export const postRouter = createTRPCRouter({
               const cluster = path.start.identity.low;
               threats[cluster] = threat.map((t) => t.data as Threat);
             }
-            nr.length = 1;
+            nr.length -= 1;
             nr._fieldLookup = { path: 0 };
             return nr;
           }),

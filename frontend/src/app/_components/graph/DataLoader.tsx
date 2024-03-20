@@ -1,6 +1,7 @@
 import { useOgma } from "@linkurious/ogma-react";
 import { type Neo4JEdgeData } from "@linkurious/ogma";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import * as d3 from "d3";
 import { api } from "~/trpc/react";
 import { useStore } from "~/app/_store";
 import {
@@ -8,9 +9,13 @@ import {
   type Cluster,
   type Threat,
 } from "~/server/api/routers/post";
+import { getNodeData, getNodeRadius } from "~/app/_utils/graph";
 import ProgressBar from "./ProgressBar";
 
 export type ForesightData = Cluster | Threat;
+
+const MAX_RADIUS = 20;
+const MIN_RADIUS = 2;
 
 export default function DataLoader({
   day,
@@ -25,16 +30,45 @@ export default function DataLoader({
   const [totalSize, setTotalSize] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  const { history, setClusters, setLocateNode, setSelectedNode } = useStore();
+  const {
+    setClusters,
+    setScale,
+    setLocateNode,
+    setSelectedNode,
+    history,
+    clusterId,
+    articleGraph,
+    refresh,
+  } = useStore();
 
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
-  const { isFetching: isLoading, data: rawGraph } = api.post.hierarchicalClusters.useQuery(
-    { day, history },
-    {
-      refetchOnWindowFocus: false,
-    },
+  const { isFetching: isHLoading, data: rawHGraph } =
+    api.post.hierarchicalClusters.useQuery(
+      { day, history },
+      {
+        refetchOnWindowFocus: false,
+        enabled: typeof clusterId === "undefined",
+      },
+    );
+
+  const { isFetching: isALoading, data: rawAGraph } =
+    api.post.articles.useQuery(
+      { cluster_id: clusterId ?? "" },
+      {
+        refetchOnWindowFocus: false,
+        enabled: typeof clusterId !== "undefined",
+      },
+    );
+
+  const isLoading = useMemo(
+    () => isHLoading || isALoading,
+    [isALoading, isHLoading],
+  );
+  const rawGraph = useMemo(
+    () => (typeof clusterId === "undefined" ? rawHGraph : rawAGraph),
+    [clusterId, rawAGraph, rawHGraph],
   );
 
   const tick = useCallback(() => {
@@ -63,12 +97,103 @@ export default function DataLoader({
     }
   }, [isLoading, ogma, onLoading, setSelectedNode, tick]);
 
+  const createScale = useCallback(() => {
+    const ret: Record<
+      "cluster" | "hierarchicalcluster" | "threat" | "article" | "global",
+      { min?: number; max?: number }
+    > = {
+      cluster: {},
+      hierarchicalcluster: {},
+      threat: {},
+      article: {},
+      global: {},
+    };
+    ogma.getNodes().forEach((n) => {
+      const data = getNodeData(n);
+      if (!data) return;
+      const r = getNodeRadius(data);
+
+      const gomi = ret.global.min ?? r;
+      const goma = ret.global.max ?? r;
+      ret.global = {
+        min: Math.min(gomi, r),
+        max: Math.max(goma, r),
+      };
+
+      if (
+        data?.type === "hierarchicalcluster" ||
+        data?.type === "cluster" ||
+        data?.type === "threat" ||
+        data?.type === "article"
+      ) {
+        const omi = ret[data.type].min ?? r;
+        const oma = ret[data.type].max ?? r;
+        ret[data.type] = {
+          min: Math.min(omi, r),
+          max: Math.max(oma, r),
+        };
+      }
+    });
+    return {
+      global:
+        typeof ret.global.min === "number" && typeof ret.global.max === "number"
+          ? d3
+              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .domain([ret.global.min, ret.global.max])
+          : null,
+
+      cluster:
+        typeof ret.cluster.min === "number" &&
+        typeof ret.cluster.max === "number"
+          ? d3
+              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .domain([ret.cluster.min, ret.cluster.max])
+          : null,
+      hierarchicalcluster:
+        typeof ret.hierarchicalcluster.min === "number" &&
+        typeof ret.hierarchicalcluster.max === "number"
+          ? d3
+              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .domain([
+                ret.hierarchicalcluster.min,
+                ret.hierarchicalcluster.max,
+              ])
+          : null,
+
+      threat:
+        typeof ret.threat.min === "number" && typeof ret.threat.max === "number"
+          ? d3
+              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .domain([ret.threat.min, ret.threat.max])
+          : null,
+
+      article:
+        typeof ret.article.min === "number" &&
+        typeof ret.article.max === "number"
+          ? d3
+              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .domain([ret.article.min, ret.article.max])
+          : null,
+    };
+  }, [ogma]);
+
+  useEffect(() => {
+    if (articleGraph && !ogma.geo.enabled()) {
+      void (async () => {
+        await ogma.addGraph(articleGraph);
+        setScale(createScale());
+        refresh();
+      })();
+    }
+  }, [articleGraph, createScale, ogma, refresh, setScale]);
+
   useEffect(() => {
     if (!rawGraph) return;
     const parse = async () => {
       setTotalSize(rawGraph.nodes.length + rawGraph.edges.length);
       await ogma.setGraph(rawGraph);
-      if (!ogma.geo.enabled) await ogma.view.locateRawGraph(rawGraph);
+      setScale(createScale());
+      if (!ogma.geo.enabled()) await ogma.view.locateRawGraph(rawGraph);
       ogma.events.once("idle", () => {
         setTotalSize(0);
         onLoading && onLoading(false);
@@ -76,7 +201,7 @@ export default function DataLoader({
     };
     if (onLoading) onLoading(true);
     setTimeout(() => void parse(), 0);
-  }, [rawGraph, isLoading, ogma, onLoading]);
+  }, [rawGraph, isLoading, ogma, onLoading, createScale, setScale]);
 
   useEffect(() => {
     setLocateNode(undefined);
@@ -86,7 +211,8 @@ export default function DataLoader({
       setClusters(
         rawGraph.nodes
           .filter((n) => n.data?.type === "cluster")
-          .map((n) => n.data as Cluster).sort((a, b) => {
+          .map((n) => n.data as Cluster)
+          .sort((a, b) => {
             if (a.nr_articles > b.nr_articles) return -1;
             if (a.nr_articles < b.nr_articles) return 1;
             return 0;

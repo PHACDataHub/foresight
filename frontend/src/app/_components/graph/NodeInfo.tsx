@@ -1,10 +1,9 @@
 import {
-  type ChangeEvent,
   type KeyboardEvent,
   type MouseEvent,
   useCallback,
+  useEffect,
   useMemo,
-  useState,
 } from "react";
 import Highlighter from "react-highlight-words";
 
@@ -18,16 +17,21 @@ import {
 
 import {
   faCircleInfo,
+  faCircleNodes,
+  faClose,
   faMagnifyingGlass,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { useParams, useRouter } from "next/navigation";
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
 
 import "react-accessible-accordion/dist/fancy-example.css";
 import { type Article, type Cluster } from "~/server/api/routers/post";
-import { getNodeData, getRawNodeData } from ".";
+import { findAlongPath, getNodeData } from "~/app/_utils/graph";
+import { getRawNodeData } from ".";
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   return (
@@ -44,17 +48,20 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
 export default function NodeInfo() {
   const {
     searchTerms,
-    setSearchTerms,
     clusters,
     setLocateNode,
     setOpenNode,
     geoMode,
     threats,
     selectedNode,
+    setSelectedNode,
+    qa,
+    history,
+    addQA,
+    setArticleGraph,
   } = useStore();
-  const [search, setSearch] = useState(searchTerms.join(","));
-
-  const [question, setQuestion] = useState("");
+  const { locale, day } = useParams();
+  const router = useRouter();
 
   const data = selectedNode && getNodeData(selectedNode);
   const id = (data?.type === "cluster" && data.id) || "";
@@ -66,21 +73,39 @@ export default function NodeInfo() {
     { enabled: data?.type === "cluster" },
   );
 
-  const { data: answers, isFetching: isAnswerLoading } =
-    api.post.question.useQuery(
-      { cluster_id: id, question },
-      {
-        refetchOnWindowFocus: false,
-        enabled: data?.type === "cluster" && question.length > 0,
-      },
-    );
+  const questionApi = api.post.question.useMutation();
 
-  const handleQuestion = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      setQuestion(e.currentTarget.value);
-      e.currentTarget.value = "";
+  useEffect(() => {
+    if (rawGraph) {
+      setArticleGraph(rawGraph);
     }
-  }, []);
+  }, [rawGraph, setArticleGraph]);
+
+  const handleCloseClick = useCallback(() => {
+    setSelectedNode(null);
+  }, [setSelectedNode]);
+
+  const handleQuestion = useCallback(
+    async (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        const question = e.currentTarget.value;
+        addQA({ clusterId: id, question });
+        e.currentTarget.value = "";
+        const answer = await questionApi.mutateAsync({
+          cluster_id: id,
+          question,
+        });
+        addQA({ clusterId: id, question, answer });
+      }
+    },
+    [addQA, id, questionApi],
+  );
+
+  const handleGraphClick = useCallback(() => {
+    if (typeof locale === "string" && typeof day === "string") {
+      router.push(`/${locale}/${day}/${history}/${id}`);
+    }
+  }, [day, history, id, locale, router]);
 
   const cluster = useMemo(() => {
     const c = rawGraph?.nodes.find(
@@ -112,31 +137,45 @@ export default function NodeInfo() {
     );
   }, [rawGraph?.nodes]);
 
-  const handleSearchChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setSearch(e.target.value);
-      setSearchTerms(
-        e.target.value
-          .toLowerCase()
-          .split(",")
-          .filter((s) => s.length > 0),
-      );
-    },
-    [setSearchTerms],
-  );
-
   const filteredClusters = useMemo(() => {
-    return clusters?.filter(
-      (c) =>
-        (!geoMode ||
-          c.locations.filter(
-            (l) =>
-              typeof l.latitude === "number" && typeof l.longitude === "number",
-          ).length > 0) &&
-        c.threats &&
-        c.threats.filter((t) => threats.includes(t.title)).length > 0,
-    );
-  }, [clusters, geoMode, threats]);
+    const nodes =
+      selectedNode &&
+      hierarchicalCluster &&
+      findAlongPath(selectedNode, "out", () => true).map((n) => getNodeData(n));
+
+    return clusters
+      ?.filter(
+        (c) =>
+          (!geoMode ||
+            c.locations.filter(
+              (l) =>
+                typeof l.latitude === "number" &&
+                typeof l.longitude === "number",
+            ).length > 0) &&
+          (!nodes || nodes.includes(c)) &&
+          c.threats &&
+          c.threats.filter((t) => threats.includes(t.title)).length > 0,
+      )
+      .map((a) => a)
+      .sort((a) => {
+        for (const term of searchTerms) {
+          const t = term.toLowerCase();
+          if (
+            a.summary.toLowerCase().includes(t) ||
+            a.title.toLowerCase().includes(t)
+          )
+            return -1;
+        }
+        return 0;
+      });
+  }, [
+    clusters,
+    geoMode,
+    hierarchicalCluster,
+    searchTerms,
+    selectedNode,
+    threats,
+  ]);
 
   const handleLocate = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
@@ -156,35 +195,22 @@ export default function NodeInfo() {
 
   return (
     <div className="flex flex-1 flex-col text-xl">
-      <h3 className="mt-0 bg-blue-300 p-2">Search terms</h3>
-      <label className="flex space-x-5 p-5 font-normal">
-        <span>Search</span>
-        <input
-          type="text"
-          value={search}
-          className="flex-1 border"
-          onChange={handleSearchChange}
-        />
-      </label>
-      {hierarchicalCluster && (
-        <>
-          <h3 className="mt-0 bg-blue-300 p-2">hierarchicalCluster</h3>
-          <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
-            <pre>{JSON.stringify(hierarchicalCluster, null, 2)}</pre>
-          </div>
-        </>
-      )}
-      {!cluster && !selectedNode && filteredClusters && (
+      {hierarchicalCluster && filteredClusters && (
         <>
           <h3 className="mt-0 flex justify-between bg-blue-300 p-2">
-            <span>Detected Clusters</span>
+            <span>Related clusters</span>
             <span>{filteredClusters.length}</span>
           </h3>
           <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
             {filteredClusters.map((cluster) => (
               <section key={`cluster${cluster.id}`}>
                 <div className="flex items-center justify-between">
-                  <h4>{cluster.title}</h4>
+                  <h4>
+                    <Highlighter
+                      searchWords={searchTerms}
+                      textToHighlight={cluster.title}
+                    />
+                  </h4>
                   <div className="flex space-x-2">
                     <button
                       value={cluster.id}
@@ -203,13 +229,115 @@ export default function NodeInfo() {
                   </div>
                 </div>
                 <ClusterLocations cluster={cluster} />
-                <p>{cluster.summary}</p>
+                <p>
+                  <Highlighter
+                    searchWords={searchTerms}
+                    textToHighlight={cluster.summary}
+                  />
+                </p>
               </section>
             ))}
           </div>
         </>
       )}
-      {selectedNode && isFetching && "Loading..."}
+      {data?.type === "threat" && <pre>{JSON.stringify(data, null, 2)}</pre>}
+      {data?.type === "article" && (
+        <>
+          <div className="flex items-start pl-5 pr-5">
+            <h1 className="gc-thickline">{data.title}</h1>
+            <button className="btn" title="Close" onClick={handleCloseClick}>
+              <FontAwesomeIcon icon={faClose} />
+            </button>
+          </div>
+          {data.outlier && (
+            <ul className="list-inline">
+              <li>
+                <span className="label label-info">Outlier</span>
+              </li>
+            </ul>
+          )}
+          <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
+            <div className="float-right flex flex-col border border-gray-300 p-5">
+              <table>
+                <tbody>
+                  <tr>
+                    <th>Publication</th>
+                    <td>{data.pub_name}</td>
+                  </tr>
+                  <tr>
+                    <th>Pub Date</th>
+                    <td>{data.pub_date.toLocaleDateString()}</td>
+                  </tr>
+                  <tr>
+                    <th>Pub Time</th>
+                    <td>{data.pub_time.toLocaleTimeString()}</td>
+                  </tr>
+                  <tr>
+                    <th className="pr-5">GPHIN Score</th>
+                    <td>{data.gphin_score}</td>
+                  </tr>
+                  <tr>
+                    <th>GPHIN State</th>
+                    <td>{data.gphin_state}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p className="whitespace-pre-wrap leading-10">{data.content}</p>
+          </div>
+        </>
+      )}
+      {!cluster && !selectedNode && filteredClusters && (
+        <>
+          <h3 className="mt-0 flex justify-between bg-blue-300 p-2">
+            <span>Detected Clusters</span>
+            <span>{filteredClusters.length}</span>
+          </h3>
+          <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
+            {filteredClusters.map((cluster) => (
+              <section key={`cluster${cluster.id}`}>
+                <div className="flex items-center justify-between">
+                  <h4>
+                    <Highlighter
+                      searchWords={searchTerms}
+                      textToHighlight={cluster.title}
+                    />
+                  </h4>
+                  <div className="flex space-x-2">
+                    <button
+                      value={cluster.id}
+                      className="btn btn-primary"
+                      onClick={handleOpenCluster}
+                    >
+                      <FontAwesomeIcon icon={faCircleInfo} />
+                    </button>
+                    <button
+                      value={cluster.id}
+                      className="btn btn-primary"
+                      onClick={handleLocate}
+                    >
+                      <FontAwesomeIcon icon={faMagnifyingGlass} />
+                    </button>
+                  </div>
+                </div>
+                <ClusterLocations cluster={cluster} />
+                <p>
+                  <Highlighter
+                    searchWords={searchTerms}
+                    textToHighlight={cluster.summary}
+                  />
+                </p>
+              </section>
+            ))}
+          </div>
+        </>
+      )}
+      {selectedNode && isFetching && (
+        <div className="flex flex-1 items-center justify-center">
+          <FontAwesomeIcon icon={faSpinner} size="4x" spin />
+        </div>
+      )}
       {cluster && (
         <>
           <h3 className="mt-0 bg-blue-300 p-2">Selected Cluster</h3>
@@ -262,19 +390,22 @@ export default function NodeInfo() {
                       </li>
                     ),
                   )}
-                  {question.length > 0 && (
-                    <li className="font-bold">
+                  {qa[id]?.map(({ question, answer }, i) => (
+                    <li className="font-bold" key={`qes_${id}_${i}`}>
                       {question}
                       <ul className="ml-10" style={{ listStyleType: "square" }}>
                         <li className="whitespace-pre-wrap font-normal">
-                          {isAnswerLoading && "Processing..."}
-                          {answers?.map((a, i) => (
+                          {typeof answer === "undefined" && (
+                            <FontAwesomeIcon spin icon={faSpinner} />
+                          )}
+                          {answer?.map((a, i) => (
                             <p key={`cluster_${cluster.id}-a-${i}`}>{a}</p>
                           ))}
                         </li>
                       </ul>
                     </li>
-                  )}
+                  ))}
+
                   <li>
                     <input
                       type="text"
@@ -286,11 +417,22 @@ export default function NodeInfo() {
                 </ul>
                 {articles.length > 0 && (
                   <>
-                    <h4 className="flex items-end">
-                      Articles
-                      <span className="badge ml-5">
-                        <span className="text-sm">{articles.length}</span>
-                      </span>
+                    <h4 className="flex items-center justify-between">
+                      <div className="flex items-end">
+                        Articles
+                        <span className="badge ml-5">
+                          <span className="text-sm">{articles.length}</span>
+                        </span>
+                      </div>
+                      {history && (
+                        <button
+                          title="Graph View"
+                          className="btn btn-primary"
+                          onClick={handleGraphClick}
+                        >
+                          <FontAwesomeIcon icon={faCircleNodes} />
+                        </button>
+                      )}
                     </h4>
                     <Accordion allowMultipleExpanded allowZeroExpanded>
                       {articles?.map((article) => (

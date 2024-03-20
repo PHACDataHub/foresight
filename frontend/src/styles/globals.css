@@ -15,6 +15,11 @@
 
 }
 
+#timeline>div {
+  bottom: -254px !important;
+
+}
+
 .cluster_3_day {
   border-radius: 0.3rem;
   background-color: #3dcc4a;
@@ -36,11 +41,11 @@
 .SlideModal {
   background-color: #F8F8FC !important;
   padding: 10px;
+  max-width: 500px;
 }
 
 .SlideModal ul {
   margin-top: 10px;
-
 }
 
 .SlideModal ul li {
