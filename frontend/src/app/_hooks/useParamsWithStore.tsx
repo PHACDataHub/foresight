@@ -22,6 +22,7 @@ export default function useParamsWithStore(
       if (t === 3 || t === 7 || t === 30) {
         if (store.history !== t) {
           store.setHistory(t);
+          if (t === 30) store.setEverything(false);
         }
         return;
       }

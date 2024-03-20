@@ -237,7 +237,7 @@ const translateGraph = (
               source.pub_date.year.low,
               source.pub_date.month.low - 1,
               source.pub_date.day.low,
-              5
+              5,
             ),
             pub_name: source.pub_name,
             pub_time: new Date(source.pub_time),
@@ -423,7 +423,7 @@ export const postRouter = createTRPCRouter({
   articles: publicProcedure
     .input(
       z.object({
-        cluster_id: z.string()
+        cluster_id: z.string(),
       }),
     )
     .query(async ({ input }) => {
@@ -452,6 +452,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         day: z.number().gte(1).lte(62),
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
+        everything: z.boolean().optional(),
       }),
     )
     .query(async ({ input }) => {
@@ -463,6 +464,9 @@ export const postRouter = createTRPCRouter({
       let startDate = "";
 
       if (input.history) {
+        if (input.history === 30 && input.everything) {
+          throw new Error("Unable to process everything for 30 days.");
+        }
         endDate = baseDate.toLocaleDateString("en-CA", {
           year: "numeric",
           month: "numeric",
@@ -485,39 +489,49 @@ export const postRouter = createTRPCRouter({
           MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
             WHERE c.id =~ id_pattern
         WITH c, collect(t) as threats
+
+        ${
+          input.everything
+            ? `
+          MATCH articles=(a:Article)-[r:IN_CLUSTER]->(c)
+        WITH c, threats, articles
+        `
+            : ""
+        }
+
           MATCH path=(c)<-[:CONTAINS*..]-(:HierarchicalCluster)
-        RETURN path, threats
+        RETURN path,${input.everything ? " articles," : ""} threats
         `,
           { period },
-          // , threats: input.threats },
         );
-        // AND t.text IN $threats
         const threats: Record<string, Threat[]> = {};
         const noThreats = {
           ...result,
-          records: result.records.map((r) => {
-            const nr: RecordShape = { ...r, keys: ["path"] };
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const threat = translateGraph({
-              nodes:
-                (nr._fields as Node[][]).pop()?.map((t) => ({
-                  data: {
-                    neo4jLabels: t.labels,
-                    neo4jProperties: t.properties,
-                  },
-                })) ?? [],
-              edges: [],
-            }).nodes;
+          records: input.everything
+            ? result.records
+            : result.records.map((r) => {
+                const nr: RecordShape = { ...r, keys: ["path"] };
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const threat = translateGraph({
+                  nodes:
+                    (nr._fields as Node[][]).pop()?.map((t) => ({
+                      data: {
+                        neo4jLabels: t.labels,
+                        neo4jProperties: t.properties,
+                      },
+                    })) ?? [],
+                  edges: [],
+                }).nodes;
 
-            if (threat) {
-              const path = r.get("path") as Path;
-              const cluster = path.start.identity.low;
-              threats[cluster] = threat.map((t) => t.data as Threat);
-            }
-            nr.length -= 1;
-            nr._fieldLookup = { path: 0 };
-            return nr;
-          }),
+                if (threat) {
+                  const path = r.get("path") as Path;
+                  const cluster = path.start.identity.low;
+                  threats[cluster] = threat.map((t) => t.data as Threat);
+                }
+                nr.length -= 1;
+                nr._fieldLookup = { path: 0 };
+                return nr;
+              }),
         };
         return translateGraph(await OgmaLib.parse.neo4j(noThreats), (node) => {
           if (node.data?.type === "cluster" && node.id) {

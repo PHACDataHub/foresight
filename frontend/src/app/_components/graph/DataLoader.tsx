@@ -31,6 +31,7 @@ export default function DataLoader({
   const [progress, setProgress] = useState(0);
 
   const {
+    everything,
     setClusters,
     setScale,
     setLocateNode,
@@ -46,7 +47,7 @@ export default function DataLoader({
 
   const { isFetching: isHLoading, data: rawHGraph } =
     api.post.hierarchicalClusters.useQuery(
-      { day, history },
+      { day, history, everything },
       {
         refetchOnWindowFocus: false,
         enabled: typeof clusterId === "undefined",

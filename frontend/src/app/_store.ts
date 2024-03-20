@@ -9,6 +9,8 @@ import { type ScaleLinear } from "d3";
 import { type AllDataTypes, type Cluster } from "~/server/api/routers/post";
 
 export interface ForesightStore {
+  everything: boolean;
+  setEverything: (everything: boolean) => void;
   refreshObserver: number;
   refresh: () => void;
   scale: Record<
@@ -66,6 +68,8 @@ export interface ForesightStore {
 }
 
 export const useStore = create<ForesightStore>((set) => ({
+  everything: false,
+  setEverything: (everything) => set({ everything }),
   refreshObserver: 0,
   refresh: () =>
     set((state) => ({ refreshObserver: state.refreshObserver + 1 })),

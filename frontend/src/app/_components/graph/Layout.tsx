@@ -52,6 +52,9 @@ const LayoutService = forwardRef(
       scale,
       refreshObserver,
       setFocus,
+      everything,
+      setEverything,
+      history,
     } = useStore();
 
     useEffect(() => {
@@ -255,8 +258,40 @@ const LayoutService = forwardRef(
       return findAlongPath(selectedNode, "out", () => true);
     }, [selectedNode]);
 
+    const handleCollapseAllClick = useCallback(() => {
+      void ogma.removeNodes(
+        ogma
+          .getNodes()
+          .filter((n) =>
+            ["article", "threat"].includes(getNodeData(n)?.type ?? ""),
+          ),
+      );
+    }, [ogma]);
+
+    const handleEverythingChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEverything(e.currentTarget.checked);
+        setLayout("force");
+      },
+      [setEverything, setLayout],
+    );
+
     return (
       <>
+        <div className="control-buttons mt-20 space-x-2">
+          <button className="btn btn-default" onClick={handleCollapseAllClick}>
+            Collapse All
+          </button>
+          <label className={history === 30 ? "text-gray-300" : ""}>
+            Auto expand all{" "}
+            <input
+              type="checkbox"
+              checked={everything}
+              disabled={history === 30}
+              onChange={handleEverythingChange}
+            />
+          </label>
+        </div>
         <EdgeStyleRule
           attributes={{
             shape: (e) => {

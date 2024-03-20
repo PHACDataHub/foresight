@@ -338,7 +338,7 @@ export default function NodeInfo() {
           <FontAwesomeIcon icon={faSpinner} size="4x" spin />
         </div>
       )}
-      {cluster && (
+      {!isFetching && cluster && (
         <>
           <h3 className="mt-0 bg-blue-300 p-2">Selected Cluster</h3>
           <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
