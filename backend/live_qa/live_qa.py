@@ -171,17 +171,21 @@ class MLInput(BaseModel):
     model_name: str
 
 
-model_name = 'mistral:instruct'
-qa_chain_llm, sm_chain_llm, cl_chain_llm, lb_chain_llm, output_parser, text_splitter = create_llm_chain(model_name)
-answer = compute_answer("Today is March 14, 2024", "What day was yesterday?", qa_chain_llm, output_parser)
+class ModelManager:
+    def __init__(self, model_name):
+        self.model_name = model_name    # 'mistral:instruct'
+        self.qa_chain_llm, self.sm_chain_llm, self.cl_chain_llm, self.lb_chain_llm, self.output_parser, self.text_splitter = create_llm_chain(model_name)
+        answer = compute_answer("Today is March 14, 2024", "What day was yesterday?", self.qa_chain_llm, self.output_parser)
 
+
+model_manager = ModelManager('mistral:instruct')
 app = FastAPI()
 
 
 @app.post("/answer_question")
 def answering_question(input: QAIput):
     start_time = datetime.now()
-    result = {"answer": compute_answer(input.fulltext, input.question, qa_chain_llm, output_parser)}
+    result = {"answer": compute_answer(input.fulltext, input.question, model_manager.qa_chain_llm, model_manager.output_parser)}
     end_time = datetime.now()
     seconds = (end_time - start_time).total_seconds()
     print(f"{seconds} seconds --- {result}\n", flush=True)
@@ -191,7 +195,9 @@ def answering_question(input: QAIput):
 @app.post("/answer_question_long_text")
 def answering_question(input: QAIput):
     start_time = datetime.now()
-    result = {"answer_long_text": compute_answer_long_text(input.fulltext, input.question, qa_chain_llm, sm_chain_llm, output_parser, text_splitter)}
+    result = {"answer_long_text": compute_answer_long_text(
+        input.fulltext, input.question, 
+        model_manager.qa_chain_llm, model_manager.sm_chain_llm, model_manager.output_parser, model_manager.text_splitter)}
     end_time = datetime.now()
     seconds = (end_time - start_time).total_seconds()
     print(f"{seconds} seconds --- {result}\n", flush=True)
@@ -201,7 +207,9 @@ def answering_question(input: QAIput):
 @app.post("/summarize_text")
 def summarize_text(input: TSInput):
     start_time = datetime.now()
-    result = {"summary": compute_summary(input.fulltext, sm_chain_llm, output_parser, text_splitter)}
+    result = {"summary": compute_summary(
+        input.fulltext, 
+        model_manager.sm_chain_llm, model_manager.output_parser, model_manager.text_splitter)}
     end_time = datetime.now()
     seconds = (end_time - start_time).total_seconds()
     print(f"{seconds} seconds --- {result}\n", flush=True)
@@ -211,7 +219,9 @@ def summarize_text(input: TSInput):
 @app.post("/label_text")
 def label_text(input: LBInput):
     start_time = datetime.now()
-    result = {"labels": compute_labels(input.fulltext, input.keywords, lb_chain_llm, sm_chain_llm, output_parser, text_splitter)}
+    result = {"labels": compute_labels(
+        input.fulltext, input.keywords, 
+        model_manager.lb_chain_llm, model_manager.sm_chain_llm, model_manager.output_parser, model_manager.text_splitter)}
     end_time = datetime.now()
     seconds = (end_time - start_time).total_seconds()
     print(f"{seconds} seconds --- {result}\n", flush=True)
@@ -221,7 +231,9 @@ def label_text(input: LBInput):
 @app.post("/classify_text")
 def classify_text(input: CTInput):
     start_time = datetime.now()
-    result = {"categories": compute_topics(input.fulltext, input.categories, cl_chain_llm, sm_chain_llm, output_parser, text_splitter)}
+    result = {"categories": compute_topics(
+        input.fulltext, input.categories, 
+        model_manager.cl_chain_llm, model_manager.sm_chain_llm, model_manager.output_parser, model_manager.text_splitter)}
     end_time = datetime.now()
     seconds = (end_time - start_time).total_seconds()
     print(f"{seconds} seconds --- {result}\n", flush=True)
@@ -231,9 +243,8 @@ def classify_text(input: CTInput):
 @app.post("/load_model")
 def load_model(input: MLInput):
     try:
-        model_name = input.model_name
-        qa_chain_llm, sm_chain_llm, cl_chain_llm, lb_chain_llm, output_parser, text_splitter = create_llm_chain(model_name)
-        answer = compute_answer("Today is March 14, 2024", "What day was yesterday?", qa_chain_llm, output_parser)        
+        global model_manager
+        model_manager = ModelManager(input.model_name)
         result = {"result": "OK"} 
     except Exception as ex:
         result = {"result": "Failed", "exception": str(ex)}
