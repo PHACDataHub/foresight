@@ -92,30 +92,29 @@ def create_llm_chain(model_name):
 
 
 def compute_answer(full_text, question, qa_chain_llm, output_parser):
-    print(f"[ANS] --- [{full_text}]\n", flush=True)
-    
-    # chunks = [c.page_content for c in text_splitter.create_documents([full_text])]
-    # answers = []
-    # for chunk in chunks:
-    #     output = qa_chain_llm.invoke({'content': chunk, 'question': question})
-    #     answers.extend(output_parser.parse(output['text']))
-    # print(f"[MQA] --- {answers}\n", flush=True)
-    
-    # summary = 'No answer.'
-    # if answers:
-    #     if len(answers) > 1:
-    #         docs = [Document(page_content=answer) for answer in answers]
-    #         output = sm_chain_llm.invoke(docs)
-    #         summary = output['output_text']
-    #     else:
-    #         summary = answers[0]
-    # print(f"[SQA] --- {summary}\n", flush=True)
-    # return summary
-    
     output = qa_chain_llm.invoke({'content': full_text, 'question': question})
     answer = output_parser.parse(output['text'])
     print(f"[SQA] --- {answer}\n", flush=True)
     return answer
+
+
+def compute_answer_long_text(full_text, question, qa_chain_llm, sm_chain_llm, output_parser, text_splitter):
+    chunks = [c.page_content for c in text_splitter.create_documents([full_text])]
+    answers = []
+    for chunk in chunks:
+        output = qa_chain_llm.invoke({'content': chunk, 'question': question})
+        answers.extend(output_parser.parse(output['text']))
+    
+    summary = 'No answer.'
+    if answers:
+        if len(answers) > 1:
+            docs = [Document(page_content=answer) for answer in answers]
+            output = sm_chain_llm.invoke(docs)
+            summary = output['output_text']
+        else:
+            summary = answers[0]
+    print(f"[SQA] --- {summary}\n", flush=True)
+    return summary
 
 
 def compute_summary(full_text, sm_chain_llm, output_parser, text_splitter):
@@ -189,6 +188,16 @@ def answering_question(input: QAIput):
     return result
 
 
+@app.post("/answer_question_long_text")
+def answering_question(input: QAIput):
+    start_time = datetime.now()
+    result = {"answer_long_text": compute_answer_long_text(input.fulltext, input.question, qa_chain_llm, sm_chain_llm, output_parser, text_splitter)}
+    end_time = datetime.now()
+    seconds = (end_time - start_time).total_seconds()
+    print(f"{seconds} seconds --- {result}\n", flush=True)
+    return result
+
+
 @app.post("/summarize_text")
 def summarize_text(input: TSInput):
     start_time = datetime.now()
@@ -229,4 +238,3 @@ def load_model(input: MLInput):
     except Exception as ex:
         result = {"result": "Failed", "exception": str(ex)}
     return result
-    
