@@ -9,6 +9,10 @@ import { type ScaleLinear } from "d3";
 import { type AllDataTypes, type Cluster } from "~/server/api/routers/post";
 
 export interface ForesightStore {
+  showInfoPanel: boolean;
+  setShowInfoPanel: (showInfoPanel: boolean) => void;
+  panelWasToggled: boolean;
+  setPanelWasToggled: (panelWasToggled: boolean) => void;
   everything: boolean;
   setEverything: (everything: boolean) => void;
   refreshObserver: number;
@@ -68,6 +72,10 @@ export interface ForesightStore {
 }
 
 export const useStore = create<ForesightStore>((set) => ({
+  showInfoPanel: false,
+  setShowInfoPanel: (showInfoPanel) => set({ showInfoPanel }),
+  panelWasToggled: false,
+  setPanelWasToggled: (panelWasToggled) => set({ panelWasToggled }),
   everything: false,
   setEverything: (everything) => set({ everything }),
   refreshObserver: 0,
@@ -124,7 +132,12 @@ export const useStore = create<ForesightStore>((set) => ({
   ],
   setThreats: (threats) => set({ threats, selectedNode: null }),
   selectedNode: null,
-  setSelectedNode: (selectedNode) => set({ selectedNode }),
+  setSelectedNode: (selectedNode) =>
+    set((state) => {
+      if (!state.panelWasToggled && !state.showInfoPanel && selectedNode)
+        return { selectedNode, showInfoPanel: true };
+      return { selectedNode };
+    }),
   openNode: undefined,
   setOpenNode: (openNode) => set({ openNode }),
   qa: {},

@@ -14,6 +14,8 @@ import {
 import OgmaLib, { type RawNode } from "@linkurious/ogma";
 
 import {
+  faCaretLeft,
+  faCaretRight,
   faCircleNodes,
   faExpand,
   faMap,
@@ -88,7 +90,10 @@ export default function Graph() {
   const [dataLoading, setDataLoading] = useState(false);
 
   const {
+    showInfoPanel,
+    setShowInfoPanel,
     toggleTreeDirection,
+    setPanelWasToggled,
     layout,
     setLayout,
     geoMode,
@@ -153,15 +158,37 @@ export default function Graph() {
     }
   }, [height, width, maximized, resizeOgma]);
 
+  const handleNodeViewToggle = useCallback(() => {
+    if (showInfoPanel) setPanelWasToggled(true);
+    setShowInfoPanel(!showInfoPanel);
+  }, [setPanelWasToggled, setShowInfoPanel, showInfoPanel]);
+
   if (typeof day !== "string") return "Day error";
 
   return (
     <PanelGroup autoSaveId="example" direction="horizontal">
-      <Panel defaultSize={50} className="flex flex-col border">
+      <Panel
+        defaultSize={50}
+        className={`${showInfoPanel ? "flex" : "hidden"} border`}
+      >
+        <button
+          className="btn btn-default absolute -left-8"
+          onClick={handleNodeViewToggle}
+        >
+          <FontAwesomeIcon icon={faCaretLeft} />
+        </button>
         <NodeInfo />
       </Panel>
       <PanelResizeHandle />
       <Panel className="flex flex-col border">
+        {!showInfoPanel && (
+          <button
+            className="btn btn-default absolute -left-8"
+            onClick={handleNodeViewToggle}
+          >
+            <FontAwesomeIcon icon={faCaretRight} />
+          </button>
+        )}
         <div className="relative w-full flex-1" ref={ref}>
           <ThreatSelector />
           <div className="absolute h-full max-h-full w-full max-w-full">
@@ -231,6 +258,7 @@ export default function Graph() {
                 longitudePath="location.longitude"
                 latitudePath="location.latitude"
                 minZoomLevel={2}
+                maxZoomLevel={10}
                 sizeRatio={0.8}
               />
               <>

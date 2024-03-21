@@ -106,4 +106,4 @@ Initiating Small-Scale Projects:
 
 1. [The story of Alice](./doc/milestone-1.md).
 
-*Note: some of the features in [Defining a Full Prototype for the Playground](#iv-defining-a-full-prototype-for-the-playground) are implemented yet.*
+*Note: some of the features in [Defining a Full Prototype for the Playground](#iv-defining-a-full-prototype-for-the-playground) are not yet implemented.*
