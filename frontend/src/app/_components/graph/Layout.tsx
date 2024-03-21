@@ -273,21 +273,23 @@ const LayoutService = forwardRef(
             ) {
               setFocus(target);
             } else if (data?.type === "cluster") {
-              setFocus(null);
-              loadArticleGraph(true);
-              setLayout("force");
-              // await ogma.removeNodes(
-              //   target.getAdjacentNodes().filter((n) => {
-              //     const d = getNodeData(n);
-              //     return d?.type === "article" || d?.type === "threat";
-              //   }),
-              // );
-              // setSelectedNode(null);
-              // setFocus(null);
-              // setTimeout(() => {
-              //   target.setSelected(false);
-              // }, 0);
-              // updateLayout();
+              if (
+                target
+                  .getAdjacentNodes()
+                  .filter((n) => getNodeData(n)?.type === "article").size > 0
+              ) {
+                await ogma.removeNodes(
+                  target.getAdjacentNodes().filter((n) => {
+                    const d = getNodeData(n);
+                    return d?.type === "article";
+                  }),
+                );
+                setFocus(null);
+              } else {
+                setFocus(null);
+                loadArticleGraph(true);
+                setLayout("force");
+              }
             }
           }
         });
