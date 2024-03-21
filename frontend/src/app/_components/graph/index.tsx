@@ -99,6 +99,7 @@ export default function Graph() {
     threats,
     clusterId,
     setFocus,
+    articleCount,
   } = useStore();
 
   const handleDataLoading = useCallback((loading: boolean) => {
@@ -128,9 +129,7 @@ export default function Graph() {
     void ogmaRef.current.removeNodes(
       ogmaRef.current
         .getNodes()
-        .filter((n) =>
-          ["article"].includes(getNodeData(n)?.type ?? ""),
-        ),
+        .filter((n) => ["article"].includes(getNodeData(n)?.type ?? "")),
     );
   }, []);
 
@@ -199,7 +198,6 @@ export default function Graph() {
       <Panel
         defaultSize={25}
         minSize={25}
-        
         className={`${showInfoPanel ? "flex" : "hidden"} border`}
       >
         <button
@@ -253,7 +251,12 @@ export default function Graph() {
                       !ogmaHoverRef.current
                     )
                       return;
+
                     const subNodes = target.getSubNodes()!;
+                    if (subNodes.size <= 1) {
+                      ogmaHoverContainerRef.current?.classList.add("hidden");
+                      return;
+                    }
                     const subEdges = subNodes.getAdjacentEdges({
                       filter: "all",
                       bothExtremities: true,
@@ -296,57 +299,70 @@ export default function Graph() {
                 duration={0}
               />
               <>
-                <div className="control-buttons space-x-2">
-                  {!geoMode && (
-                    <>
-                      <div className="btn-group">
+                <div className="control-buttons">
+                  <div className="flex space-x-2">
+                    {!geoMode && (
+                      <>
+                        <div className="btn-group">
+                          <button
+                            className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
+                            onClick={handleLayoutHierarchicalClick}
+                            title="Hierarchical Layout"
+                          >
+                            <span className="wb-inv">
+                              Layout nodes using a hierarchical algorithm
+                            </span>
+                            <FontAwesomeIcon icon={faSitemap} />
+                          </button>
+                          <button
+                            className={`btn btn-primary${layout === "force" ? " active" : ""}`}
+                            onClick={handleLayoutForceClick}
+                            title="Force Layout"
+                          >
+                            <span className="wb-inv">
+                              Layout nodes using a force layout
+                            </span>
+                            <FontAwesomeIcon icon={faCircleNodes} />
+                          </button>
+                        </div>
                         <button
-                          className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
-                          onClick={handleLayoutHierarchicalClick}
-                          title="Hierarchical Layout"
+                          className="btn btn-primary"
+                          onClick={handleCollapseAllClick}
+                          title="Remove articles and threats"
                         >
-                          <span className="wb-inv">
-                            Layout nodes using a hierarchical algorithm
-                          </span>
-                          <FontAwesomeIcon icon={faSitemap} />
+                          <FontAwesomeIcon icon={faCompress} />
                         </button>
-                        <button
-                          className={`btn btn-primary${layout === "force" ? " active" : ""}`}
-                          onClick={handleLayoutForceClick}
-                          title="Force Layout"
-                        >
-                          <span className="wb-inv">
-                            Layout nodes using a force layout
-                          </span>
-                          <FontAwesomeIcon icon={faCircleNodes} />
-                        </button>
-                      </div>
-                      <button
-                        className="btn btn-primary"
-                        onClick={handleCollapseAllClick}
-                        title="Remove articles and threats"
-                      >
-                        <FontAwesomeIcon icon={faCompress} />
-                      </button>
-                    </>
-                  )}
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleGeoBtnClick}
-                    title="Map view"
-                  >
-                    <span className="wb-inv">View clusters on a map</span>
-                    <FontAwesomeIcon icon={faMap} />
-                  </button>
+                      </>
+                    )}
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleGeoBtnClick}
+                      title="Map view"
+                    >
+                      <span className="wb-inv">View clusters on a map</span>
+                      <FontAwesomeIcon icon={faMap} />
+                    </button>
 
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleMaximizeClick}
-                    title="Fullscreen"
-                  >
-                    <span className="wb-inv">Switch to Full Screen View</span>
-                    <FontAwesomeIcon icon={maximized ? faMinimize : faExpand} />
-                  </button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleMaximizeClick}
+                      title="Fullscreen"
+                    >
+                      <span className="wb-inv">Switch to Full Screen View</span>
+                      <FontAwesomeIcon
+                        icon={maximized ? faMinimize : faExpand}
+                      />
+                    </button>
+                  </div>
+                  {articleCount > 0 && (
+                    <div className="mt-4 text-xl">
+                      You are working with{" "}
+                      <span className="text-3xl">
+                        {articleCount.toLocaleString()}
+                      </span>{" "}
+                      articles.
+                    </div>
+                  )}
                 </div>
               </>
             </Ogma>

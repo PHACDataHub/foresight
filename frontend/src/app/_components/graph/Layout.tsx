@@ -254,7 +254,13 @@ const LayoutService = forwardRef(
       ogma.events
         .on("click", ({ target }) => {
           setSelectedNode(
-            target && !target.isVirtual() && target.isNode ? target : null,
+            target &&
+              (!target.isVirtual() ||
+                (target.getData() as { location_generated?: boolean })
+                  ?.location_generated === true) &&
+              target.isNode
+              ? target
+              : null,
           );
           setFocus(null);
         })
@@ -379,69 +385,84 @@ const LayoutService = forwardRef(
             },
           }}
         />
-        <NeighborGeneration
-          enabled={!hover && geoMode}
-          selector={(n) => {
-            const d = getNodeData(n);
-            return d?.type === "cluster" && d.locations.length > 0;
-          }}
-          neighborIdFunction={(n) => {
-            const d = getNodeData(n);
-            if (d?.type !== "cluster") return "UNKNOWN";
-            return d.locations
-              .filter(
-                (l) =>
-                  typeof l.latitude === "number" &&
-                  typeof l.longitude === "number",
-              )
-              .map((l) => JSON.stringify(l));
-          }}
-          nodeGenerator={(id, nodes) => {
-            const n = nodes.get(0);
-            if (!n) return {};
-            return {
-              data: {
-                ...(n.getData() as object),
-                location: JSON.parse(id) as object,
-                location_generated: true,
-              },
-            };
-          }}
-          onUpdated={() => {
-            if (geoClustering.current === null) {
-              console.log("updated!");
-              geoClustering.current = ogma.transformations.addGeoClustering({
-                enabled: true,
-                nodeGenerator: (nodes) => {
-                  // if (nodes.size === 1) return null;
-                  const n = nodes.get(0);
-                  const data = getNodeData(n);
-                  if (!data) return null;
-                  return {
-                    attributes: {
-                      radius: 15,
-                      badges: {
-                        topRight: {
-                          scale: 0.6,
-                          stroke: {
-                            width: 0.5,
+        {Boolean(scale.cluster) && (
+          <NeighborGeneration
+            enabled={!hover && geoMode}
+            selector={(n) => {
+              const d = getNodeData(n);
+              return d?.type === "cluster" && d.locations.length > 0;
+            }}
+            neighborIdFunction={(n) => {
+              const d = getNodeData(n);
+              if (d?.type !== "cluster") return "UNKNOWN";
+              return d.locations
+                .filter(
+                  (l) =>
+                    typeof l.latitude === "number" &&
+                    typeof l.longitude === "number",
+                )
+                .map((l) => JSON.stringify(l));
+            }}
+            nodeGenerator={(id, nodes) => {
+              const n = nodes.get(0);
+              if (!n) return {};
+              return {
+                data: {
+                  ...(n.getData() as object),
+                  location: JSON.parse(id) as object,
+                  location_generated: true,
+                },
+              };
+            }}
+            onUpdated={() => {
+              if (geoClustering.current === null) {
+                geoClustering.current = ogma.transformations.addGeoClustering({
+                  enabled: true,
+                  radius: 100,
+                  nodeGenerator: (nodes) => {
+                    const n = nodes.get(0);
+                    const data = getNodeData(n);
+                    if (!data) return null;
+                    if (nodes.size === 1)
+                      return {
+                        data: {
+                          ...data,
+                        },
+                      };
+                    const s = scale[data.type];
+                    return {
+                      attributes: {
+                        color: "rgb(90,111,196)",
+                        radius: s
+                          ? s(
+                              nodes.reduce((p: number, c) => {
+                                const d = getNodeData(c);
+                                const r = d ? getNodeRadius(d) : 0;
+                                return Math.max(p, r);
+                              }, 0),
+                            )
+                          : 10,
+                        badges: {
+                          topRight: {
+                            scale: 0.6,
+                            stroke: {
+                              width: 0.5,
+                            },
+                            text: `${nodes.size}`,
                           },
-                          text: `${nodes.size}`,
                         },
                       },
-                    },
-                    data: {
-                      ...data,
-                      location_generated: false,
-                    },
-                  };
-                },
-              });
-            } else {
-              void geoClustering.current.refresh();
-            }
-          }}
-        />
+                      data: {
+                        ...data,
+                        location_generated: false,
+                      },
+                    };
+                  },
+                });
+              }
+            }}
+          />
+        )}
         <NodeStyleRule
           selector={(n) =>
             !n.isVirtual() ||

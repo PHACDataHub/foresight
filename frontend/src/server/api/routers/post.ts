@@ -1,4 +1,5 @@
 import neo4j, {
+  type Integer as Neo4jInteger,
   type Node,
   type Path,
   type QueryResult,
@@ -373,6 +374,62 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+  hierarchicalClustersArticleCount: publicProcedure
+    .input(
+      z.object({
+        day: z.number().gte(1).lte(62),
+        history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
+        everything: z.boolean().optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const session = driver.session();
+      const baseDate = new Date("2019-12-01");
+      baseDate.setDate(baseDate.getDate() + input.day - 1);
+
+      let endDate = "";
+      let startDate = "";
+
+      if (input.history) {
+        if (input.history === 30 && input.everything) {
+          throw new Error("Unable to process everything for 30 days.");
+        }
+        endDate = baseDate.toLocaleDateString("en-CA", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        });
+        baseDate.setDate(baseDate.getDate() - input.history + 1);
+      }
+
+      startDate = baseDate.toLocaleDateString("en-CA", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      });
+
+      const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
+      try {
+        const counter = await session.run(
+          `
+        WITH $period + '-\\d+' AS id_pattern
+          MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
+            WHERE c.id =~ id_pattern
+        WITH c
+          MATCH articles=(a:Article)-[r:IN_CLUSTER]->(c)
+        RETURN count(a) as count
+        `,
+          { period },
+        );
+        for (const r of counter.records) {
+          const count = r.get("count") as Neo4jInteger;
+          return count.toNumber();
+        }
+        return 0;
+      } finally {
+        await session.close();
+      }
+    }),
   hierarchicalClusters: publicProcedure
     .input(
       z.object({

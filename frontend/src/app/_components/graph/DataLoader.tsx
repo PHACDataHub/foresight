@@ -40,6 +40,7 @@ export default function DataLoader({
     clusterId,
     articleGraph,
     refresh,
+    setArticleCount,
   } = useStore();
 
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -47,6 +48,15 @@ export default function DataLoader({
 
   const { isFetching: isHLoading, data: rawHGraph } =
     api.post.hierarchicalClusters.useQuery(
+      { day, history, everything },
+      {
+        refetchOnWindowFocus: false,
+        enabled: typeof clusterId === "undefined",
+      },
+    );
+
+  const { data: articleCount } =
+    api.post.hierarchicalClustersArticleCount.useQuery(
       { day, history, everything },
       {
         refetchOnWindowFocus: false,
@@ -80,6 +90,11 @@ export default function DataLoader({
       tick();
     }, 200);
   }, []);
+
+  useEffect(() => {
+    if (typeof articleCount === "number") setArticleCount(articleCount);
+    else setArticleCount(0);
+  }, [articleCount, setArticleCount]);
 
   useEffect(() => {
     if (isLoading && progressTimer.current === null) {

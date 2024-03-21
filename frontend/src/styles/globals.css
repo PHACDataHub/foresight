@@ -179,7 +179,8 @@ main.container {
 .control-buttons {
   position: absolute;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: end;
   z-index: 401;
   right: 20px;
   top: 20px;
