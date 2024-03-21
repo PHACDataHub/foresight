@@ -1,8 +1,18 @@
 "use client";
 
-import { type Node as OgmaNode } from "@linkurious/ogma";
+import {
+  type Edge,
+  type GeoClustering,
+  type Node as OgmaNode,
+} from "@linkurious/ogma";
 
-import { EdgeStyleRule, NodeStyleRule, useOgma } from "@linkurious/ogma-react";
+import {
+  EdgeStyleRule,
+  NeighborGeneration,
+  NodeFilter,
+  NodeStyleRule,
+  useOgma,
+} from "@linkurious/ogma-react";
 import {
   forwardRef,
   useCallback,
@@ -26,16 +36,19 @@ const LayoutService = forwardRef(
       fullScreen,
       dataLoaded,
       onExitFullScreen,
+      hover,
     }: {
       threats: string[];
       dataLoaded: boolean;
       fullScreen: boolean;
+      hover?: boolean;
       onExitFullScreen?: () => void;
     },
     ref,
   ) => {
     const ogma = useOgma();
     const timer = useRef<NodeJS.Timeout | null>(null);
+    const geoClustering = useRef<GeoClustering<unknown, unknown> | null>(null);
 
     const {
       locateNode,
@@ -52,10 +65,34 @@ const LayoutService = forwardRef(
       scale,
       refreshObserver,
       setFocus,
-      everything,
-      setEverything,
-      history,
+      loadArticleGraph,
     } = useStore();
+
+    const selectedPath = useMemo(() => {
+      if (!selectedNode) return null;
+      const data = getNodeData(selectedNode);
+      if (data?.type === "hierarchicalcluster")
+        return findAlongPath(selectedNode, "out", () => true);
+      if (data?.type === "cluster" || data?.type === "threat")
+        return findAlongPath(selectedNode, "in", () => true);
+      return null;
+    }, [selectedNode]);
+
+    const edgeOnSelectedPath = useCallback(
+      (e: Edge) => {
+        const dataTarget = e.getTarget();
+        const dataSource = e.getSource();
+        return (
+          selectedPath &&
+          ((selectedNode === dataTarget && selectedPath.includes(dataSource)) ||
+            (selectedNode === dataSource &&
+              selectedPath.includes(dataTarget)) ||
+            (selectedPath.includes(dataSource) &&
+              selectedPath.includes(dataTarget)))
+        );
+      },
+      [selectedNode, selectedPath],
+    );
 
     useEffect(() => {
       if (locateNode) {
@@ -94,57 +131,87 @@ const LayoutService = forwardRef(
       }
     }, [openNode, ogma, setSelectedNode, setOpenNode]);
 
-    const updateLayout = useDebounceCallback(() => {
-      // ogma.events.once("idle", () => {
-      const go = async () => {
-        if (!ogma.geo.enabled() && !focus) {
-          if (layout === "hierarchical") {
-            await ogma.layouts.hierarchical({
-              locate: true,
-              direction: treeDirection,
-            });
-          } else if (layout === "force") {
-            await ogma.layouts.force({
-              locate: true,
-              gpu: true,
-              // gravity: 0.1,
-              charge: 20,
-            });
-          }
-        }
-      };
-      void go();
-    }, [ogma.events, ogma.geo, ogma.layouts, treeDirection, layout, focus]);
-
-    useEffect(() => {
-      if (focus) {
-        const related = findAlongPath(focus, "out", () => true);
-        const nodes = ogma
-          .getNodes()
-          .filter((n) => n === focus || related.includes(n));
-        const viewSubGraph = async () => {
-          if (layout !== "force") {
-            await ogma.layouts.force({
-              locate: true,
-              gpu: true,
-              // gravity: 0.1,
-              charge: 20,
-            });
-            setLayout("force");
-          }
-
+    const layoutGraph = useCallback(async () => {
+      if (!ogma.geo.enabled() && !focus) {
+        if (layout === "hierarchical" && !hover) {
+          await ogma.layouts.hierarchical({
+            locate: true,
+            direction: treeDirection,
+          });
+        } else if (hover ?? layout === "force") {
           await ogma.layouts.force({
             locate: true,
             gpu: true,
             // gravity: 0.1,
             charge: 20,
-            centralNode: focus,
-            nodes,
+            duration: hover ? 0 : undefined,
           });
+          if (hover) {
+            await ogma.view.locateGraph({ padding: 75 });
+          }
+        }
+      }
+    }, [
+      focus,
+      hover,
+      layout,
+      ogma.geo,
+      ogma.layouts,
+      ogma.view,
+      treeDirection,
+    ]);
+
+    const updateLayout = useDebounceCallback(() => {
+      void layoutGraph();
+    }, [layoutGraph]);
+
+    useEffect(() => {
+      if (focus && selectedPath) {
+        const related = selectedPath; // findAlongPath(focus, "out", () => true);
+        const nodes = ogma
+          .getNodes()
+          .filter((n) => n === focus || related.includes(n));
+        const viewSubGraph = async () => {
+          await layoutGraph();
+          const box = ogma.view.getGraphBoundingBox();
+          const height = nodes.getBoundingBox();
+          await nodes
+            // .filter((n) => getNodeData(n)?.type !== "threat")
+            .setAttribute("y", box.maxY + (height.maxY - height.minY));
+          await ogma.layouts.hierarchical({
+            locate: true,
+            nodes,
+            direction: treeDirection,
+          });
+
+          await ogma
+            .getEdges()
+            .filter(
+              (e) =>
+                !(
+                  selectedPath &&
+                  selectedPath.includes(e.getSource()) &&
+                  selectedPath.includes(e.getTarget())
+                ) &&
+                selectedPath &&
+                (selectedPath.includes(e.getSource()) ||
+                  selectedPath.includes(e.getTarget())),
+            )
+            .setAttribute("opacity", 0.1);
         };
         void viewSubGraph();
+      } else {
+        void ogma.getEdges().setAttribute("opacity", 1);
       }
-    }, [focus, layout, ogma, setLayout]);
+    }, [
+      focus,
+      layout,
+      ogma,
+      setLayout,
+      selectedPath,
+      layoutGraph,
+      treeDirection,
+    ]);
 
     useEffect(() => {
       updateLayout();
@@ -186,27 +253,34 @@ const LayoutService = forwardRef(
 
       ogma.events
         .on("click", ({ target }) => {
-          setSelectedNode(target && target.isNode ? target : null);
-          if (target && target.isNode) setLayout("force");
+          setSelectedNode(
+            target && !target.isVirtual() && target.isNode ? target : null,
+          );
           setFocus(null);
         })
         .on("doubleclick", async ({ target }) => {
-          if (target && target.isNode) {
+          if (target && !target.isVirtual() && target.isNode) {
             const data = getNodeData(target);
-            if (data?.type === "hierarchicalcluster") {
+            if (
+              data?.type === "hierarchicalcluster" ||
+              data?.type === "threat"
+            ) {
               setFocus(target);
             } else if (data?.type === "cluster") {
-              await ogma.removeNodes(
-                target.getAdjacentNodes().filter((n) => {
-                  const d = getNodeData(n);
-                  return d?.type === "article" || d?.type === "threat";
-                }),
-              );
-              setSelectedNode(null);
               setFocus(null);
-              setTimeout(() => {
-                target.setSelected(false);
-              }, 0);
+              loadArticleGraph(true);
+              setLayout("force");
+              // await ogma.removeNodes(
+              //   target.getAdjacentNodes().filter((n) => {
+              //     const d = getNodeData(n);
+              //     return d?.type === "article" || d?.type === "threat";
+              //   }),
+              // );
+              // setSelectedNode(null);
+              // setFocus(null);
+              // setTimeout(() => {
+              //   target.setSelected(false);
+              // }, 0);
               // updateLayout();
             }
           }
@@ -216,7 +290,15 @@ const LayoutService = forwardRef(
       return () => {
         ogma.events.off(onNodesAdded);
       };
-    }, [ogma, ref, setFocus, setLayout, setSelectedNode, updateLayout]);
+    }, [
+      loadArticleGraph,
+      ogma,
+      ref,
+      setFocus,
+      setLayout,
+      setSelectedNode,
+      updateLayout,
+    ]);
 
     useImperativeHandle(ref, () => ({
       refresh: updateLayout,
@@ -254,45 +336,9 @@ const LayoutService = forwardRef(
       [searchTerms],
     );
 
-    const selectedPath = useMemo(() => {
-      if (!selectedNode) return null;
-      return findAlongPath(selectedNode, "out", () => true);
-    }, [selectedNode]);
-
-    const handleCollapseAllClick = useCallback(() => {
-      void ogma.removeNodes(
-        ogma
-          .getNodes()
-          .filter((n) =>
-            ["article", "threat"].includes(getNodeData(n)?.type ?? ""),
-          ),
-      );
-    }, [ogma]);
-
-    const handleEverythingChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEverything(e.currentTarget.checked);
-        setLayout("force");
-      },
-      [setEverything, setLayout],
-    );
-
     return (
       <>
-        <div className="control-buttons mt-20 space-x-2">
-          <button className="btn btn-default" onClick={handleCollapseAllClick}>
-            Collapse All
-          </button>
-          <label className={history === 30 ? "text-gray-300" : ""}>
-            Auto expand all{" "}
-            <input
-              type="checkbox"
-              checked={everything}
-              disabled={history === 30}
-              onChange={handleEverythingChange}
-            />
-          </label>
-        </div>
+        {hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}
         <EdgeStyleRule
           attributes={{
             shape: (e) => {
@@ -321,30 +367,88 @@ const LayoutService = forwardRef(
               };
             },
             width: (e) => {
-              const dataSource = e.getSource();
-              const dataTarget = e.getTarget();
-              if (
-                selectedPath &&
-                (selectedPath.includes(dataSource) ||
-                  selectedPath.includes(dataTarget))
-              )
-                return 2;
+              const d = e.getData() as { neo4jType: string } | undefined;
+              if (d?.neo4jType === "SIMILAR_TO") return 2;
+              if (edgeOnSelectedPath(e)) return 2;
               return 1;
             },
             color: (e) => {
-              const dataSource = e.getSource();
-              const dataTarget = e.getTarget();
-              if (
-                selectedPath &&
-                (selectedPath.includes(dataSource) ||
-                  selectedPath.includes(dataTarget))
-              )
-                return "#ee8f00";
+              if (edgeOnSelectedPath(e)) return "#ee8f00";
+              const d = e.getData() as { neo4jType: string } | undefined;
+              if (d?.neo4jType === "SIMILAR_TO") return "#000";
             },
           }}
         />
-
+        <NeighborGeneration
+          enabled={!hover && geoMode}
+          selector={(n) => {
+            const d = getNodeData(n);
+            return d?.type === "cluster" && d.locations.length > 0;
+          }}
+          neighborIdFunction={(n) => {
+            const d = getNodeData(n);
+            if (d?.type !== "cluster") return "UNKNOWN";
+            return d.locations
+              .filter(
+                (l) =>
+                  typeof l.latitude === "number" &&
+                  typeof l.longitude === "number",
+              )
+              .map((l) => JSON.stringify(l));
+          }}
+          nodeGenerator={(id, nodes) => {
+            const n = nodes.get(0);
+            if (!n) return {};
+            return {
+              data: {
+                ...(n.getData() as object),
+                location: JSON.parse(id) as object,
+                location_generated: true,
+              },
+            };
+          }}
+          onUpdated={() => {
+            if (geoClustering.current === null) {
+              console.log("updated!");
+              geoClustering.current = ogma.transformations.addGeoClustering({
+                enabled: true,
+                nodeGenerator: (nodes) => {
+                  // if (nodes.size === 1) return null;
+                  const n = nodes.get(0);
+                  const data = getNodeData(n);
+                  if (!data) return null;
+                  return {
+                    attributes: {
+                      radius: 15,
+                      badges: {
+                        topRight: {
+                          scale: 0.6,
+                          stroke: {
+                            width: 0.5,
+                          },
+                          text: `${nodes.size}`,
+                        },
+                      },
+                    },
+                    data: {
+                      ...data,
+                      location_generated: false,
+                    },
+                  };
+                },
+              });
+            } else {
+              void geoClustering.current.refresh();
+            }
+          }}
+        />
         <NodeStyleRule
+          selector={(n) =>
+            !n.isVirtual() ||
+            (n.isVirtual() &&
+              (n.getData() as { location_generated?: boolean })
+                ?.location_generated === true)
+          }
           attributes={{
             text: {
               // scaling: true,
@@ -360,11 +464,11 @@ const LayoutService = forwardRef(
             color: (n) => {
               const data = getNodeData(n);
               if (data?.type === "hierarchicalcluster") return "#bacf99";
-              if (data?.type === "cluster") return "#8297ec";
+              if (data?.type === "cluster") return "rgb(90,111,196)";
               if (data?.type === "threat") return "#ffb700";
               if (data?.type === "article") {
-                if (data.outlier) return "#ffcb3c";
-                return "#9073c5";
+                if (data.outlier) return "rgb(194,165,247)";
+                return "rgb(104,75,157)";
               }
               return "#d9dae2";
             },
@@ -372,7 +476,7 @@ const LayoutService = forwardRef(
               const data = getNodeData(n);
               if (!data) return;
               const r = getNodeRadius(data);
-              const s = scale.global;
+              const s = scale[data.type];
               if (s) {
                 return s(r);
               } else {

@@ -5,18 +5,14 @@ import L from "leaflet";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
-import {
-  Geo,
-  NeighborGeneration,
-  NodeFilter,
-  Ogma,
-} from "@linkurious/ogma-react";
+import { Geo, NodeFilter, Ogma } from "@linkurious/ogma-react";
 import OgmaLib, { type RawNode } from "@linkurious/ogma";
 
 import {
   faCaretLeft,
   faCaretRight,
   faCircleNodes,
+  faCompress,
   faExpand,
   faMap,
   faMinimize,
@@ -84,6 +80,8 @@ export default function Graph() {
   const ref = useRef<HTMLDivElement | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const ogmaRef = useRef<OgmaLib | null>(null);
+  const ogmaHoverRef = useRef<OgmaLib | null>(null);
+  const ogmaHoverContainerRef = useRef<HTMLDivElement | null>(null);
   const layoutService = useRef<LayoutServiceRef | null>(null);
   const { height, width } = useResizeObserver({ ref, box: "border-box" });
   const { day } = useParams();
@@ -125,6 +123,17 @@ export default function Graph() {
     setGeoMode(!geoMode);
   }, [geoMode, setGeoMode]);
 
+  const handleCollapseAllClick = useCallback(() => {
+    if (!ogmaRef.current) return;
+    void ogmaRef.current.removeNodes(
+      ogmaRef.current
+        .getNodes()
+        .filter((n) =>
+          ["article"].includes(getNodeData(n)?.type ?? ""),
+        ),
+    );
+  }, []);
+
   const handleMaximizeClick = useCallback(() => {
     setMaximized(!maximized);
   }, [maximized]);
@@ -142,12 +151,32 @@ export default function Graph() {
           height: window.innerHeight,
         });
       } else if (currentSize.width !== w || currentSize.height !== h) {
-        console.log("--resize--");
-        void ogma.view.setSize({ width: w, height: h });
-        // void ogma.view.locateGraph();
+        const resize = async () => {
+          await ogma.view.setSize({ width: w, height: h });
+          if (ogma.geo.enabled()) {
+            const view = ogma.geo.getView();
+            await ogma.geo.disable({ duration: 0 });
+            await ogma.geo.enable({ duration: 0 });
+            if (view)
+              await ogma.geo.setView(view.latitude, view.longitude, view.zoom);
+          } else {
+            await ogma.view.locateGraph();
+          }
+        };
+        void resize();
       }
     },
   );
+
+  useEffect(() => {
+    if (ogmaRef.current && ogmaHoverContainerRef.current) {
+      console.log(" --- append child container thing ---");
+      ogmaRef.current.geo
+        .getMap()
+        ?.getContainer()
+        .appendChild(ogmaHoverContainerRef.current);
+    }
+  }, [geoMode]);
 
   useEffect(() => {
     if (!ogmaRef.current) return;
@@ -168,7 +197,9 @@ export default function Graph() {
   return (
     <PanelGroup autoSaveId="example" direction="horizontal">
       <Panel
-        defaultSize={50}
+        defaultSize={25}
+        minSize={25}
+        
         className={`${showInfoPanel ? "flex" : "hidden"} border`}
       >
         <button
@@ -211,6 +242,35 @@ export default function Graph() {
                   // },
                 }
               }
+              onReady={(ogma) => {
+                ogma.events
+                  .on("mouseover", ({ target }) => {
+                    if (
+                      !target ||
+                      !target.isNode ||
+                      !target.isVirtual() ||
+                      !ogmaHoverContainerRef.current ||
+                      !ogmaHoverRef.current
+                    )
+                      return;
+                    const subNodes = target.getSubNodes()!;
+                    const subEdges = subNodes.getAdjacentEdges({
+                      filter: "all",
+                      bothExtremities: true,
+                    });
+                    ogmaHoverContainerRef.current.classList.remove("hidden");
+                    void ogmaHoverRef.current.setGraph({
+                      nodes: subNodes.toJSON(),
+                      edges: subEdges.toJSON(),
+                    });
+                    const { x, y } = target.getPositionOnScreen();
+                    ogmaHoverContainerRef.current.style.left = `${x + 50}px`;
+                    ogmaHoverContainerRef.current.style.top = `${y}px`;
+                  })
+                  .on(["click", "dragStart", "viewChanged"], () => {
+                    ogmaHoverContainerRef.current?.classList.add("hidden");
+                  });
+              }}
             >
               <DataLoader day={parseInt(day)} onLoading={handleDataLoading} />
 
@@ -225,33 +285,6 @@ export default function Graph() {
                 fullScreen={maximized}
                 onExitFullScreen={handleMaximizeClick}
               />
-              <NeighborGeneration
-                enabled={geoMode}
-                selector={(n) => getNodeData(n)?.type === "cluster"}
-                neighborIdFunction={(n) => {
-                  const data = getNodeData(n);
-                  if (data?.type === "cluster") {
-                    return data.locations
-                      .filter(
-                        (l) =>
-                          typeof l.latitude === "number" &&
-                          typeof l.longitude === "number",
-                      )
-                      .map((l) => JSON.stringify(l));
-                  }
-                  return null;
-                }}
-                nodeGenerator={(id, nodes) => {
-                  const n = nodes.get(0);
-                  if (!n) return {};
-                  return {
-                    data: {
-                      ...(n.getData() as object),
-                      location: JSON.parse(id) as object,
-                    },
-                  };
-                }}
-              />
               {clusterId && <TimeLine container={timelineRef} />}
               <Geo
                 enabled={geoMode}
@@ -260,32 +293,42 @@ export default function Graph() {
                 minZoomLevel={2}
                 maxZoomLevel={10}
                 sizeRatio={0.8}
+                duration={0}
               />
               <>
                 <div className="control-buttons space-x-2">
                   {!geoMode && (
-                    <div className="btn-group">
+                    <>
+                      <div className="btn-group">
+                        <button
+                          className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
+                          onClick={handleLayoutHierarchicalClick}
+                          title="Hierarchical Layout"
+                        >
+                          <span className="wb-inv">
+                            Layout nodes using a hierarchical algorithm
+                          </span>
+                          <FontAwesomeIcon icon={faSitemap} />
+                        </button>
+                        <button
+                          className={`btn btn-primary${layout === "force" ? " active" : ""}`}
+                          onClick={handleLayoutForceClick}
+                          title="Force Layout"
+                        >
+                          <span className="wb-inv">
+                            Layout nodes using a force layout
+                          </span>
+                          <FontAwesomeIcon icon={faCircleNodes} />
+                        </button>
+                      </div>
                       <button
-                        className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
-                        onClick={handleLayoutHierarchicalClick}
-                        title="Hierarchical Layout"
+                        className="btn btn-primary"
+                        onClick={handleCollapseAllClick}
+                        title="Remove articles and threats"
                       >
-                        <span className="wb-inv">
-                          Layout nodes using a hierarchical algorithm
-                        </span>
-                        <FontAwesomeIcon icon={faSitemap} />
+                        <FontAwesomeIcon icon={faCompress} />
                       </button>
-                      <button
-                        className={`btn btn-primary${layout === "force" ? " active" : ""}`}
-                        onClick={handleLayoutForceClick}
-                        title="Force Layout"
-                      >
-                        <span className="wb-inv">
-                          Layout nodes using a force layout
-                        </span>
-                        <FontAwesomeIcon icon={faCircleNodes} />
-                      </button>
-                    </div>
+                    </>
                   )}
                   <button
                     className="btn btn-primary"
@@ -307,6 +350,23 @@ export default function Graph() {
                 </div>
               </>
             </Ogma>
+            <div ref={ogmaHoverContainerRef} className="hoverogma hidden">
+              <Ogma
+                ref={ogmaHoverRef}
+                options={{
+                  width: 150,
+                  height: 150,
+                  backgroundColor: "rgba(250,250,250,0.75)",
+                }}
+              >
+                <LayoutService
+                  threats={threats}
+                  dataLoaded={dataLoading}
+                  fullScreen={false}
+                  hover={true}
+                />
+              </Ogma>
+            </div>
             {clusterId && (
               <div className="" id="timeline" ref={timelineRef}></div>
             )}

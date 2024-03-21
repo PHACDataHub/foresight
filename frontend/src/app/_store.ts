@@ -9,6 +9,8 @@ import { type ScaleLinear } from "d3";
 import { type AllDataTypes, type Cluster } from "~/server/api/routers/post";
 
 export interface ForesightStore {
+  _loadArticleGraph: number;
+  loadArticleGraph: (s?: boolean) => void;
   showInfoPanel: boolean;
   setShowInfoPanel: (showInfoPanel: boolean) => void;
   panelWasToggled: boolean;
@@ -72,6 +74,9 @@ export interface ForesightStore {
 }
 
 export const useStore = create<ForesightStore>((set) => ({
+  _loadArticleGraph: 0,
+  loadArticleGraph: (s) =>
+    set((state) => ({ _loadArticleGraph: s ? state._loadArticleGraph + 1 : 0 })),
   showInfoPanel: false,
   setShowInfoPanel: (showInfoPanel) => set({ showInfoPanel }),
   panelWasToggled: false,
@@ -103,7 +108,7 @@ export const useStore = create<ForesightStore>((set) => ({
   setClusters: (clusters) => set({ clusters }),
   locateNode: undefined,
   setLocateNode: (locateNode) => set({ locateNode }),
-  treeDirection: "RL",
+  treeDirection: "BT",
   setTreeDirection: (treeDirection: "BT" | "TB" | "LR" | "RL") =>
     set({ treeDirection }),
   toggleTreeDirection: () => {

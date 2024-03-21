@@ -59,6 +59,8 @@ export default function NodeInfo() {
     history,
     addQA,
     setArticleGraph,
+    _loadArticleGraph,
+    loadArticleGraph,
   } = useStore();
   const { locale, day } = useParams();
   const router = useRouter();
@@ -76,10 +78,11 @@ export default function NodeInfo() {
   const questionApi = api.post.question.useMutation();
 
   useEffect(() => {
-    if (rawGraph) {
+    if (rawGraph && _loadArticleGraph > 0) {
       setArticleGraph(rawGraph);
+      loadArticleGraph();
     }
-  }, [rawGraph, setArticleGraph]);
+  }, [_loadArticleGraph, loadArticleGraph, rawGraph, setArticleGraph]);
 
   const handleCloseClick = useCallback(() => {
     setSelectedNode(null);
@@ -240,7 +243,35 @@ export default function NodeInfo() {
           </div>
         </>
       )}
-      {data?.type === "threat" && <pre>{JSON.stringify(data, null, 2)}</pre>}
+      {data?.type === "threat" && (
+        <>
+          <div className="flex items-start pl-5 pr-5">
+            <h1 className="gc-thickline">{data.title}</h1>
+            <button className="btn" title="Close" onClick={handleCloseClick}>
+              <FontAwesomeIcon icon={faClose} />
+            </button>
+          </div>
+          <div className="p-5">
+            <ul className="list-inline">
+              <li>
+                <span className="label label-danger">Threat</span>
+              </li>
+            </ul>
+            <table>
+              <thead>
+                <tr>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{data.score}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
       {data?.type === "article" && (
         <>
           <div className="flex items-start pl-5 pr-5">
@@ -525,6 +556,9 @@ export default function NodeInfo() {
             )}
           </div>
         </>
+      )}
+      {selectedNode && !selectedNode.getId()?.toString().startsWith("_gen_") && (
+        <pre className="text-xs text-right m-5">Node id: {selectedNode.getId()}</pre>
       )}
     </div>
   );

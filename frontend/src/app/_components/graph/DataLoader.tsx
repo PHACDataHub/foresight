@@ -147,14 +147,14 @@ export default function DataLoader({
         typeof ret.cluster.min === "number" &&
         typeof ret.cluster.max === "number"
           ? d3
-              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .scaleLog([MIN_RADIUS * 2, MAX_RADIUS * 2])
               .domain([ret.cluster.min, ret.cluster.max])
           : null,
       hierarchicalcluster:
         typeof ret.hierarchicalcluster.min === "number" &&
         typeof ret.hierarchicalcluster.max === "number"
           ? d3
-              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .scaleLog([MIN_RADIUS * 1.5, MAX_RADIUS * 1.5])
               .domain([
                 ret.hierarchicalcluster.min,
                 ret.hierarchicalcluster.max,
@@ -164,7 +164,7 @@ export default function DataLoader({
       threat:
         typeof ret.threat.min === "number" && typeof ret.threat.max === "number"
           ? d3
-              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .scaleLog([MIN_RADIUS * 1.7, MAX_RADIUS * 1.7])
               .domain([ret.threat.min, ret.threat.max])
           : null,
 
@@ -172,7 +172,7 @@ export default function DataLoader({
         typeof ret.article.min === "number" &&
         typeof ret.article.max === "number"
           ? d3
-              .scaleLog([MIN_RADIUS, MAX_RADIUS])
+              .scaleLog([MIN_RADIUS / 2, MAX_RADIUS / 2])
               .domain([ret.article.min, ret.article.max])
           : null,
     };
@@ -181,7 +181,16 @@ export default function DataLoader({
   useEffect(() => {
     if (articleGraph && !ogma.geo.enabled()) {
       void (async () => {
-        await ogma.addGraph(articleGraph);
+        const node_ids = ogma
+          .getNodes()
+          .map((n) => n.getId())
+          .concat(articleGraph.nodes.map((n) => `${n.id}`));
+        await ogma.addGraph({
+          nodes: articleGraph.nodes,
+          edges: articleGraph.edges.filter(
+            (e) => node_ids.includes(e.source) && node_ids.includes(e.target),
+          ),
+        });
         setScale(createScale());
         refresh();
       })();

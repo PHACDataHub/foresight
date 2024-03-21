@@ -44,4 +44,5 @@ export function isNodeFiltered(n: OgmaNode, threats: string[]) {
     )?.filter((a) => !isNodeFiltered(a, threats));
     if (!clusters || clusters?.size === 0) return true;
   }
+  if (data?.type === "threat" && !threats.includes(data.title)) return true;
 };
