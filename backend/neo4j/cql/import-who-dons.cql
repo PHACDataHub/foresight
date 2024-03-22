@@ -87,7 +87,7 @@ CALL apoc.periodic.iterate('
     WITH doc, n, doc.topics[threat] AS score, threat
         MERGE (t:Threat {text: threat})
         MERGE (n)-[r:DETECTED_THREAT]->(t)
-            SET t.score = score
+            SET r.score = score, t.score = 1.0
     RETURN DISTINCT(n.url) AS url, COLLECT(DISTINCT(t.text)) AS threats
 ',
 {batchSize:1000, parallel:false})

@@ -1,0 +1,2366 @@
+{
+    "title": "Custom Categories",
+    "version": "2.4",
+    "settings": {
+      "pagenumber": 0,
+      "editable": true,
+      "fullscreenEnabled": false,
+      "parameters": {
+        "neodash_class_label": "Coronavirus infectious disease",
+        "neodash_class_label_display": "Coronavirus infectious disease",
+        "neodash_class_description": "",
+        "neodash_class_description_display": "",
+        "neodash_disease_label": "Ebola hemorrhagic fever",
+        "neodash_disease_label_display": "Ebola hemorrhagic fever",
+        "neodash_start_date": {
+          "year": 2019,
+          "month": 12,
+          "day": 31
+        },
+        "neodash_threats": [
+          "",
+          [
+            {
+              "type": "div",
+              "key": "k0Outbreaks linked to vaccine-preventable diseases",
+              "ref": null,
+              "props": {
+                "children": [
+                  "Outbreaks linked to vaccine-preventable diseases",
+                  {
+                    "type": "span",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "children": ", "
+                    },
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            },
+            {
+              "type": "div",
+              "key": "k1Unusual health patterns",
+              "ref": null,
+              "props": {
+                "children": [
+                  "Unusual health patterns",
+                  {
+                    "type": "span",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "children": ", "
+                    },
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            },
+            {
+              "type": "div",
+              "key": "k2Emerging pathogens",
+              "ref": null,
+              "props": {
+                "children": [
+                  "Emerging pathogens",
+                  {
+                    "type": "span",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "children": ", "
+                    },
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            },
+            {
+              "type": "div",
+              "key": "k3Anomalous disease clusters",
+              "ref": null,
+              "props": {
+                "children": [
+                  "Anomalous disease clusters",
+                  {
+                    "key": null,
+                    "ref": null,
+                    "props": {},
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            }
+          ]
+        ],
+        "neodash_threats_display": [
+          {
+            "type": "div",
+            "key": "k0",
+            "ref": null,
+            "props": {
+              "children": [
+                "",
+                {
+                  "type": "span",
+                  "key": null,
+                  "ref": null,
+                  "props": {
+                    "children": ", "
+                  },
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          },
+          {
+            "type": "div",
+            "key": "k1[object Object],[object Object],[object Object],[object Object]",
+            "ref": null,
+            "props": {
+              "children": [
+                [
+                  {
+                    "type": "div",
+                    "key": "k0[object Object]",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "{\"type\":\"div\",\"key\":\"k0Outbreaks linked to vaccine-preventable diseases\",\"ref\":null,\"props\":{\"children\":[\"Outbreaks linked to vaccine-preventable diseases\",{\"type\":\"span\",\"key\":null,\"ref\":null,\"props\":{\"children\":\", \"},\"_owner\":null}]},\"_owner\":null}",
+                        {
+                          "type": "span",
+                          "key": null,
+                          "ref": null,
+                          "props": {
+                            "children": ", "
+                          },
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  },
+                  {
+                    "type": "div",
+                    "key": "k1[object Object]",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "{\"type\":\"div\",\"key\":\"k1Unusual health patterns\",\"ref\":null,\"props\":{\"children\":[\"Unusual health patterns\",{\"type\":\"span\",\"key\":null,\"ref\":null,\"props\":{\"children\":\", \"},\"_owner\":null}]},\"_owner\":null}",
+                        {
+                          "type": "span",
+                          "key": null,
+                          "ref": null,
+                          "props": {
+                            "children": ", "
+                          },
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  },
+                  {
+                    "type": "div",
+                    "key": "k2[object Object]",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "{\"type\":\"div\",\"key\":\"k2Emerging pathogens\",\"ref\":null,\"props\":{\"children\":[\"Emerging pathogens\",{\"type\":\"span\",\"key\":null,\"ref\":null,\"props\":{\"children\":\", \"},\"_owner\":null}]},\"_owner\":null}",
+                        {
+                          "type": "span",
+                          "key": null,
+                          "ref": null,
+                          "props": {
+                            "children": ", "
+                          },
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  },
+                  {
+                    "type": "div",
+                    "key": "k3[object Object]",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "{\"type\":\"div\",\"key\":\"k3Anomalous disease clusters\",\"ref\":null,\"props\":{\"children\":[\"Anomalous disease clusters\",{\"key\":null,\"ref\":null,\"props\":{},\"_owner\":null}]},\"_owner\":null}",
+                        {
+                          "key": null,
+                          "ref": null,
+                          "props": {},
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  }
+                ],
+                {
+                  "key": null,
+                  "ref": null,
+                  "props": {},
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          }
+        ],
+        "neodash_threat_text": [
+          "Infectious Diseases",
+          "Environmental Hazards",
+          "Vaccine-Preventable Diseases",
+          "Zoonotic Diseases",
+          "Food Safety"
+        ],
+        "neodash_threat_text_display": [
+          {
+            "type": "div",
+            "key": "k0Infectious Diseases",
+            "ref": null,
+            "props": {
+              "children": [
+                "Infectious Diseases",
+                {
+                  "type": "span",
+                  "key": null,
+                  "ref": null,
+                  "props": {
+                    "children": ", "
+                  },
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          },
+          {
+            "type": "div",
+            "key": "k1Environmental Hazards",
+            "ref": null,
+            "props": {
+              "children": [
+                "Environmental Hazards",
+                {
+                  "type": "span",
+                  "key": null,
+                  "ref": null,
+                  "props": {
+                    "children": ", "
+                  },
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          },
+          {
+            "type": "div",
+            "key": "k2Vaccine-Preventable Diseases",
+            "ref": null,
+            "props": {
+              "children": [
+                "Vaccine-Preventable Diseases",
+                {
+                  "type": "span",
+                  "key": null,
+                  "ref": null,
+                  "props": {
+                    "children": ", "
+                  },
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          },
+          {
+            "type": "div",
+            "key": "k3Zoonotic Diseases",
+            "ref": null,
+            "props": {
+              "children": [
+                "Zoonotic Diseases",
+                {
+                  "type": "span",
+                  "key": null,
+                  "ref": null,
+                  "props": {
+                    "children": ", "
+                  },
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          },
+          {
+            "type": "div",
+            "key": "k4Food Safety",
+            "ref": null,
+            "props": {
+              "children": [
+                "Food Safety",
+                {
+                  "key": null,
+                  "ref": null,
+                  "props": {},
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          }
+        ],
+        "neodash_end_date": {
+          "year": 2019,
+          "month": 12,
+          "day": 31
+        },
+        "neodash_cluster_id_display": "2020-01-02-2020-01-04-0",
+        "neodash_find_fact": "Where the event happened?",
+        "neodash_all_representative_docs": [
+          [
+            {
+              "type": "div",
+              "key": "k01006055476",
+              "ref": null,
+              "props": {
+                "children": [
+                  "1,006,055,476",
+                  {
+                    "type": "span",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "children": ", "
+                    },
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            },
+            {
+              "type": "div",
+              "key": "k11006055457",
+              "ref": null,
+              "props": {
+                "children": [
+                  "1,006,055,457",
+                  {
+                    "type": "span",
+                    "key": null,
+                    "ref": null,
+                    "props": {
+                      "children": ", "
+                    },
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            },
+            {
+              "type": "div",
+              "key": "k21006053550",
+              "ref": null,
+              "props": {
+                "children": [
+                  "1,006,053,550",
+                  {
+                    "key": null,
+                    "ref": null,
+                    "props": {},
+                    "_owner": null
+                  }
+                ]
+              },
+              "_owner": null
+            }
+          ]
+        ],
+        "neodash_all_representative_docs_display": [
+          {
+            "type": "div",
+            "key": "k01006055476,1006055457,1006053550",
+            "ref": null,
+            "props": {
+              "children": [
+                [
+                  {
+                    "type": "div",
+                    "key": "k01006055476",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "1,006,055,476",
+                        {
+                          "type": "span",
+                          "key": null,
+                          "ref": null,
+                          "props": {
+                            "children": ", "
+                          },
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  },
+                  {
+                    "type": "div",
+                    "key": "k11006055457",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "1,006,055,457",
+                        {
+                          "type": "span",
+                          "key": null,
+                          "ref": null,
+                          "props": {
+                            "children": ", "
+                          },
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  },
+                  {
+                    "type": "div",
+                    "key": "k21006053550",
+                    "ref": null,
+                    "props": {
+                      "children": [
+                        "1,006,053,550",
+                        {
+                          "key": null,
+                          "ref": null,
+                          "props": {},
+                          "_owner": null
+                        }
+                      ]
+                    },
+                    "_owner": null
+                  }
+                ],
+                {
+                  "key": null,
+                  "ref": null,
+                  "props": {},
+                  "_owner": null
+                }
+              ]
+            },
+            "_owner": null
+          }
+        ],
+        "neodash_my_question": "Where  and when the event happened?",
+        "neodash_use_all_representative_articles": "True",
+        "neodash_time_and_place": "When and where the events happened?",
+        "neodash_how_many_people_were_effected?": "How many people were effec",
+        "neodash_impact_on_people": "Is it infectious? How intensive is it?",
+        "neodash_severity_and_urgency": "How severe is it and how soon should we take some action?",
+        "neodash_cluster_id": "2019-12-31-1",
+        "neodash_selected_cluster_id": "2019-12-31-1"
+      },
+      "theme": "light",
+      "disableRowLimiting": true,
+      "downloadImageEnabled": true
+    },
+    "pages": [
+      {
+        "title": "News Article Clusters",
+        "reports": [
+          {
+            "id": "322f69ed-3777-4e60-b4a1-f44f5a9cf5b5",
+            "title": "Start date",
+            "query": "RETURN true;",
+            "width": 4,
+            "height": 2,
+            "x": 0,
+            "y": 3,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Date Picker",
+              "entityType": "Start date",
+              "parameterName": "neodash_start_date"
+            },
+            "schema": []
+          },
+          {
+            "id": "c1a0ee5d-a3a3-47a8-b447-f68d7a0aa293",
+            "title": "End date",
+            "query": "RETURN true;",
+            "width": 4,
+            "height": 2,
+            "x": 4,
+            "y": 3,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Date Picker",
+              "entityType": "End date",
+              "parameterName": "neodash_end_date"
+            },
+            "schema": []
+          },
+          {
+            "id": "6fff92ae-a090-43aa-b275-770732c29e30",
+            "title": "Threats to be detected - Alice's assignment",
+            "query": "MATCH (n:`Threat`) \nWHERE toLower(toString(n.`text`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`text` as value,  n.`text` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+            "width": 16,
+            "height": 2,
+            "x": 8,
+            "y": 3,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "multiSelector": true,
+              "multiline": true,
+              "manualParameterSave": false,
+              "entityType": "Threat",
+              "propertyType": "text",
+              "propertyTypeDisplay": "text",
+              "parameterName": "neodash_threat_text"
+            },
+            "schema": []
+          },
+          {
+            "id": "0827c67b-a42c-482a-92d5-3dce7c9542fc",
+            "title": "Clusters with detected threats",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nRETURN c, r, t\n\n\n\n\n\n\n\n",
+            "width": 12,
+            "height": 9,
+            "x": 0,
+            "y": 5,
+            "type": "graph",
+            "selection": {
+              "Cluster": "title",
+              "DETECTED_THREAT": "(label)",
+              "Threat": "text"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": false,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "nodeSizeProp": "nr_articles",
+              "nodeLabelColor": "#000000FF",
+              "nodeLabelFontSize": 3,
+              "defaultRelColor": "#a0a0a088",
+              "relLabelFontSize": 1,
+              "frozen": false,
+              "nodePositions": {},
+              "showPropertiesOnClick": false,
+              "actionsRules": [
+                {
+                  "condition": "onNodeClick",
+                  "field": "Cluster",
+                  "value": "id",
+                  "customization": "set variable",
+                  "customizationValue": "cluster_id"
+                }
+              ]
+            },
+            "schema": [
+              [
+                "Cluster",
+                "summary",
+                "keywords",
+                "nr_articles",
+                "name",
+                "answers",
+                "id",
+                "topic_id",
+                "title",
+                "representative_docs",
+                "labels",
+                "start_date"
+              ],
+              [
+                "DETECTED_THREAT"
+              ],
+              [
+                "Threat",
+                "text"
+              ]
+            ]
+          },
+          {
+            "id": "e7b66236-60c7-493d-9c8e-3f3373f9c97a",
+            "title": "Cluster by identifier",
+            "query": "MATCH (n:`Cluster`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+            "width": 8,
+            "height": 2,
+            "x": 0,
+            "y": 32,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "entityType": "Cluster",
+              "propertyType": "id",
+              "propertyTypeDisplay": "id",
+              "parameterName": "neodash_cluster_id"
+            },
+            "schema": []
+          },
+          {
+            "id": "413366d4-0856-4874-ae2b-129430db660a",
+            "title": "Articles",
+            "query": "MATCH (a:Article)-[r1:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})\nRETURN a.title AS title, a.pub_name AS publisher, a.pub_date AS date, a.content AS content, a.factiva_folder AS factiva, a.gphin_score AS score, a.gphin_state AS state\n\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 38,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "nodeColorScheme": "neodash",
+              "columnWidths": "[30,12,5,30,10,5,5]"
+            },
+            "schema": []
+          },
+          {
+            "id": "13669818-c254-4918-817b-aeffb4611b8b",
+            "title": "Clusters without detected threats",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\nMATCH (c:Cluster)\n  WHERE c.id =~ id_pattern\n    AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nRETURN c\n\n\n\n\n\n\n",
+            "width": 12,
+            "height": 7,
+            "x": 0,
+            "y": 23,
+            "type": "graph",
+            "selection": {
+              "Cluster": "title"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "nodeColorScheme": "neodash",
+              "showPropertiesOnClick": true,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                }
+              ],
+              "nodeSizeProp": "nr_articles"
+            },
+            "schema": [
+              [
+                "Cluster",
+                "summary",
+                "keywords",
+                "nr_articles",
+                "name",
+                "answers",
+                "id",
+                "topic_id",
+                "title",
+                "representative_docs",
+                "labels",
+                "start_date"
+              ]
+            ]
+          },
+          {
+            "id": "e9c74a13-4c38-42c8-b6af-cf871dc80c5b",
+            "title": "Summary",
+            "query": "MATCH ((c:Cluster {id: $neodash_cluster_id}))\nRETURN TRIM(c.summary)\n\n\n",
+            "width": 8,
+            "height": 4,
+            "x": 0,
+            "y": 34,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "fontSize": 14,
+              "format": "yml",
+              "monospace": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "verticalAlign": "top",
+              "textAlign": "left",
+              "compact": true
+            },
+            "schema": []
+          },
+          {
+            "id": "b5170405-c20f-489a-b118-711b0b171f77",
+            "title": "Detected threats",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id})-[r2:DETECTED_THREAT]->(t:Threat) \nRETURN t.text AS threat\n\n\n\n",
+            "width": 8,
+            "height": 3,
+            "x": 16,
+            "y": 35,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "columnWidths": "[50,5]",
+              "refreshButtonEnabled": true,
+              "compact": true
+            }
+          },
+          {
+            "id": "66cedbe2-6ff0-4fcb-82dd-7e8a2b68c227",
+            "title": "Articles in the cluster",
+            "query": "MERGE (d:DayCounter)\n  DELETE d\nWITH 1 AS dummy\n  MATCH (a:Article)-[r:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})\nWITH c, COLLECT(a) AS ac\nWITH ac\n  OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)\n    WHERE a IN ac AND oa IN ac\nRETURN a, r, oa\n\n\n\n\n",
+            "width": 8,
+            "height": 6,
+            "x": 8,
+            "y": 32,
+            "type": "graph",
+            "selection": {
+              "Article": "pub_name",
+              "SIMILAR_TO": "(label)"
+            },
+            "settings": {
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "nodeColorScheme": "neodash",
+              "nodeLabelFontSize": 2,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "yterious",
+                  "customization": "node color",
+                  "customizationValue": "#DA02F288"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#008BFD88"
+                }
+              ],
+              "nodeSizeProp": "prob_size"
+            },
+            "schema": [
+              [
+                "Article",
+                "pub_date",
+                "gphin_state",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "pub_name",
+                "factiva_file_name",
+                "id",
+                "gphin_score",
+                "title",
+                "prob_size",
+                "content"
+              ],
+              [
+                "SIMILAR_TO",
+                "score",
+                "period"
+              ]
+            ]
+          },
+          {
+            "id": "46f0a2c9-2be1-45f3-88a8-8f4a4d924775",
+            "title": "Cluster's label and number of articles within Alice's assignment",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH DISTINCT(c) AS c, COUNT(DISTINCT(a)) AS nr_articles\nRETURN c.title AS label, c.id AS id, [i IN RANGE(1, SIZE(c.labels)) | c.labels[i]] AS alternatives, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n\n",
+            "width": 12,
+            "height": 7,
+            "x": 12,
+            "y": 7,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "",
+                  "condition": "=",
+                  "value": "",
+                  "customization": "node color",
+                  "customizationValue": "black"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "columnWidths": "[31,15, 43,7]",
+              "compact": true,
+              "actionsRules": [
+                {
+                  "condition": "Click",
+                  "field": "id",
+                  "value": "c.id",
+                  "customization": "set variable",
+                  "customizationValue": "cluster_id"
+                }
+              ]
+            },
+            "schema": []
+          },
+          {
+            "id": "05f217c5-dd22-48b3-928c-ee2f591f61a6",
+            "title": "Clusters without detected threats",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND NOT EXISTS((c)-[:DETECTED_THREAT]->(:Threat))\nWITH DISTINCT(c) AS c, COUNT(a) AS nr_articles\nRETURN c.title AS cluster, [i IN RANGE(1, SIZE(c.labels)) | c.labels[i]] AS alternatives, nr_articles ORDER BY nr_articles DESC\n\n\n\n\n\n\n",
+            "width": 12,
+            "height": 7,
+            "x": 12,
+            "y": 23,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "nodeColorScheme": "neodash",
+              "showPropertiesOnClick": true,
+              "columnWidths": "[40,50,10]",
+              "compact": true
+            },
+            "schema": []
+          },
+          {
+            "id": "0ed01afa-32b6-4997-9ed2-842b2ca1922f",
+            "title": "Period view",
+            "query": "- See all clusters of articles formed over a period of time from *start date* to *end date* (*if end date less than start date then it is consider as a single day view*)\n- Threat list: what are the public health threats that are assigned to Alice. All clusters are classified against them. Multiple threats can be detected in a single cluster.\n- Graph view of clusters and threats. Bigger clusters have more articles. Red cluster highlight special matches of keywords (Wuhan, pneumonia, coronavirus)\n- Cluster's label, alternative labels, and number of articles\n- Clusters with full hierarchical to show how *close* are the cluster to ech other. For example how clusters with disease outbreaks belong to the same subtrees.\n  * Three views: all together, only with deteched threats, and only for Alice\n- World map view of clusters (detected locations - city, province, building, etc - *not perfect*)\n- Clusters without detected threats (*perhaps not of interest*)\n  * Their labels, and number of articles",
+            "width": 24,
+            "height": 3,
+            "x": 0,
+            "y": 0,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "feea12e5-ad43-4895-9a39-1eaad2cdf18e",
+            "title": "Use the first representative article to answer my second question",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH REDUCE(t='', d IN contents | CASE WHEN SIZE(d) > SIZE(t) AND t <> '' THEN t ELSE d END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://35.215.43.115:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_impact_on_people})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "width": 9,
+            "height": 6,
+            "x": 6,
+            "y": 60,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "formFields": [
+                {
+                  "type": "Node Property",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "find_fact",
+                    "parameterName": "neodash_find_fact"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "refreshButtonEnabled": true,
+              "fontSize": 16,
+              "format": "yml",
+              "autorun": false,
+              "monospace": true
+            },
+            "schema": []
+          },
+          {
+            "id": "c0152056-00e0-46ef-82b7-ccb36a382a03",
+            "title": "Cluster analysis",
+            "query": "- Cluster can be selected by id: `YYYY-MM-DD-<cluster-id>` where `cluster_id` is the identification of the cluster in the period.\n- Summary: short summarization based on aggregated content of (3, 5, or 10) *representative documents* of the clusters\n- Detected threats: public health threats identified within articles of the cluster\n- Map of development: which countries are being effected.\n- Q&A: common question and answers\n",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 30,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "09ed6305-4e9c-476e-bdb4-14f771e9cd86",
+            "title": "More exploration - my first question",
+            "query": "RETURN true;",
+            "width": 6,
+            "height": 3,
+            "x": 0,
+            "y": 57,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "entityType": "Time and Place",
+              "parameterName": "neodash_time_and_place"
+            },
+            "schema": []
+          },
+          {
+            "id": "cfdf1af1-b356-4bad-a9f0-c96e01aaa06e",
+            "title": "Use summary to answer my first question",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  CALL apoc.load.jsonParams(\n    \"http://35.215.43.115:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: c.summary, question: $neodash_time_and_place})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "width": 9,
+            "height": 3,
+            "x": 6,
+            "y": 57,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "formFields": [
+                {
+                  "type": "Node Property",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "find_fact",
+                    "parameterName": "neodash_find_fact"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "refreshButtonEnabled": true,
+              "format": "yml",
+              "fontSize": 16,
+              "autorun": false,
+              "monospace": true
+            },
+            "schema": []
+          },
+          {
+            "id": "011612ba-63cc-49d5-ae63-03bd4847696f",
+            "title": "More exploration - my second question",
+            "query": "RETURN true;",
+            "width": 6,
+            "height": 3,
+            "x": 0,
+            "y": 60,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "entityType": "Impact on people",
+              "parameterName": "neodash_impact_on_people"
+            },
+            "schema": []
+          },
+          {
+            "id": "b36d9f45-755b-4070-8185-50336f9ba0ee",
+            "title": "More exploration - my third question",
+            "query": "RETURN true;",
+            "width": 6,
+            "height": 3,
+            "x": 0,
+            "y": 63,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "entityType": "Severity and urgency",
+              "parameterName": "neodash_severity_and_urgency"
+            },
+            "schema": []
+          },
+          {
+            "id": "9b328c3c-4755-49da-a152-68b4f0479ef2",
+            "title": "Use the top three representative articles to answer my third question",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id}) \nWITH c\n  MATCH (a:Article)\n    WHERE a.id IN c.representative_docs\nWITH COLLECT(a.content) AS contents\nWITH [i IN RANGE(0, CASE WHEN SIZE(contents) > 2 THEN 2 ELSE SIZE(contents) END) | contents[i]] AS contents\nWITH REDUCE(t='', e IN contents | CASE WHEN t = '' THEN e ELSE t + '\\n\\n' + e END) AS fulltext\nWITH fulltext\n  CALL apoc.load.jsonParams(\n    \"http://35.215.43.115:8000/answer_question\", \n    {method: \"POST\", `Content-Type`:\"application/json\"}, \n    apoc.convert.toJson({fulltext: fulltext, question: $neodash_severity_and_urgency})) YIELD value \nRETURN value['answer'] AS answer\n\n\n\n\n",
+            "width": 9,
+            "height": 9,
+            "x": 15,
+            "y": 57,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "formFields": [
+                {
+                  "type": "Node Property",
+                  "settings": {
+                    "type": "Free Text",
+                    "entityType": "find_fact",
+                    "parameterName": "neodash_find_fact"
+                  },
+                  "query": "RETURN true;"
+                }
+              ],
+              "refreshButtonEnabled": true,
+              "fontSize": 16,
+              "format": "yml",
+              "autorun": false,
+              "monospace": true
+            },
+            "schema": []
+          },
+          {
+            "id": "1265877e-cec4-4664-b263-6ba8d4ea39c7",
+            "title": "Chat with AI",
+            "query": "- Asking three different question, using summary of the cluster, its first representative article, its top three articles to answer\n- **You can ask what you want!** *Type your question!*",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 55,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "4ea2939f-0e4f-4853-9f09-a50b70072e78",
+            "title": "What does Alice read? Only the clusters and the outliers associated with threats assigned to her.",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (t:Threat)<-[r:DETECTED_THREAT]-(c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH COUNT(DISTINCT(c)) AS t_clusters, COUNT(DISTINCT(a)) AS t_articles, id_pattern\n  MATCH (c:Cluster)<-[:IN_CLUSTER]-(a:Article)\n    WHERE c.id =~ id_pattern\nWITH COUNT(DISTINCT(c)) AS a_clusters, COUNT(DISTINCT(a)) AS c_articles, t_clusters, t_articles\n  MATCH (a:Article)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  COUNT(DISTINCT(a)) AS a_articles, c_articles, a_clusters, t_articles, t_clusters\n  OPTIONAL MATCH (a:Article:Outlier)\n    WHERE CASE WHEN ($neodash_end_date IS NOT NULL AND $neodash_end_date >= $neodash_start_date)\n      THEN  ($neodash_start_date <= a.pub_date AND a.pub_date <= $neodash_end_date)\n      ELSE ($neodash_start_date = a.pub_date) END\nWITH\n  a_articles, c_articles, a_clusters, t_articles, t_clusters, COUNT(DISTINCT(a)) AS o_articles\nRETURN\n  a_articles AS `#articles`, \n  c_articles AS `#clustered articles`,\n  a_clusters AS `#clusters`, \n  t_articles AS `#articles (T)`,\n  t_clusters AS `#clusters (T)`,\n  o_articles AS `#outliers (T)`,\n  (t_clusters + o_articles) AS `#Alice reads`,\n  TOSTRING(ROUND(10000.0*t_clusters/a_articles)/100.0) +'%' AS `Clusters`,\n  TOSTRING(ROUND(10000.0*o_articles/a_articles)/100.0) +'%' AS `+Outliers`\n  \n",
+            "width": 12,
+            "height": 2,
+            "x": 12,
+            "y": 5,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "",
+                  "condition": "=",
+                  "value": "",
+                  "customization": "node color",
+                  "customizationValue": "black"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "columnWidths": "[13,13, 13,13,13,9,9,9,8]",
+              "compact": true,
+              "backgroundColor": "#A0CFF888"
+            },
+            "schema": []
+          },
+          {
+            "id": "e4d279b0-09a5-4697-9246-60043070f6cd",
+            "title": "All clusters in full hierarchy",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)\n    WHERE c.id =~ id_pattern\nWITH c \n  MATCH path=(c)<-[:CONTAINS*..]-(h:HierarchicalCluster)\nRETURN path\n\n\n\n\n\n\n\n\n\n",
+            "width": 8,
+            "height": 9,
+            "x": 0,
+            "y": 14,
+            "type": "graph",
+            "selection": {
+              "Cluster": "title",
+              "HierarchicalCluster": "name"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                },
+                {
+                  "field": "HierarchicalCluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#2400F188"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "nodeSizeProp": "nr_articles",
+              "nodeLabelColor": "#000000FF",
+              "nodeLabelFontSize": 3,
+              "defaultRelColor": "#a0a0a088",
+              "relLabelFontSize": 1
+            },
+            "schema": [
+              [
+                "Cluster",
+                "summary",
+                "keywords",
+                "nr_articles",
+                "name",
+                "answers",
+                "id",
+                "topic_id",
+                "title",
+                "representative_docs",
+                "labels",
+                "start_date"
+              ],
+              [
+                "HierarchicalCluster",
+                "name",
+                "id",
+                "clusters"
+              ]
+            ]
+          },
+          {
+            "id": "90c13dff-761c-4cdf-b6c9-487c6de6f244",
+            "title": "Only clusters with detected threats in full hierarchy",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\nWITH c \n  MATCH path=(c)<-[:CONTAINS*..]-(h:HierarchicalCluster)\nRETURN path\n\n\n\n\n\n\n\n\n\n",
+            "width": 8,
+            "height": 9,
+            "x": 8,
+            "y": 14,
+            "type": "graph",
+            "selection": {
+              "Cluster": "title",
+              "HierarchicalCluster": "name"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                },
+                {
+                  "field": "HierarchicalCluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#2400F188"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "nodeSizeProp": "nr_articles",
+              "nodeLabelColor": "#000000FF",
+              "defaultRelColor": "#a0a0a088",
+              "relLabelFontSize": 1,
+              "nodeLabelFontSize": 3.5
+            },
+            "schema": [
+              [
+                "Cluster",
+                "summary",
+                "keywords",
+                "nr_articles",
+                "name",
+                "answers",
+                "id",
+                "topic_id",
+                "title",
+                "representative_docs",
+                "labels",
+                "start_date"
+              ],
+              [
+                "HierarchicalCluster",
+                "name",
+                "id",
+                "clusters"
+              ]
+            ]
+          },
+          {
+            "id": "20583d5b-de4e-43e2-97e1-83a5d0b90c65",
+            "title": "Only Alice's clusters in full hierarchy",
+            "query": "WITH CASE WHEN TOSTRING($neodash_end_date) > TOSTRING($neodash_start_date) THEN TOSTRING($neodash_start_date) + '-' + TOSTRING($neodash_end_date) ELSE TOSTRING($neodash_start_date) END AS period\nWITH period + '-\\\\d+' AS id_pattern\n  MATCH (c:Cluster)-[:DETECTED_THREAT]->(t:Threat)\n    WHERE c.id =~ id_pattern\n      AND t.text IN $neodash_threat_text\nWITH c \n  MATCH path=(c)<-[:CONTAINS*..]-(h:HierarchicalCluster)\nRETURN path\n\n\n\n\n\n\n\n\n\n",
+            "width": 8,
+            "height": 9,
+            "x": 16,
+            "y": 14,
+            "type": "graph",
+            "selection": {
+              "Cluster": "title",
+              "HierarchicalCluster": "name"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": false,
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "layout": "force-directed",
+              "styleRules": [
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Cluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#18830288"
+                },
+                {
+                  "field": "HierarchicalCluster.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#2400F188"
+                }
+              ],
+              "nodeColorScheme": "neodash",
+              "nodeSizeProp": "nr_articles",
+              "nodeLabelColor": "#000000FF",
+              "defaultRelColor": "#a0a0a088",
+              "relLabelFontSize": 1,
+              "nodeLabelFontSize": 3.5
+            },
+            "schema": [
+              [
+                "Cluster",
+                "summary",
+                "keywords",
+                "nr_articles",
+                "name",
+                "answers",
+                "id",
+                "topic_id",
+                "title",
+                "representative_docs",
+                "labels",
+                "start_date"
+              ],
+              [
+                "HierarchicalCluster",
+                "name",
+                "id",
+                "clusters"
+              ]
+            ]
+          },
+          {
+            "id": "aad1ffcf-9566-47d2-ac40-0689078caa3a",
+            "title": "Changes in time",
+            "query": "- The graph diagrams below show how the articles of *the cluster with id selected above* and their similarities evolve over time\n- Click on the *refresh* `circle` on the left of **Date (in the middle diagram)** to change the diagram in the midile",
+            "width": 12,
+            "height": 2,
+            "x": 0,
+            "y": 46,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "d8307f88-250b-467f-9a02-a62b4d93833e",
+            "title": "Articles at the start of the period",
+            "query": "MATCH (a:Article)-[r:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})\nWITH c, COLLECT(a) AS ac\nWITH ac, SPLIT($neodash_cluster_id, '-') AS splits\nWITH ac, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\n  OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)\n    WHERE a IN ac AND start_date = a.pub_date AND oa IN ac AND start_date = oa.pub_date\nRETURN a, r, oa",
+            "width": 8,
+            "height": 7,
+            "x": 0,
+            "y": 48,
+            "type": "graph",
+            "selection": {
+              "Article": "pub_date",
+              "SIMILAR_TO": "(label)"
+            },
+            "settings": {
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "nodeColorScheme": "neodash",
+              "nodeLabelFontSize": 2,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "yterious",
+                  "customization": "node color",
+                  "customizationValue": "#DA02F288"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#008BFD88"
+                }
+              ],
+              "nodeSizeProp": "prob_size"
+            },
+            "schema": [
+              [
+                "Article",
+                "pub_date",
+                "gphin_state",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "pub_name",
+                "factiva_file_name",
+                "id",
+                "gphin_score",
+                "title",
+                "prob_size",
+                "content"
+              ],
+              [
+                "SIMILAR_TO",
+                "score",
+                "period"
+              ]
+            ]
+          },
+          {
+            "id": "26c88763-1ad6-4e01-a553-73ade60cf21c",
+            "title": "Start date",
+            "query": "WITH SPLIT($neodash_cluster_id, '-') AS splits\nWITH splits, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\nRETURN start_date",
+            "width": 4,
+            "height": 2,
+            "x": 12,
+            "y": 46,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "runButtonText": "Next day",
+              "refreshButtonEnabled": true,
+              "type": "Custom Query",
+              "entityType": "Next day",
+              "parameterName": "neodash_next_day",
+              "fontSize": 32,
+              "textAlign": "center",
+              "verticalAlign": "middle"
+            },
+            "schema": []
+          },
+          {
+            "id": "9bae600b-f172-4319-96e8-32a0d3386272",
+            "title": "Articles at the end of the period",
+            "query": "MATCH (a:Article)-[r:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})\nWITH c, COLLECT(a) AS ac\n  OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)\n    WHERE a IN ac AND oa IN ac\nRETURN a, r, oa\n",
+            "width": 8,
+            "height": 7,
+            "x": 16,
+            "y": 48,
+            "type": "graph",
+            "selection": {
+              "Article": "title",
+              "SIMILAR_TO": "(label)"
+            },
+            "settings": {
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "nodeColorScheme": "neodash",
+              "nodeLabelFontSize": 2,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "yterious",
+                  "customization": "node color",
+                  "customizationValue": "#DA02F288"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#008BFD88"
+                },
+                {
+                  "field": "Outlier.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#EAE71A88"
+                }
+              ],
+              "nodeSizeProp": "prob_size"
+            },
+            "schema": [
+              [
+                "Article",
+                "pub_date",
+                "gphin_state",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "pub_name",
+                "factiva_file_name",
+                "id",
+                "gphin_score",
+                "title",
+                "prob_size",
+                "content"
+              ],
+              [
+                "SIMILAR_TO",
+                "score",
+                "period"
+              ]
+            ]
+          },
+          {
+            "id": "eb9df2c2-6720-4cc6-9d53-bcdfd7771602",
+            "title": "Keywords",
+            "query": "MATCH (c:Cluster {id: $neodash_cluster_id})\nRETURN c.keywords AS keywords\n\n\n\n",
+            "width": 8,
+            "height": 3,
+            "x": 16,
+            "y": 32,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "columnWidths": "[50,5]",
+              "refreshButtonEnabled": true,
+              "compact": true,
+              "transposed": false
+            }
+          },
+          {
+            "id": "8b284d52-5263-4bf5-ae4a-18505f3cb707",
+            "title": "Articles at a day within the period (to change see above right)",
+            "query": "MATCH (a:Article)-[r:IN_CLUSTER]->(c:Cluster {id: $neodash_cluster_id})\nWITH c, COLLECT(a) AS ac\nWITH ac\n  MERGE (d:DayCounter)\n\nWITH ac, d.mid_date AS end_date\n  OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)\n    WHERE a IN ac AND end_date >= a.pub_date AND oa IN ac AND end_date >= oa.pub_date\nRETURN a, r, oa\n",
+            "width": 8,
+            "height": 7,
+            "x": 8,
+            "y": 48,
+            "type": "graph",
+            "selection": {
+              "Article": "pub_date",
+              "SIMILAR_TO": "(label)"
+            },
+            "settings": {
+              "allowDownload": true,
+              "showPropertiesOnHover": true,
+              "enableEditing": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true,
+              "nodeColorScheme": "neodash",
+              "nodeLabelFontSize": 2,
+              "styleRules": [
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Wuhan",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "Coronavirus",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "coronavius",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "yterious",
+                  "customization": "node color",
+                  "customizationValue": "#DA02F288"
+                },
+                {
+                  "field": "Article.title",
+                  "condition": "contains",
+                  "value": "pneumonia",
+                  "customization": "node color",
+                  "customizationValue": "#FF000088"
+                },
+                {
+                  "field": "Article.id",
+                  "condition": "!=",
+                  "value": "0",
+                  "customization": "node color",
+                  "customizationValue": "#008BFD88"
+                }
+              ],
+              "nodeSizeProp": "prob_size"
+            },
+            "schema": [
+              [
+                "Article",
+                "pub_date",
+                "gphin_state",
+                "factiva_folder",
+                "probability",
+                "pub_time",
+                "pub_name",
+                "factiva_file_name",
+                "id",
+                "gphin_score",
+                "title",
+                "prob_size",
+                "content"
+              ],
+              [
+                "SIMILAR_TO",
+                "score",
+                "period"
+              ]
+            ]
+          },
+          {
+            "id": "932b00d9-9659-420b-8f56-8ccfe6747f62",
+            "title": "Date - middle diagram",
+            "query": "WITH SPLIT($neodash_cluster_id, '-') AS splits\nWITH splits, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\nWITH splits, start_date,\n\tCASE WHEN SIZE(splits) >= 4 \n\t\tTHEN DATE(splits[3] + '-' + splits[4] + '-' + splits[5]) \n\t\tELSE start_date END AS end_date\nWITH start_date, end_date, DURATION.inDays(start_date, end_date) AS days\n\tMERGE (d:DayCounter)\n\t\tSET d.mid_date = \n\t\t\tCASE WHEN end_date IS NULL OR d.mid_date IS NULL\n\t\t\tTHEN \n                CASE WHEN end_date > start_date\n                    THEN start_date + DURATION({days:1})\n                    ELSE start_date END\n\t\t\tELSE\n                CASE WHEN end_date > start_date\n                    THEN \n                        CASE WHEN d.mid_date = end_date - DURATION({days:1})\n                            THEN start_date + DURATION({days:1})\n                            ELSE d.mid_date + DURATION({days:1}) END\n        \t\t\tELSE d.mid_date\n        \t\tEND\n\t\t    END\nRETURN d.mid_date",
+            "width": 4,
+            "height": 2,
+            "x": 16,
+            "y": 46,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "runButtonText": "Next day",
+              "refreshButtonEnabled": true,
+              "type": "Custom Query",
+              "entityType": "Next day",
+              "parameterName": "neodash_next_day",
+              "fontSize": 32,
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "8a202a00-2939-4cb1-b099-57bcea62df67",
+            "title": "End date",
+            "query": "WITH SPLIT($neodash_cluster_id, '-') AS splits\nWITH splits, DATE(splits[0] + '-' + splits[1] + '-' + splits[2]) AS start_date\nWITH splits, start_date, CASE WHEN SIZE(splits) = 4 \n  THEN start_date \n  ELSE DATE(splits[3] + '-' + splits[4] + '-' + splits[5])\n  END AS end_date\nRETURN end_date",
+            "width": 4,
+            "height": 2,
+            "x": 20,
+            "y": 46,
+            "type": "value",
+            "selection": {},
+            "settings": {
+              "runButtonText": "Next day",
+              "refreshButtonEnabled": true,
+              "type": "Custom Query",
+              "entityType": "Next day",
+              "parameterName": "neodash_next_day",
+              "fontSize": 32,
+              "textAlign": "center",
+              "verticalAlign": "middle"
+            },
+            "schema": []
+          }
+        ]
+      },
+      {
+        "title": "Disease Ontology",
+        "reports": [
+          {
+            "id": "834c6ae4-70ff-4a0e-95de-de1367bfc087",
+            "title": "Ontology with the first three levels",
+            "query": "MATCH (o:Ontology)-[r1]-(d:Resource:Class)<-[r2:subClassOf*1..3]-(m:Resource:Class)\n  WHERE m.label IS NOT NULL\nRETURN o, r1, d, r2, m\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "Resource": "title",
+              "Ontology": "title",
+              "Class": "label"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "Resource",
+                "date",
+                "saved-by",
+                "hasOBOFormatVersion",
+                "default-namespace",
+                "description",
+                "comment",
+                "versionInfo",
+                "title",
+                "uri",
+                "hasDbXref",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "hasExactSynonym",
+                "creation_date",
+                "created_by",
+                "hasAlternativeId",
+                "exactMatch",
+                "narrowMatch",
+                "hasNarrowSynonym",
+                "hasRelatedSynonym",
+                "OBI_9991118",
+                "broadMatch"
+              ],
+              [
+                "Ontology",
+                "date",
+                "saved-by",
+                "hasOBOFormatVersion",
+                "default-namespace",
+                "description",
+                "comment",
+                "versionInfo",
+                "title",
+                "uri"
+              ],
+              [
+                "IAO_0000700"
+              ],
+              [
+                "Class",
+                "hasDbXref",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasExactSynonym",
+                "creation_date",
+                "created_by",
+                "hasAlternativeId",
+                "comment",
+                "exactMatch",
+                "narrowMatch",
+                "hasNarrowSynonym",
+                "hasRelatedSynonym",
+                "OBI_9991118",
+                "broadMatch"
+              ],
+              [
+                "subClassOf"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "title": "(DO) Subclass & Superclass",
+        "reports": [
+          {
+            "id": "f3cda05c-bbfa-42aa-9762-1c7959feb4a6",
+            "title": "Disease",
+            "query": "MATCH (n:`Class`) \nWHERE toLower(toString(n.`label`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`label` as value,  n.`label` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+            "width": 4,
+            "height": 2,
+            "x": 0,
+            "y": 0,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "entityType": "Class",
+              "propertyType": "label",
+              "propertyTypeDisplay": "label",
+              "parameterName": "neodash_class_label"
+            },
+            "schema": []
+          },
+          {
+            "id": "8fd6e8e6-0b7c-453f-9089-2a083a537c43",
+            "title": "Superclasses",
+            "query": "MATCH (d:Class {label: $neodash_class_label})-[r:subClassOf*1..]->(m:Class)\n  WHERE m.label IS NOT NULL\nRETURN d, r, m\n\n",
+            "width": 4,
+            "height": 6,
+            "x": 0,
+            "y": 2,
+            "type": "graph",
+            "selection": {
+              "Resource": "label",
+              "Class": "label"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "Resource",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
+              ],
+              [
+                "Class",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
+              ],
+              [
+                "subClassOf"
+              ]
+            ]
+          },
+          {
+            "id": "f96f8f83-7bed-4185-91bb-f96c74a87ec2",
+            "title": "Subclasses (3 levels down)",
+            "query": "MATCH (d:Class {label: $neodash_class_label})<-[r:subClassOf*1..3]-(m:Class)\n  WHERE m.label IS NOT NULL\nRETURN d, r, m\n\n\n\n\n",
+            "width": 20,
+            "height": 8,
+            "x": 4,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "Resource": "label",
+              "Class": "label"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "Resource",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasExactSynonym",
+                "hasDbXref"
+              ],
+              [
+                "Class",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasExactSynonym",
+                "hasDbXref"
+              ],
+              [
+                "subClassOf"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "title": "(DON) Detected Diseases",
+        "reports": [
+          {
+            "id": "28e5f4fa-2638-4ab9-871e-60ab5c7ce738",
+            "title": "Detected Diseases",
+            "query": "MATCH (a:DON)<-[r1:PART_OF]-(c1:Chunk)-[rs:SIMILAR_D2D_CHUNK]->(c2:Chunk)-[r2:PART_OF]->(d:Resource:Class)<-[rd:DETECTED_DISEASE]-(a)\nRETURN a, r1, c1, rs, c2, r2, d, rd\n\n\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "DON": "title",
+              "PART_OF": "(label)",
+              "Chunk": "(label)",
+              "SIMILAR_D2D_CHUNK": "(label)",
+              "Resource": "label",
+              "Class": "label",
+              "DETECTED_DISEASE": "(label)"
+            },
+            "settings": {
+              "enableEditing": true,
+              "showPropertiesOnHover": true,
+              "allowDownload": true,
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "rightClickToExpandNodes": true
+            },
+            "schema": [
+              [
+                "DON",
+                "summary",
+                "answers",
+                "countries",
+                "title",
+                "content",
+                "url",
+                "report_date"
+              ],
+              [
+                "PART_OF"
+              ],
+              [
+                "Chunk",
+                "embeddings",
+                "text"
+              ],
+              [
+                "SIMILAR_D2D_CHUNK",
+                "score"
+              ],
+              [
+                "Resource",
+                "hasDbXref",
+                "IAO_0000115",
+                "hasExactSynonym",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasAlternativeId",
+                "deprecated"
+              ],
+              [
+                "Class",
+                "hasDbXref",
+                "IAO_0000115",
+                "hasExactSynonym",
+                "hasOBONamespace",
+                "label",
+                "id",
+                "uri",
+                "hasAlternativeId",
+                "deprecated"
+              ],
+              [
+                "DETECTED_DISEASE",
+                "score",
+                "scores"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "title": "(DON) Public Health Threats",
+        "reports": [
+          {
+            "id": "04bd7e67-b538-4972-acc3-aa7cf8822551",
+            "title": "Threat Graph",
+            "query": "MATCH (d)<-[r1:DETECTED_DISEASE]-(n:DON)-[r2:DETECTED_THREAT]->(t:Threat)\nRETURN n, r2, t, r1, d\n\n\n\n\n\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 8,
+            "type": "graph",
+            "selection": {
+              "DON": "title",
+              "DETECTED_THREAT": "(label)",
+              "Threat": "(label)",
+              "DETECTED_DISEASE": "(label)",
+              "Resource": "label",
+              "Class": "label"
+            },
+            "settings": {
+              "actionsRules": [
+                {
+                  "condition": "onNodeClick",
+                  "field": "DON",
+                  "value": "url",
+                  "customization": "set variable",
+                  "customizationValue": "don_id"
+                }
+              ]
+            },
+            "schema": [
+              [
+                "DON",
+                "summary",
+                "answers",
+                "countries",
+                "title",
+                "content",
+                "url",
+                "report_date"
+              ],
+              [
+                "DETECTED_THREAT"
+              ],
+              [
+                "Threat",
+                "score",
+                "text"
+              ],
+              [
+                "DETECTED_DISEASE",
+                "score",
+                "scores"
+              ],
+              [
+                "Resource",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "deprecated",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
+              ],
+              [
+                "Class",
+                "IAO_0000115",
+                "hasOBONamespace",
+                "deprecated",
+                "label",
+                "id",
+                "uri",
+                "hasDbXref",
+                "hasExactSynonym",
+                "hasAlternativeId",
+                "OBI_9991118",
+                "comment"
+              ]
+            ]
+          },
+          {
+            "id": "5b1ca82a-40d4-4ba4-9edf-499524054c71",
+            "title": "Distribution of threats (in Disease Outbreak News)",
+            "query": "MATCH (n:DON)-[r:DETECTED_THREAT]-(t:Threat)\nRETURN DISTINCT(t.text) AS threat, COUNT(n) AS count ORDER BY count DESC\n\n\n\n\n\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 0,
+            "type": "bar",
+            "selection": {
+              "index": "threat",
+              "value": "count",
+              "key": "(none)"
+            },
+            "settings": {
+              "marginBottom": 150,
+              "marginRight": 200,
+              "labelRotation": 25
+            },
+            "schema": []
+          }
+        ]
+      },
+      {
+        "title": "(DON) World View",
+        "reports": [
+          {
+            "id": "c1958713-378e-4830-aa9b-e34ed920d288",
+            "title": "Map",
+            "query": "MATCH (d:Resource:Class {label: $neodash_disease_label})\nWITH d MATCH (n:DON)-[:DETECTED_DISEASE]->(d)\nWITH n, n.countries AS countries\n  UNWIND countries AS country\nRETURN DISTINCT(country) AS code, COUNT(n) AS count\n\n\n",
+            "width": 17,
+            "height": 8,
+            "x": 7,
+            "y": 0,
+            "type": "areamap",
+            "selection": {
+              "index": "code",
+              "value": "count"
+            },
+            "settings": {
+              "mapDrillDown": true,
+              "showLegend": true,
+              "downloadImageEnabled": true,
+              "fullscreenEnabled": true,
+              "refreshButtonEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "b6a1cb95-8bcf-46a8-a3e3-0cb720450406",
+            "title": "Detected disease",
+            "query": "MATCH (d:Resource:Class)-[:DETECTED_DISEASE]-(:DON)\nRETURN DISTINCT(d.label)\n",
+            "width": 7,
+            "height": 6,
+            "x": 0,
+            "y": 0,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Custom Query",
+              "entityType": "disease_label",
+              "parameterName": "neodash_disease_label"
+            },
+            "schema": []
+          }
+        ]
+      }
+    ],
+    "parameters": {},
+    "extensions": {
+      "active": true,
+      "activeReducers": [],
+      "advanced-charts": {
+        "active": true
+      },
+      "styling": {
+        "active": true
+      },
+      "actions": {
+        "active": true
+      },
+      "query-translator": {},
+      "forms": {
+        "active": true
+      }
+    },
+    "uuid": "ae450566-e6c1-4cfe-86d2-30c39a206766"
+  }
