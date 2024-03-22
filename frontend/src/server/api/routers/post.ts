@@ -1,4 +1,5 @@
 import neo4j, {
+  type Integer as Neo4jInteger,
   type Node,
   type Path,
   type QueryResult,
@@ -85,7 +86,7 @@ export interface Cluster {
   threats?: Threat[];
 
   // TODO: fix this
-  location: ClusterLocation;
+  // location: ClusterLocation;
 }
 
 export interface ClusterRecord
@@ -189,12 +190,12 @@ const translateGraph = (
               source.locations ?? "[]",
             ) as ClusterLocation[],
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            location: JSON.parse(source.locations ?? "[]").filter(
-              (l: { latitude?: number; longitude?: number }) =>
-                typeof l.latitude === "number" &&
-                typeof l.longitude === "number",
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            )[0],
+            // location: JSON.parse(source.locations ?? "[]").filter(
+            //   (l: { latitude?: number; longitude?: number }) =>
+            //     typeof l.latitude === "number" &&
+            //     typeof l.longitude === "number",
+            //   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            // )[0],
             // location: JSON.parse(
             //   source.locations ?? "[]",
             // )[0],
@@ -299,89 +300,14 @@ export const postRouter = createTRPCRouter({
           `
         MATCH (c:Cluster {id: $id})-[r]-(a:Article)
           OPTIONAL MATCH (c)-[rt]-(t:Threat)
-        RETURN c,r,a,t,rt
+        WITH c,r,a,t,rt
+          OPTIONAL MATCH (a)-[or:SIMILAR_TO]-(oa)-[orc]-(oc:Cluster)
+            WHERE oa.pub_date >= c.start_date AND oa.pub_date <= c.end_date
+        RETURN c,r,a,t,rt,oa,or,orc
         `,
           { id: input.id },
         );
         return translateGraph(await OgmaLib.parse.neo4j(result));
-        // if (result.records.length > 0) {
-        //   const cluster = (result.records.at(0)?.get("c") as Node)
-        //     .properties as Record<string, unknown>;
-
-        //   const articles: Record<string, unknown> = {};
-        //   const threats: Record<string, unknown> = {};
-        //   const threatTitles: string[] = [];
-        //   result.records.forEach((rec) => {
-        //     const a = (rec.get("a") as Node).properties;
-        //     const t = (rec.get("t") as Node).properties;
-        //     const r2 = (rec.get("r2") as Node).properties;
-        //     const article_id = `${(a.id as Neo4JNumber).low}`;
-        //     const threat_id = `${(a.id as Neo4JNumber).low}`;
-        //     if (!articles[article_id]) articles[article_id] = a;
-        //     if (!threats[threat_id]) {
-        //       const title = (t as { text: string }).text;
-        //       if (!threatTitles.includes(title)) {
-        //         threats[threat_id] = { t, r: r2 };
-        //         threatTitles.push(title);
-        //       }
-        //     }
-        //   });
-
-        //   return {
-        //     type: "cluster",
-        //     answers: JSON.parse(
-        //       (cluster.answers as string) ?? "[]",
-        //     ) as ClusterQA[],
-        //     id: cluster.id,
-        //     nr_articles: parseInt(cluster.nr_articles as string),
-        //     node_size: cluster.node_size,
-        //     start_date: new Date(),
-        //     summary: cluster.summary,
-        //     title: cluster.title,
-        //     topic_id: cluster.topic_id,
-        //     primary_threat: cluster.primary_threat,
-        //     threats: Object.entries(threats)
-        //       .map(([_, o]) => {
-        //         const d = o as Record<"t" | "r", Record<string, unknown>>;
-        //         return {
-        //           t: {
-        //             type: "threat",
-        //             title: d.t.text,
-        //             score: d.t.score,
-        //           },
-        //           r: { score: d.r.score },
-        //         } as { t: Threat; r: { score: number } };
-        //       })
-        //       .sort((a, b) => {
-        //         if (a.r.score > b.r.score) return -1;
-        //         if (a.r.score < b.r.score) return 1;
-        //         if ((a.t.score ?? 0) > (b.t.score ?? 0)) return -1;
-        //         if ((a.t.score ?? 0) < (b.t.score ?? 0)) return 1;
-        //         return 0;
-        //       }),
-        //     articles: Object.entries(articles)
-        //       .map(([_, o]) => {
-        //         const d = o as Record<string, unknown>;
-        //         return {
-        //           pub_date: d.pub_date,
-        //           gphin_state: d.gphin_state,
-        //           factiva_folder: d.factiva_folder,
-        //           pub_time: d.pub_time,
-        //           pub_name: d.pub_name,
-        //           factiva_file_name: d.factiva_file_name,
-        //           id: d.id,
-        //           gphin_score: d.gphin_score,
-        //           title: d.title,
-        //           content: d.content,
-        //         } as Article;
-        //       })
-        //       .sort((a, b) => {
-        //         if (a.gphin_score > b.gphin_score) return -1;
-        //         if (a.gphin_score < b.gphin_score) return 1;
-        //         return 0;
-        //       }),
-        //   } as Cluster;
-        // }
       } finally {
         await session.close();
       }
@@ -436,7 +362,8 @@ export const postRouter = createTRPCRouter({
           WITH c, COLLECT(a) AS ac
             OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)
               WHERE a IN ac AND oa IN ac
-          RETURN a, r, oa
+          RETURN 
+            a, r, NOT oa
         `,
           { cluster_id: input.cluster_id },
         );
@@ -447,6 +374,62 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+  hierarchicalClustersArticleCount: publicProcedure
+    .input(
+      z.object({
+        day: z.number().gte(1).lte(62),
+        history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
+        everything: z.boolean().optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const session = driver.session();
+      const baseDate = new Date("2019-12-01");
+      baseDate.setDate(baseDate.getDate() + input.day - 1);
+
+      let endDate = "";
+      let startDate = "";
+
+      if (input.history) {
+        if (input.history === 30 && input.everything) {
+          throw new Error("Unable to process everything for 30 days.");
+        }
+        endDate = baseDate.toLocaleDateString("en-CA", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        });
+        baseDate.setDate(baseDate.getDate() - input.history + 1);
+      }
+
+      startDate = baseDate.toLocaleDateString("en-CA", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      });
+
+      const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
+      try {
+        const counter = await session.run(
+          `
+        WITH $period + '-\\d+' AS id_pattern
+          MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
+            WHERE c.id =~ id_pattern
+        WITH c
+          MATCH articles=(a:Article)-[r:IN_CLUSTER]->(c)
+        RETURN count(a) as count
+        `,
+          { period },
+        );
+        for (const r of counter.records) {
+          const count = r.get("count") as Neo4jInteger;
+          return count.toNumber();
+        }
+        return 0;
+      } finally {
+        await session.close();
+      }
+    }),
   hierarchicalClusters: publicProcedure
     .input(
       z.object({
@@ -488,19 +471,19 @@ export const postRouter = createTRPCRouter({
         WITH $period + '-\\d+' AS id_pattern
           MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
             WHERE c.id =~ id_pattern
-        WITH c, collect(t) as threats
+        WITH c, t, r, collect(t) as threats
 
         ${
           input.everything
             ? `
           MATCH articles=(a:Article)-[r:IN_CLUSTER]->(c)
-        WITH c, threats, articles
+        WITH c, t, r, threats, articles
         `
             : ""
         }
 
           MATCH path=(c)<-[:CONTAINS*..]-(:HierarchicalCluster)
-        RETURN path,${input.everything ? " articles," : ""} threats
+        RETURN path,t, r,${input.everything ? " articles," : ""} threats
         `,
           { period },
         );
