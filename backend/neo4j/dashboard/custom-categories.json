@@ -1891,7 +1891,8 @@
             "type": "table",
             "selection": {},
             "settings": {
-              "columnWidths": "[15,85]"
+              "columnWidths": "[15,85]",
+              "allowDownload": true
             }
           },
           {
@@ -1912,14 +1913,36 @@
           {
             "id": "1d56d5b7-fab1-44b8-b52d-241eefa1dd21",
             "title": "Set of threats and number of clusters",
-            "query": "MATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\nWITH DISTINCT(c) AS c, COLLECT (t.text) AS threats\nWITH DISTINCT(threats) AS threats, COUNT(DISTINCT(c)) AS number_of_clusters \nRETURN threats, number_of_clusters ORDER BY number_of_clusters DESC\n",
+            "query": "MATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\nWITH DISTINCT(c) AS c, COLLECT(t.text) AS threats\nWITH DISTINCT(threats) AS threats, COUNT(DISTINCT(c)) AS nr_clusters \nRETURN \n  REDUCE(l='', e IN apoc.coll.sort(threats) | CASE WHEN l='' THEN e ELSE l + ', ' + e END) AS threats, \n  nr_clusters ORDER BY nr_clusters DESC, threats ASC\n",
             "width": 24,
             "height": 8,
             "x": 0,
             "y": 75,
             "type": "table",
             "selection": {},
-            "settings": {}
+            "settings": {
+              "columnWidths": "[90,10]",
+              "allowDownload": true,
+              "refreshButtonEnabled": true,
+              "compact": true
+            }
+          },
+          {
+            "id": "ebfbad39-76e4-4f20-a37f-ba9d24fba808",
+            "title": "Set of threats and number of clusters - in proportional view",
+            "query": "MATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\nWITH DISTINCT(c) AS c, COLLECT(t.text) AS threats\nWITH DISTINCT(threats) AS threats, COUNT(DISTINCT(c)) AS nr_clusters \nRETURN \n  REDUCE(l='', e IN apoc.coll.sort(threats) | CASE WHEN l='' THEN e ELSE l + ', ' + e END) AS threats, \n  nr_clusters ORDER BY nr_clusters DESC, threats ASC\n\n\n\n",
+            "width": 24,
+            "height": 10,
+            "x": 0,
+            "y": 83,
+            "type": "pie",
+            "selection": {
+              "index": "threats",
+              "value": "nr_clusters",
+              "key": "(none)"
+            },
+            "settings": {},
+            "schema": []
           }
         ]
       },
