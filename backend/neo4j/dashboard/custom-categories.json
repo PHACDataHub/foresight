@@ -474,7 +474,9 @@
         "neodash_impact_on_people": "Is it infectious? How intensive is it?",
         "neodash_severity_and_urgency": "How severe is it and how soon should we take some action?",
         "neodash_cluster_id": "2019-12-31-1",
-        "neodash_selected_cluster_id": "2019-12-31-1"
+        "neodash_selected_cluster_id": "2019-12-31-1",
+        "neodash_threat_text_2": [],
+        "neodash_threat_text_2_display": []
       },
       "theme": "light",
       "disableRowLimiting": true,
@@ -1915,7 +1917,7 @@
             "title": "Set of threats and number of clusters",
             "query": "MATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\nWITH DISTINCT(c) AS c, COLLECT(t.text) AS threats\nWITH DISTINCT(threats) AS threats, COUNT(DISTINCT(c)) AS nr_clusters \nRETURN \n  REDUCE(l='', e IN apoc.coll.sort(threats) | CASE WHEN l='' THEN e ELSE l + ', ' + e END) AS threats, \n  nr_clusters ORDER BY nr_clusters DESC, threats ASC\n",
             "width": 24,
-            "height": 8,
+            "height": 11,
             "x": 0,
             "y": 75,
             "type": "table",
@@ -1929,19 +1931,63 @@
           },
           {
             "id": "ebfbad39-76e4-4f20-a37f-ba9d24fba808",
-            "title": "Set of threats and number of clusters - in proportional view",
-            "query": "MATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\nWITH DISTINCT(c) AS c, COLLECT(t.text) AS threats\nWITH DISTINCT(threats) AS threats, COUNT(DISTINCT(c)) AS nr_clusters \nRETURN \n  REDUCE(l='', e IN apoc.coll.sort(threats) | CASE WHEN l='' THEN e ELSE l + ', ' + e END) AS threats, \n  nr_clusters ORDER BY nr_clusters DESC, threats ASC\n\n\n\n",
+            "title": "How many clusters are with a set of detected threats",
+            "query": "MATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\n  WHERE CASE WHEN SIZE($neodash_threat_text_2) > 0 THEN t.text IN $neodash_threat_text_2 ELSE TRUE END\nWITH DISTINCT(c) AS c, COLLECT(t.text) AS threats\nWITH DISTINCT(threats) AS threats, COUNT(DISTINCT(c)) AS nr_clusters \nRETURN \n  REDUCE(l='', e IN apoc.coll.sort(threats) | CASE WHEN l='' THEN e ELSE l + ', ' + e END) AS threats, \n  nr_clusters ORDER BY nr_clusters DESC, threats ASC\n\n\n\n",
             "width": 24,
-            "height": 10,
+            "height": 11,
             "x": 0,
-            "y": 83,
+            "y": 88,
             "type": "pie",
             "selection": {
               "index": "threats",
               "value": "nr_clusters",
               "key": "(none)"
             },
-            "settings": {},
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true
+            },
+            "schema": []
+          },
+          {
+            "id": "f305484e-93e8-44d5-a6dd-54cec7a622f9",
+            "title": "How AI-created labels related to detected threats",
+            "query": "MATCH (c:Cluster)-[:DETECTED_THREAT]-(t:Threat)\n  WHERE CASE WHEN SIZE($neodash_threat_text_2) > 0 THEN t.text IN $neodash_threat_text_2 ELSE TRUE END\nWITH c, t\n    UNWIND c.labels AS label\nWITH DISTINCT(label) AS label, COUNT(DISTINCT(c.id)) AS nr_clusters, COLLECT(DISTINCT(t.text)) AS threats\nRETURN label, nr_clusters, threats ORDER BY nr_clusters DESC\n\n\n",
+            "width": 24,
+            "height": 11,
+            "x": 0,
+            "y": 99,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "fullscreenEnabled": true,
+              "allowDownload": true,
+              "columnWidths": "[15,5, 80]",
+              "refreshButtonEnabled": true,
+              "compact": true
+            }
+          },
+          {
+            "id": "87985b78-7c07-4a4e-832d-48c2dc9911fb",
+            "title": "List of threats (none is to select all)",
+            "query": "MATCH (n:`Threat`) \nWHERE toLower(toString(n.`text`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`text` as value,  n.`text` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 86,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Node Property",
+              "entityType": "Threat",
+              "propertyType": "text",
+              "propertyTypeDisplay": "text",
+              "parameterName": "neodash_threat_text_2",
+              "id": "2",
+              "refreshButtonEnabled": true,
+              "multiSelector": true,
+              "multiline": true
+            },
             "schema": []
           }
         ]
