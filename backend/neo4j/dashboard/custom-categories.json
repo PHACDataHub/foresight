@@ -551,7 +551,6 @@
             "type": "graph",
             "selection": {
               "Cluster": "title",
-              "DETECTED_THREAT": "(label)",
               "Threat": "text"
             },
             "settings": {
@@ -825,8 +824,7 @@
             "y": 32,
             "type": "graph",
             "selection": {
-              "Article": "pub_name",
-              "SIMILAR_TO": "(label)"
+              "Article": "pub_name"
             },
             "settings": {
               "allowDownload": true,
@@ -1537,8 +1535,7 @@
             "y": 48,
             "type": "graph",
             "selection": {
-              "Article": "pub_date",
-              "SIMILAR_TO": "(label)"
+              "Article": "pub_date"
             },
             "settings": {
               "allowDownload": true,
@@ -1657,8 +1654,7 @@
             "y": 48,
             "type": "graph",
             "selection": {
-              "Article": "title",
-              "SIMILAR_TO": "(label)"
+              "Article": "title"
             },
             "settings": {
               "allowDownload": true,
@@ -1837,28 +1833,7 @@
               ],
               "nodeSizeProp": "prob_size"
             },
-            "schema": [
-              [
-                "Article",
-                "pub_date",
-                "gphin_state",
-                "factiva_folder",
-                "probability",
-                "pub_time",
-                "pub_name",
-                "factiva_file_name",
-                "id",
-                "gphin_score",
-                "title",
-                "prob_size",
-                "content"
-              ],
-              [
-                "SIMILAR_TO",
-                "score",
-                "period"
-              ]
-            ]
+            "schema": []
           },
           {
             "id": "932b00d9-9659-420b-8f56-8ccfe6747f62",
@@ -1904,6 +1879,47 @@
               "verticalAlign": "middle"
             },
             "schema": []
+          },
+          {
+            "id": "0809e3a5-8f74-4355-a940-9d4e5305ffb1",
+            "title": "Threats and keywords",
+            "query": "\nMATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\nWITH DISTINCT(t.text) AS threat, COLLECT(c.keywords) AS keywords\nWITH threat, apoc.coll.flatten(keywords) AS flatten_keywords\nWITH threat, apoc.coll.frequenciesAsMap(flatten_keywords) AS keyword_map\nWITH threat,\n    REDUCE(m={}, k IN KEYS(keyword_map) | CASE WHEN keyword_map[k] > 9 THEN apoc.map.setEntry(m, k, keyword_map[k]) ELSE m END) AS filtered_map\nWITH threat,\n    REDUCE(l=[], k IN apoc.coll.sort(KEYS(filtered_map)) | l + [k, filtered_map[k]]) AS keywords\nRETURN threat, keywords\n\n\n",
+            "width": 24,
+            "height": 7,
+            "x": 0,
+            "y": 68,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "columnWidths": "[15,85]"
+            }
+          },
+          {
+            "id": "3183e929-d9e8-4b0f-bbe5-cd56368050db",
+            "title": "Custom Categories",
+            "query": "- Custom set of threats and the number of clusters belonging to each of the sets\n- Each of the threats and their frequent keywords (appearing in at least 10 clusters)",
+            "width": 24,
+            "height": 2,
+            "x": 0,
+            "y": 66,
+            "type": "text",
+            "selection": {},
+            "settings": {
+              "backgroundColor": "#CEF1E488"
+            },
+            "schema": []
+          },
+          {
+            "id": "1d56d5b7-fab1-44b8-b52d-241eefa1dd21",
+            "title": "Set of threats and number of clusters",
+            "query": "MATCH (t:Threat)<-[:DETECTED_THREAT]-(c:Cluster)\nWITH DISTINCT(c) AS c, COLLECT (t.text) AS threats\nWITH DISTINCT(threats) AS threats, COUNT(DISTINCT(c)) AS number_of_clusters \nRETURN threats, number_of_clusters ORDER BY number_of_clusters DESC\n",
+            "width": 24,
+            "height": 8,
+            "x": 0,
+            "y": 75,
+            "type": "table",
+            "selection": {},
+            "settings": {}
           }
         ]
       },
