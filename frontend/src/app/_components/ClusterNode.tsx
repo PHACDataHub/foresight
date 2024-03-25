@@ -2,36 +2,56 @@ import { type Node as OgmaNode } from "@linkurious/ogma";
 import Highlighter from "react-highlight-words";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faAngleDown,
+  faAngleLeft,
+  faAngleRight,
   faCircleInfo,
   faClose,
   faMagnifyingGlass,
-  faShareNodes,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
-import { type KeyboardEvent, useCallback, useEffect, useMemo } from "react";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionItemButton,
-  AccordionItemHeading,
-  AccordionItemPanel,
-} from "react-accessible-accordion";
+import React, {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
+import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import InputAdornment from "@mui/material/InputAdornment";
+
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import IconButton from "@mui/material/IconButton";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import TextField from "@mui/material/TextField";
+import Badge from "@mui/material/Badge";
 import { type Article, type Cluster } from "~/server/api/routers/post";
 import { type ClusterNodeSections, useStore } from "~/app/_store";
 import { createScale, getNodeData, getRawNodeData } from "~/app/_utils/graph";
 import { api } from "~/trpc/react";
+import ArticleComponent from "./graph/Article";
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   if (!cluster?.locations) return;
   return (
-    <ul className="list-inline">
-      {cluster.locations.map((l, i) => (
-        <li key={`loc_${i}`}>
-          <span className="label label-info">{l.location}</span>
-        </li>
-      ))}
-    </ul>
+    <Stack direction="row" spacing={1}>
+      {cluster.locations
+        .filter((l) => Boolean(l.location))
+        .map((l, i) => (
+          <Chip
+            key={`loc_${i}`}
+            color="primary"
+            variant="outlined"
+            label={l.location}
+          />
+        ))}
+    </Stack>
   );
 }
 
@@ -77,31 +97,28 @@ function ClusterTitle({
   if (!cluster) return <></>;
 
   return (
-    <div
-      className="flex items-center justify-between"
-      style={
-        details
-          ? { background: "rgb(90,111,196)", padding: 5, color: "white" }
-          : undefined
-      }
-    >
-      <h4>
-        <Highlighter
-          searchWords={searchTerms}
-          textToHighlight={cluster.title}
-        />
-      </h4>
-      <div className="flex space-x-2">
-        <button value={cluster.id} onClick={handleOpenCluster}>
+    <div className="flex items-center justify-between">
+      <div className="flex-1">
+        <Typography variant="h6">
+          <Highlighter
+            searchWords={searchTerms}
+            textToHighlight={cluster.title}
+          />
+        </Typography>
+      </div>
+      <div className="flex">
+        <IconButton onClick={handleOpenCluster}>
           <FontAwesomeIcon icon={faCircleInfo} />
-        </button>
-        <button value={cluster.id} onClick={handleLocate}>
+        </IconButton>
+
+        <IconButton onClick={handleLocate}>
           <FontAwesomeIcon icon={faMagnifyingGlass} />
-        </button>
+        </IconButton>
+
         {details && (
-          <button value={cluster.id} onClick={handleCloseCluster}>
+          <IconButton defaultValue={cluster.id} onClick={handleCloseCluster}>
             <FontAwesomeIcon icon={faClose} />
-          </button>
+          </IconButton>
         )}
       </div>
     </div>
@@ -121,18 +138,20 @@ export function ClusterNode(
 ) {
   const { clusterNode } = props;
   const details = "details" in props && props.details;
-  const expand = ("expand" in props && props.expand) || [];
+
+  const [question, setQuestion] = useState("");
 
   const {
     searchTerms,
     qa,
     addQA,
     ogma,
-    setLayout,
     refresh,
-    toggleExpandedCluster,
     expandedClusters,
     setScale,
+    showInfoPanel,
+    setShowInfoPanel,
+    setPanelWasToggled,
   } = useStore();
 
   const { data, isFetching } = api.post.cluster.useQuery(
@@ -157,7 +176,6 @@ export function ClusterNode(
     if (!cluster) return;
     if (expandedClusters.includes(cluster.id)) {
       refresh();
-      console.log("--- frefreshing...---");
       const node_ids = data?.nodes
         .filter((n) => getRawNodeData(n)?.type === "article")
         .map((n) => `${getRawNodeData<Article>(n).id}`);
@@ -174,29 +192,44 @@ export function ClusterNode(
     }
   }, [cluster, data?.nodes, expandedClusters, ogma, refresh]);
 
+  const handleQuestionChange = useCallback(
+    (evt: React.ChangeEvent<HTMLInputElement>) => {
+      setQuestion(evt.target.value);
+    },
+    [],
+  );
+
   const handleQuestion = useCallback(
     async (e: KeyboardEvent<HTMLInputElement>) => {
       if (!cluster) return;
       if (e.key === "Enter") {
-        const question = e.currentTarget.value;
+        console.log(question);
         addQA({ clusterId: cluster.id, question });
-        e.currentTarget.value = "";
-        const answer = await questionApi.mutateAsync({
-          cluster_id: cluster.id,
-          question,
-        });
-        addQA({ clusterId: cluster.id, question, answer });
+        setQuestion("");
+        try {
+          const answer = await questionApi.mutateAsync({
+            cluster_id: cluster.id,
+            question,
+          });
+          addQA({ clusterId: cluster.id, question, answer });
+        } catch (e) {
+          addQA({
+            clusterId: cluster.id,
+            question,
+            answer: [(e as Error).message],
+          });
+        }
       }
     },
-    [addQA, cluster, questionApi],
+    [addQA, cluster, question, questionApi],
   );
 
-  const handleAddToGraph = useCallback(async () => {
-    if (!cluster) return;
-    toggleExpandedCluster(cluster.id);
-    setLayout("force");
-    refresh();
-  }, [cluster, refresh, setLayout, toggleExpandedCluster]);
+  // const handleAddToGraph = useCallback(async () => {
+  //   if (!cluster) return;
+  //   toggleExpandedCluster(cluster.id);
+  //   setLayout("force");
+  //   refresh();
+  // }, [cluster, refresh, setLayout, toggleExpandedCluster]);
 
   useEffect(() => {
     if (!ogma || !data || !cluster) return;
@@ -240,177 +273,148 @@ export function ClusterNode(
       });
   }, [data, details]);
 
+  const handleNodeViewToggle = useCallback(() => {
+    if (showInfoPanel) setPanelWasToggled(true);
+    setShowInfoPanel(!showInfoPanel);
+  }, [setPanelWasToggled, setShowInfoPanel, showInfoPanel]);
+
+  const [tab, setTab] = useState(0);
+
+  const handleTabChange = useCallback(
+    (evt: React.SyntheticEvent, newTab: number) => {
+      setTab(newTab);
+    },
+    [],
+  );
+
+  if (details && !showInfoPanel)
+    return (
+      <div
+        className="flex justify-between"
+        style={{ background: "rgb(90,111,196)", padding: 5 }}
+      >
+        <IconButton onClick={handleNodeViewToggle}>
+          <FontAwesomeIcon icon={faAngleRight} color="white" />
+        </IconButton>
+      </div>
+    );
+
   if (!cluster) return;
 
   if (details)
     return (
-      <div className="flex h-0 flex-auto flex-col overflow-auto pl-5 pr-5 text-2xl">
-        <ClusterTitle
-          cluster={cluster}
-          clusterNode={clusterNode}
-          details={details}
-        />
-        <ClusterLocations cluster={cluster} />
-        <Accordion
-          key={JSON.stringify(expand)}
-          allowMultipleExpanded
-          allowZeroExpanded
-          preExpanded={expand}
+      <div className="flex flex-1 flex-col">
+        <div
+          className="flex items-center justify-between text-white"
+          style={{ background: "rgb(90,111,196)", padding: 5 }}
         >
-          <AccordionItem uuid="summary">
-            <AccordionItemHeading>
-              <AccordionItemButton>Summary</AccordionItemButton>
-            </AccordionItemHeading>
-            <AccordionItemPanel>
-              <p>
+          <Typography variant="h6">Selected Cluster</Typography>
+          <IconButton onClick={handleNodeViewToggle}>
+            <FontAwesomeIcon
+              color="white"
+              icon={showInfoPanel ? faAngleLeft : faAngleRight}
+            />
+          </IconButton>
+        </div>
+        <Tabs value={tab} onChange={handleTabChange} centered>
+          <Tab label="Summary" />
+          <Tab
+            label={
+              <Badge
+                badgeContent={
+                  isFetching ? (
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                  ) : (
+                    articles.length
+                  )
+                }
+                max={10000}
+                color="info"
+              >
+                Articles
+              </Badge>
+            }
+          />
+        </Tabs>
+        {tab === 0 && (
+          <div className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col p-5">
+              <ClusterTitle
+                cluster={cluster}
+                clusterNode={clusterNode}
+                details={details}
+              />
+              <ClusterLocations cluster={cluster} />
+              <div className="h-0 flex-auto overflow-auto">
                 <Highlighter
                   searchWords={searchTerms}
                   textToHighlight={cluster.summary ?? ""}
                 />
-              </p>
-            </AccordionItemPanel>
-          </AccordionItem>
-          <AccordionItem uuid="qa">
-            <AccordionItemHeading>
-              <AccordionItemButton>Insights</AccordionItemButton>
-            </AccordionItemHeading>
-            <AccordionItemPanel>
-              <ul style={{ listStyleType: "circle" }}>
-                <li>
-                  <input
-                    type="text"
-                    className="w-full border p-2"
-                    placeholder="Ask a question"
-                    onKeyUp={handleQuestion}
-                  />
-                </li>
-
-                {qa[cluster.id]?.map(({ question, answer }, i) => (
-                  <li className="font-bold" key={`qes_${cluster.id}_${i}`}>
-                    {question}
-                    <ul className="ml-10" style={{ listStyleType: "square" }}>
-                      <li className="whitespace-pre-wrap font-normal">
-                        {typeof answer === "undefined" && (
-                          <FontAwesomeIcon spin icon={faSpinner} />
-                        )}
-                        {answer?.map((a, i) => (
-                          <p key={`cluster_${cluster.id}-a-${i}`}>{a}</p>
-                        ))}
-                      </li>
-                    </ul>
-                  </li>
-                ))}
-
-                {Object.entries(cluster.answers).map(
-                  ([question, answer], i) => (
-                    <li key={`${cluster.id}_question_${i}`}>
+                <Typography variant="h6">
+                  Questions about this cluster
+                </Typography>
+                <ul style={{ listStyleType: "circle" }}>
+                  {qa[cluster.id]?.map(({ question, answer }, i) => (
+                    <li className="font-bold" key={`qes_${cluster.id}_${i}`}>
                       {question}
                       <ul className="ml-10" style={{ listStyleType: "square" }}>
-                        <li>{answer}</li>
+                        <li className="whitespace-pre-wrap font-normal">
+                          {typeof answer === "undefined" && (
+                            <FontAwesomeIcon spin icon={faSpinner} />
+                          )}
+                          {answer?.map((a, i) => (
+                            <p key={`cluster_${cluster.id}-a-${i}`}>{a}</p>
+                          ))}
+                        </li>
                       </ul>
                     </li>
-                  ),
-                )}
-              </ul>
-            </AccordionItemPanel>
-          </AccordionItem>
-          <AccordionItem uuid="articles">
-            <AccordionItemHeading>
-              <AccordionItemButton>Articles</AccordionItemButton>
-            </AccordionItemHeading>
-            <AccordionItemPanel>
-              <div className="flex justify-end">
-                <button
-                  className="btn"
-                  onClick={handleAddToGraph}
-                  title="Add Articles to graph"
-                >
-                  <FontAwesomeIcon icon={faShareNodes} />
-                </button>
-              </div>
-
-              {!isFetching && (
-                <Accordion allowMultipleExpanded allowZeroExpanded>
-                  {articles?.map((article) => (
-                    <article
-                      key={`article_${article.id}`}
-                      className="acc-group"
-                    >
-                      <AccordionItem>
-                        <AccordionItemHeading>
-                          <AccordionItemButton>
-                            {article.title}
-                          </AccordionItemButton>
-                        </AccordionItemHeading>
-                        <AccordionItemPanel>
-                          <Accordion allowZeroExpanded>
-                            <AccordionItem>
-                              <AccordionItemHeading>
-                                <AccordionItemButton>
-                                  Details
-                                </AccordionItemButton>
-                              </AccordionItemHeading>
-                              <AccordionItemPanel>
-                                <div className="row">
-                                  <div className="col-xs-6">Id</div>
-                                  <div className="col-xs-6">{article.id}</div>
-
-                                  <div className="col-xs-6">Publication</div>
-                                  <div className="col-xs-6">
-                                    {article.pub_name}
-                                  </div>
-                                  <div className="col-xs-6">
-                                    Publication Date
-                                  </div>
-                                  <div className="col-xs-6">
-                                    {article.pub_date.toLocaleDateString()}
-                                  </div>
-                                  <div className="col-xs-6">
-                                    Publication Time
-                                  </div>
-                                  <div className="col-xs-6">
-                                    {new Date(
-                                      article.pub_time,
-                                    ).toLocaleTimeString()}
-                                  </div>
-                                  <div className="col-xs-6">Factiva Folder</div>
-                                  <div className="col-xs-6">
-                                    {article.factiva_folder ?? "Not available"}
-                                  </div>
-                                  <div className="col-xs-6">
-                                    Factiva Filename
-                                  </div>
-                                  <div className="col-xs-6">
-                                    {article.factiva_file_name ??
-                                      "Not available"}
-                                  </div>
-                                  <div className="col-xs-6">GPHIN Score</div>
-                                  <div className="col-xs-6">
-                                    {article.gphin_score}
-                                  </div>
-                                  <div className="col-xs-6">GPHIN State</div>
-                                  <div className="col-xs-6">
-                                    {article.gphin_state}
-                                  </div>
-                                </div>
-                              </AccordionItemPanel>
-                            </AccordionItem>
-                          </Accordion>
-                          <p className="whitespace-pre-wrap leading-10">
-                            {article.content}
-                          </p>
-                        </AccordionItemPanel>
-                      </AccordionItem>
-                    </article>
                   ))}
-                </Accordion>
-              )}
-            </AccordionItemPanel>
-          </AccordionItem>
-        </Accordion>
-        {isFetching && (
-          <div className="flex flex-1 items-center justify-center">
-            <FontAwesomeIcon icon={faSpinner} size="4x" spin />
+
+                  {Object.entries(cluster.answers).map(
+                    ([question, answer], i) => (
+                      <li key={`${cluster.id}_question_${i}`}>
+                        {question}
+                        <ul
+                          className="ml-10"
+                          style={{ listStyleType: "square" }}
+                        >
+                          <li>{answer}</li>
+                        </ul>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            </div>
+            <div className="flex flex-col border-t p-5">
+              <TextField
+                variant="outlined"
+                label="Chat Console"
+                placeholder="Ask a question"
+                onKeyUp={handleQuestion}
+                onChange={handleQuestionChange}
+                value={question}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" />,
+                }}
+              />
+            </div>
+          </div>
+        )}
+        {tab === 1 && (
+          <div className="h-0 flex-auto flex-col overflow-scroll">
+            {articles.map((article) => (
+              <Accordion key={article.id}>
+                <AccordionSummary
+                  expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
+                >
+                  {article.title}
+                </AccordionSummary>
+                <AccordionDetails>
+                  <ArticleComponent article={article} />
+                </AccordionDetails>
+              </Accordion>
+            ))}
           </div>
         )}
       </div>
@@ -424,12 +428,12 @@ export function ClusterNode(
         details={details}
       />
       <ClusterLocations cluster={cluster} />
-      <p>
+      <Typography>
         <Highlighter
           searchWords={searchTerms}
-          textToHighlight={cluster.summary}
+          textToHighlight={cluster.summary ?? ""}
         />
-      </p>
+      </Typography>
     </section>
   );
 }

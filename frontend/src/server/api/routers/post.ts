@@ -11,10 +11,7 @@ import OgmaLib, {
 import { z } from "zod";
 import { env } from "~/env";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export type Neo4JNumber = { low: number; high: number };
 export type Neo4JDate = {
@@ -148,7 +145,11 @@ export type AllRecordTypes =
   | ArticleRecord;
 export type AllDataTypes = Threat | Cluster | HierarchicalCluster | Article;
 
-export type AllDataTypeProperties = "threat" | "cluster" | "hierarchicalcluster" | "article";
+export type AllDataTypeProperties =
+  | "threat"
+  | "cluster"
+  | "hierarchicalcluster"
+  | "article";
 
 const translateGraph = (
   graph: RawGraph<
@@ -346,13 +347,13 @@ export const postRouter = createTRPCRouter({
         MATCH (c:Cluster {id: $cluster_id}) 
         WITH c
           CALL apoc.load.jsonParams(
-            "http://34.118.173.82:8000/answer_question", 
+            $qa_service_url, 
             {method: "POST", \`Content-Type\`:"application/json"}, 
             apoc.convert.toJson({fulltext: c.summary, question: $question})) YIELD value 
         RETURN value['answer'] AS answer
       
       `,
-          { cluster_id, question },
+          { cluster_id, question, qa_service_url: env.QA_SERVICE_URL },
         );
         const answer = result.records.at(0)?.get("answer") as string[];
         return answer;

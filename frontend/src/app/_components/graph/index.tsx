@@ -1,17 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import L from "leaflet";
 
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import {
+  type ImperativePanelGroupHandle,
+  Panel,
+  PanelGroup,
+  PanelResizeHandle,
+} from "react-resizable-panels";
 
 import { Geo, NodeFilter, Ogma } from "@linkurious/ogma-react";
 import OgmaLib from "@linkurious/ogma";
 
 import {
   faArrowsRotate,
-  faCaretLeft,
-  faCaretRight,
   faCircleNodes,
   faExpand,
   faMap,
@@ -76,15 +85,15 @@ export default function Graph() {
   const ogmaHoverRef = useRef<OgmaLib | null>(null);
   const ogmaHoverContainerRef = useRef<HTMLDivElement | null>(null);
   const layoutService = useRef<LayoutServiceRef | null>(null);
+  const panelRef = useRef<ImperativePanelGroupHandle>(null);
+
   const { height, width } = useResizeObserver({ ref, box: "border-box" });
   const { day } = useParams();
   const [dataLoading, setDataLoading] = useState(false);
 
   const {
     showInfoPanel,
-    setShowInfoPanel,
     toggleTreeDirection,
-    setPanelWasToggled,
     layout,
     setLayout,
     geoMode,
@@ -97,6 +106,43 @@ export default function Graph() {
     expandedClusters,
     setExpandedClusters,
   } = useStore();
+
+  const MIN_SIZE_IN_PIXELS = 300;
+  const COLLAPSED_SIZE_IN_PIXELS = 50;
+
+  const [minSize, setMinSize] = useState(10);
+  const [collpasedSize, setCollapsedSize] = useState(10);
+  const [restoreLayout, setRestoreLayout] = useState<number[]>([]);
+
+  useLayoutEffect(() => {
+    const panelGroup = document.querySelector<HTMLDivElement>(
+      '[data-panel-group-id="group"]',
+    );
+    const resizeHandles = document.querySelectorAll<HTMLDivElement>(
+      "[data-panel-resize-handle-id]",
+    );
+    if (!panelGroup) return;
+    const observer = new ResizeObserver(() => {
+      let width = panelGroup.offsetWidth;
+
+      resizeHandles.forEach((resizeHandle) => {
+        width -= resizeHandle.offsetWidth;
+      });
+
+      // Minimum size in pixels is a percentage of the PanelGroup's width,
+      // less the (fixed) width of the resize handles.
+      setMinSize((MIN_SIZE_IN_PIXELS / width) * 100);
+      setCollapsedSize((COLLAPSED_SIZE_IN_PIXELS / width) * 100);
+    });
+    observer.observe(panelGroup);
+    resizeHandles.forEach((resizeHandle) => {
+      observer.observe(resizeHandle);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const handleDataLoading = useCallback((loading: boolean) => {
     setDataLoading(loading);
@@ -183,38 +229,44 @@ export default function Graph() {
     }
   }, [height, width, maximized, resizeOgma]);
 
-  const handleNodeViewToggle = useCallback(() => {
-    if (showInfoPanel) setPanelWasToggled(true);
-    setShowInfoPanel(!showInfoPanel);
-  }, [setPanelWasToggled, setShowInfoPanel, showInfoPanel]);
+  useLayoutEffect(() => {
+    if (!panelRef.current) return;
+    if (!showInfoPanel) {
+      setRestoreLayout(panelRef.current.getLayout());
+      panelRef.current.setLayout([collpasedSize, 100 - collpasedSize]);
+    }
+  }, [collpasedSize, showInfoPanel]);
+
+  useLayoutEffect(() => {
+    if (!panelRef.current) return;
+    if (showInfoPanel) {
+      if (restoreLayout.length > 0) {
+        setRestoreLayout([]);
+        panelRef.current.setLayout(restoreLayout);
+      }
+    }
+  }, [restoreLayout, showInfoPanel]);
 
   if (typeof day !== "string") return "Day error";
 
   return (
-    <PanelGroup autoSaveId="example" direction="horizontal">
+    <PanelGroup
+      ref={panelRef}
+      autoSaveId="example"
+      direction="horizontal"
+      id="group"
+    >
       <Panel
         defaultSize={25}
-        minSize={25}
-        className={`${showInfoPanel ? "flex" : "hidden"} border`}
+        minSize={showInfoPanel ? minSize : collpasedSize}
+        className={`flex ${showInfoPanel ? "border" : ""}`}
+        order={1}
       >
-        <button
-          className="btn btn-default absolute -left-8"
-          onClick={handleNodeViewToggle}
-        >
-          <FontAwesomeIcon icon={faCaretLeft} />
-        </button>
         <NodeInfo />
       </Panel>
       <PanelResizeHandle />
-      <Panel className="flex flex-col border">
-        {!showInfoPanel && (
-          <button
-            className="btn btn-default absolute -left-8"
-            onClick={handleNodeViewToggle}
-          >
-            <FontAwesomeIcon icon={faCaretRight} />
-          </button>
-        )}
+
+      <Panel className="flex flex-col border" order={2}>
         <div className="relative w-full flex-1" ref={ref}>
           <div className="absolute h-full max-h-full w-full max-w-full">
             <Ogma

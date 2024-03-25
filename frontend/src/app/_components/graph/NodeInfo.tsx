@@ -180,8 +180,15 @@ export default function NodeInfo() {
     );
   }
 
+  if (!cluster && !selectedNode && clusters)
+    return (
+      <div className="flex flex-col">
+        <ClusterNodeList clusterNodes={clusters} />
+      </div>
+    );
+
   return (
-    <div className="flex flex-1 flex-col text-xl">
+    <div className="flex flex-1 flex-col">
       {hierarchicalCluster && filteredClusters && (
         <>
           <h3 className="mt-0 flex justify-between bg-blue-300 p-2">
@@ -305,11 +312,6 @@ export default function NodeInfo() {
           </div>
         </>
       )}
-      {!cluster && !selectedNode && clusters && (
-        <>
-          <ClusterNodeList clusterNodes={clusters} />
-        </>
-      )}
       {selectedNode && isFetching && (
         <div className="flex flex-1 items-center justify-center">
           <FontAwesomeIcon icon={faSpinner} size="4x" spin />
@@ -322,6 +324,7 @@ export default function NodeInfo() {
             {cluster && (
               <>
                 <h4 className="mt-0 flex items-end">
+                  TEST
                   <Highlighter
                     searchWords={searchTerms}
                     textToHighlight={cluster.title}
