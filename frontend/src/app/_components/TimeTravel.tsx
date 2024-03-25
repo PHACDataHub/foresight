@@ -10,9 +10,12 @@ import DatePicker from "react-datepicker";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { enCA, frCA } from "date-fns/locale";
-import useDateToStr from "~/app/_hooks/useDateToStr";
+
+import Button from "@mui/material/Button";
 
 import "react-datepicker/dist/react-datepicker.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 type TimeTravelProps = {
   date?: Date;
@@ -32,7 +35,6 @@ function TimeTravelComponent({
   date = new Date(2019, 11, 1, 12),
   startDate = new Date(2019, 11, 1, 12),
   endDate = new Date(2020, 0, 31, 12),
-  messages,
   onChange,
 }: TimeTravelProps) {
   if (endDate < startDate)
@@ -47,8 +49,6 @@ function TimeTravelComponent({
   const selectedDate = useRef<HTMLAnchorElement>(null);
 
   const router = useRouter();
-
-  const dateToStr = useDateToStr(locale);
 
   useEffect(() => {
     const c = selectedDate.current;
@@ -106,9 +106,6 @@ function TimeTravelComponent({
 
   return (
     <nav className="mb-3 mt-3 flex items-center space-x-10">
-      <h4 className="small m-0 p-0">
-        {messages?.chooseDate ?? "title"} {dateToStr(date)}
-      </h4>
       <DatePicker
         selected={date}
         minDate={startDate}
@@ -119,9 +116,16 @@ function TimeTravelComponent({
         showPreviousMonths={showPreviousMonths}
         locale={locale === "fr-CA" ? frCA : enCA}
         customInput={
-          <button className="btn btn-warning">
-            {messages?.travelText ?? "Time Travel"}
-          </button>
+          <Button
+            variant="contained"
+            endIcon={<FontAwesomeIcon icon={faAngleDown} />}
+          >
+            {date.toLocaleDateString(locale, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </Button>
         }
         calendarClassName="timeTravelCalendar"
       />

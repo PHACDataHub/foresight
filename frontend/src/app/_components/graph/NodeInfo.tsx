@@ -17,21 +17,20 @@ import {
 
 import {
   faCircleInfo,
-  faCircleNodes,
   faClose,
   faMagnifyingGlass,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useParams, useRouter } from "next/navigation";
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
 
 import "react-accessible-accordion/dist/fancy-example.css";
 import { type Article, type Cluster } from "~/server/api/routers/post";
-import { findAlongPath, getNodeData } from "~/app/_utils/graph";
-import { getRawNodeData } from ".";
+import { findAlongPath, getNodeData, getRawNodeData } from "~/app/_utils/graph";
+import ClusterNodeList from "~/app/_components/ClusterNodeList";
+import { ClusterNode } from "~/app/_components/ClusterNode";
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   return (
@@ -49,30 +48,25 @@ export default function NodeInfo() {
   const {
     searchTerms,
     clusters,
-    setLocateNode,
     setOpenNode,
     geoMode,
-    threats,
     selectedNode,
     setSelectedNode,
     qa,
-    history,
     addQA,
     setArticleGraph,
     _loadArticleGraph,
     loadArticleGraph,
   } = useStore();
-  const { locale, day } = useParams();
-  const router = useRouter();
 
-  const data = selectedNode && getNodeData(selectedNode);
+  const data = selectedNode && getNodeData(selectedNode.node);
   const id = (data?.type === "cluster" && data.id) || "";
 
   const { data: rawGraph, isFetching } = api.post.cluster.useQuery(
     {
       id,
     },
-    { enabled: data?.type === "cluster" },
+    { enabled: data?.type === "cluster", refetchOnWindowFocus: false },
   );
 
   const questionApi = api.post.question.useMutation();
@@ -103,12 +97,6 @@ export default function NodeInfo() {
     },
     [addQA, id, questionApi],
   );
-
-  const handleGraphClick = useCallback(() => {
-    if (typeof locale === "string" && typeof day === "string") {
-      router.push(`/${locale}/${day}/${history}/${id}`);
-    }
-  }, [day, history, id, locale, router]);
 
   const cluster = useMemo(() => {
     const c = rawGraph?.nodes.find(
@@ -144,49 +132,33 @@ export default function NodeInfo() {
     const nodes =
       selectedNode &&
       hierarchicalCluster &&
-      findAlongPath(selectedNode, "out", () => true).map((n) => getNodeData(n));
+      findAlongPath(selectedNode.node, "out", () => true);
 
     return clusters
       ?.filter(
         (c) =>
           (!geoMode ||
-            c.locations.filter(
+            getNodeData<Cluster>(c).locations.filter(
               (l) =>
                 typeof l.latitude === "number" &&
                 typeof l.longitude === "number",
             ).length > 0) &&
-          (!nodes || nodes.includes(c)) &&
-          c.threats &&
-          c.threats.filter((t) => threats.includes(t.title)).length > 0,
+          (!nodes || nodes.includes(c)),
       )
       .map((a) => a)
       .sort((a) => {
         for (const term of searchTerms) {
           const t = term.toLowerCase();
+          const c = getNodeData<Cluster>(a);
           if (
-            a.summary.toLowerCase().includes(t) ||
-            a.title.toLowerCase().includes(t)
+            c.summary.toLowerCase().includes(t) ||
+            c.title.toLowerCase().includes(t)
           )
             return -1;
         }
         return 0;
       });
-  }, [
-    clusters,
-    geoMode,
-    hierarchicalCluster,
-    searchTerms,
-    selectedNode,
-    threats,
-  ]);
-
-  const handleLocate = useCallback(
-    (e: MouseEvent<HTMLButtonElement>) => {
-      const node = e.currentTarget.value;
-      if (node) setLocateNode(node);
-    },
-    [setLocateNode],
-  );
+  }, [clusters, geoMode, hierarchicalCluster, searchTerms, selectedNode]);
 
   const handleOpenCluster = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
@@ -195,6 +167,18 @@ export default function NodeInfo() {
     },
     [setOpenNode],
   );
+
+  if (selectedNode && getNodeData(selectedNode.node)?.type === "cluster") {
+    return (
+      <div className="flex flex-1 flex-col text-xl">
+        <ClusterNode
+          clusterNode={selectedNode.node}
+          expand={selectedNode.expand}
+          details
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col text-xl">
@@ -205,41 +189,43 @@ export default function NodeInfo() {
             <span>{filteredClusters.length}</span>
           </h3>
           <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
-            {filteredClusters.map((cluster) => (
-              <section key={`cluster${cluster.id}`}>
-                <div className="flex items-center justify-between">
-                  <h4>
+            {filteredClusters
+              .map((node) => getNodeData<Cluster>(node))
+              .map((cluster) => (
+                <section key={`cluster${cluster.id}`}>
+                  <div className="flex items-center justify-between">
+                    <h4>
+                      <Highlighter
+                        searchWords={searchTerms}
+                        textToHighlight={cluster.title}
+                      />
+                    </h4>
+                    <div className="flex space-x-2">
+                      <button
+                        value={cluster.id}
+                        className="btn btn-primary"
+                        onClick={handleOpenCluster}
+                      >
+                        <FontAwesomeIcon icon={faCircleInfo} />
+                      </button>
+                      <button
+                        value={cluster.id}
+                        className="btn btn-primary"
+                        // onClick={handleLocate}
+                      >
+                        <FontAwesomeIcon icon={faMagnifyingGlass} />
+                      </button>
+                    </div>
+                  </div>
+                  <ClusterLocations cluster={cluster} />
+                  <p>
                     <Highlighter
                       searchWords={searchTerms}
-                      textToHighlight={cluster.title}
+                      textToHighlight={cluster.summary}
                     />
-                  </h4>
-                  <div className="flex space-x-2">
-                    <button
-                      value={cluster.id}
-                      className="btn btn-primary"
-                      onClick={handleOpenCluster}
-                    >
-                      <FontAwesomeIcon icon={faCircleInfo} />
-                    </button>
-                    <button
-                      value={cluster.id}
-                      className="btn btn-primary"
-                      onClick={handleLocate}
-                    >
-                      <FontAwesomeIcon icon={faMagnifyingGlass} />
-                    </button>
-                  </div>
-                </div>
-                <ClusterLocations cluster={cluster} />
-                <p>
-                  <Highlighter
-                    searchWords={searchTerms}
-                    textToHighlight={cluster.summary}
-                  />
-                </p>
-              </section>
-            ))}
+                  </p>
+                </section>
+              ))}
           </div>
         </>
       )}
@@ -319,49 +305,9 @@ export default function NodeInfo() {
           </div>
         </>
       )}
-      {!cluster && !selectedNode && filteredClusters && (
+      {!cluster && !selectedNode && clusters && (
         <>
-          <h3 className="mt-0 flex justify-between bg-blue-300 p-2">
-            <span>Detected Clusters</span>
-            <span>{filteredClusters.length}</span>
-          </h3>
-          <div className="h-0 flex-auto overflow-auto pl-5 pr-5 text-2xl">
-            {filteredClusters.map((cluster) => (
-              <section key={`cluster${cluster.id}`}>
-                <div className="flex items-center justify-between">
-                  <h4>
-                    <Highlighter
-                      searchWords={searchTerms}
-                      textToHighlight={cluster.title}
-                    />
-                  </h4>
-                  <div className="flex space-x-2">
-                    <button
-                      value={cluster.id}
-                      className="btn btn-primary"
-                      onClick={handleOpenCluster}
-                    >
-                      <FontAwesomeIcon icon={faCircleInfo} />
-                    </button>
-                    <button
-                      value={cluster.id}
-                      className="btn btn-primary"
-                      onClick={handleLocate}
-                    >
-                      <FontAwesomeIcon icon={faMagnifyingGlass} />
-                    </button>
-                  </div>
-                </div>
-                <ClusterLocations cluster={cluster} />
-                <p>
-                  <Highlighter
-                    searchWords={searchTerms}
-                    textToHighlight={cluster.summary}
-                  />
-                </p>
-              </section>
-            ))}
-          </div>
+          <ClusterNodeList clusterNodes={clusters} />
         </>
       )}
       {selectedNode && isFetching && (
@@ -455,15 +401,6 @@ export default function NodeInfo() {
                           <span className="text-sm">{articles.length}</span>
                         </span>
                       </div>
-                      {history && (
-                        <button
-                          title="Graph View"
-                          className="btn btn-primary"
-                          onClick={handleGraphClick}
-                        >
-                          <FontAwesomeIcon icon={faCircleNodes} />
-                        </button>
-                      )}
                     </h4>
                     <Accordion allowMultipleExpanded allowZeroExpanded>
                       {articles?.map((article) => (
@@ -557,9 +494,12 @@ export default function NodeInfo() {
           </div>
         </>
       )}
-      {selectedNode && !selectedNode.getId()?.toString().startsWith("_gen_") && (
-        <pre className="text-xs text-right m-5">Node id: {selectedNode.getId()}</pre>
-      )}
+      {selectedNode &&
+        !selectedNode.node.getId()?.toString().startsWith("_gen_") && (
+          <pre className="m-5 text-right text-xs">
+            Node id: {selectedNode.node.getId()}
+          </pre>
+        )}
     </div>
   );
 }

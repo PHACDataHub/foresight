@@ -1,33 +1,76 @@
 "use client";
 
-import { type ChangeEvent, useCallback, useState } from "react";
+import React, { type ChangeEvent, useCallback, useState } from "react";
+
+import Chip from "@mui/material/Chip";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useStore } from "~/app/_store";
 
 export default function HighlightTerms() {
   const { searchTerms, setSearchTerms } = useStore();
-  const [search, setSearch] = useState(searchTerms.join(","));
+  const [search, setSearch] = useState("");
 
   const handleSearchChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      setSearch(e.target.value);
       setSearchTerms(
-        e.target.value
-          .toLowerCase()
-          .split(",")
-          .filter((s) => s.length > 0),
+        searchTerms.filter((s) => s !== search).concat([e.target.value]),
       );
+      setSearch(e.target.value);
     },
-    [setSearchTerms],
+    [search, searchTerms, setSearchTerms],
+  );
+
+  const handleOnKeyUp = useCallback(
+    (evt: React.KeyboardEvent<HTMLInputElement>) => {
+      if (evt.key === "Enter" && search.length > 0) {
+        setSearchTerms(
+          [search].concat(searchTerms.filter((s) => s !== search)),
+        );
+        setSearch("");
+      }
+    },
+    [search, searchTerms, setSearchTerms],
+  );
+
+  const handleDeleteChip = useCallback(
+    (evt: React.MouseEvent<SVGElement>) => {
+      const term = evt.currentTarget.parentElement?.getAttribute("data-term");
+      if (term) {
+        setSearchTerms(searchTerms.filter((s) => s !== term));
+      }
+    },
+    [searchTerms, setSearchTerms],
   );
 
   return (
-    <div className="flex flex-1">
-      <input
-        type="text"
-        value={search}
-        className="border border-black flex-1 m-3 p-2"
+    <div className="flex items-center space-x-4 p-5">
+      <ul className="m-0 flex list-none flex-wrap justify-center space-x-2 p-[0.5]">
+        {searchTerms
+          .filter((s) => s !== search)
+          .map((s) => (
+            <li key={`search_${s}`}>
+              <Chip label={s} data-term={s} onDelete={handleDeleteChip} />
+            </li>
+          ))}
+      </ul>
+      <TextField
+        variant="outlined"
+        label="Hightlight terms"
+        placeholder="Search keyword"
         onChange={handleSearchChange}
-        placeholder="Highlight terms"
+        onKeyUp={handleOnKeyUp}
+        value={search}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <FontAwesomeIcon icon={faSearch} />
+            </InputAdornment>
+          ),
+        }}
       />
     </div>
   );

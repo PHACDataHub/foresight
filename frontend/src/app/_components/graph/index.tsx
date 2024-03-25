@@ -6,17 +6,18 @@ import L from "leaflet";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import { Geo, NodeFilter, Ogma } from "@linkurious/ogma-react";
-import OgmaLib, { type RawNode } from "@linkurious/ogma";
+import OgmaLib from "@linkurious/ogma";
 
 import {
+  faArrowsRotate,
   faCaretLeft,
   faCaretRight,
   faCircleNodes,
-  faCompress,
   faExpand,
   faMap,
   faMinimize,
   faSitemap,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -25,9 +26,7 @@ import { useResizeObserver } from "usehooks-ts";
 import { useParams } from "next/navigation";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
-import { type AllDataTypes } from "~/server/api/routers/post";
-import ThreatSelector from "~/app/_components/ThreatSelector";
-import { getNodeData, isNodeFiltered } from "~/app/_utils/graph";
+import { getNodeData } from "~/app/_utils/graph";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader from "./DataLoader";
@@ -63,12 +62,6 @@ OgmaLib.libraries.leaflet = L;
 //   throw new Error("Bad Hex");
 // }
 
-export function getRawNodeData(node: RawNode) {
-  const n = node as RawNode<AllDataTypes>;
-  const data = n.data;
-  return data;
-}
-
 export interface Country {
   country: string;
   latitude: string;
@@ -99,12 +92,20 @@ export default function Graph() {
     threats,
     clusterId,
     setFocus,
-    articleCount,
+    refresh,
+    setOgma,
+    expandedClusters,
+    setExpandedClusters,
   } = useStore();
 
   const handleDataLoading = useCallback((loading: boolean) => {
     setDataLoading(loading);
   }, []);
+
+  const handleReset = useCallback(() => {
+    setFocus(null);
+    refresh();
+  }, [refresh, setFocus]);
 
   const handleLayoutForceClick = useCallback(() => {
     setLayout("force");
@@ -125,13 +126,9 @@ export default function Graph() {
   }, [geoMode, setGeoMode]);
 
   const handleCollapseAllClick = useCallback(() => {
-    if (!ogmaRef.current) return;
-    void ogmaRef.current.removeNodes(
-      ogmaRef.current
-        .getNodes()
-        .filter((n) => ["article"].includes(getNodeData(n)?.type ?? "")),
-    );
-  }, []);
+    setExpandedClusters([]);
+    refresh();
+  }, [refresh, setExpandedClusters]);
 
   const handleMaximizeClick = useCallback(() => {
     setMaximized(!maximized);
@@ -219,7 +216,6 @@ export default function Graph() {
           </button>
         )}
         <div className="relative w-full flex-1" ref={ref}>
-          <ThreatSelector />
           <div className="absolute h-full max-h-full w-full max-w-full">
             <Ogma
               // key={`ogma-${day}-${history}`}
@@ -241,6 +237,7 @@ export default function Graph() {
                 }
               }
               onReady={(ogma) => {
+                setOgma(ogma);
                 ogma.events
                   .on("mouseover", ({ target }) => {
                     if (
@@ -253,19 +250,21 @@ export default function Graph() {
                       return;
 
                     const subNodes = target.getSubNodes()!;
-                    if (subNodes.size <= 1) {
+                    if (subNodes?.size <= 1) {
                       ogmaHoverContainerRef.current?.classList.add("hidden");
                       return;
                     }
-                    const subEdges = subNodes.getAdjacentEdges({
+                    const subEdges = subNodes?.getAdjacentEdges({
                       filter: "all",
                       bothExtremities: true,
                     });
                     ogmaHoverContainerRef.current.classList.remove("hidden");
-                    void ogmaHoverRef.current.setGraph({
-                      nodes: subNodes.toJSON(),
-                      edges: subEdges.toJSON(),
-                    });
+                    if (subNodes) {
+                      void ogmaHoverRef.current.setGraph({
+                        nodes: subNodes.toJSON(),
+                        edges: subEdges.toJSON(),
+                      });
+                    }
                     const { x, y } = target.getPositionOnScreen();
                     ogmaHoverContainerRef.current.style.left = `${x + 50}px`;
                     ogmaHoverContainerRef.current.style.top = `${y}px`;
@@ -279,7 +278,15 @@ export default function Graph() {
 
               <NodeFilter
                 enabled
-                criteria={(n) => !isNodeFiltered(n, threats)}
+                criteria={(n) => {
+                  const data = getNodeData(n);
+                  if (data?.type === "article") {
+                    const cluster_id = n.getData("cluster_id") as string;
+                    if (expandedClusters.includes(cluster_id)) return true;
+                    return false;
+                  }
+                  return true;
+                }}
               />
               <LayoutService
                 ref={layoutService}
@@ -303,6 +310,13 @@ export default function Graph() {
                   <div className="flex space-x-2">
                     {!geoMode && (
                       <>
+                        <button
+                          className="btn btn-primary"
+                          title="Reset"
+                          onClick={handleReset}
+                        >
+                          <FontAwesomeIcon icon={faArrowsRotate} />
+                        </button>
                         <div className="btn-group">
                           <button
                             className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
@@ -325,13 +339,6 @@ export default function Graph() {
                             <FontAwesomeIcon icon={faCircleNodes} />
                           </button>
                         </div>
-                        <button
-                          className="btn btn-primary"
-                          onClick={handleCollapseAllClick}
-                          title="Remove articles and threats"
-                        >
-                          <FontAwesomeIcon icon={faCompress} />
-                        </button>
                       </>
                     )}
                     <button
@@ -353,16 +360,14 @@ export default function Graph() {
                         icon={maximized ? faMinimize : faExpand}
                       />
                     </button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleCollapseAllClick}
+                      title="Remove articles and threats"
+                    >
+                      <FontAwesomeIcon color="#da484a" icon={faTrash} />
+                    </button>
                   </div>
-                  {articleCount > 0 && (
-                    <div className="mt-4 text-xl">
-                      You are working with{" "}
-                      <span className="text-3xl">
-                        {articleCount.toLocaleString()}
-                      </span>{" "}
-                      articles.
-                    </div>
-                  )}
                 </div>
               </>
             </Ogma>

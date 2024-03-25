@@ -7,14 +7,19 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import Slider from "react-slide-out";
 
 import "react-slide-out/lib/index.css";
-import { api } from "~/trpc/react";
-import useDelayedResizeObserver from "~/app/_hooks/useDelayedResizeObserver";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Button from "@mui/material/Button";
 import { useStore } from "~/app/_store";
+import useDelayedResizeObserver from "~/app/_hooks/useDelayedResizeObserver";
+import { api } from "~/trpc/react";
 
 function ThreatSelectorComponent() {
   const [open, setOpen] = useState(false);
   const { threats: selected, setThreats } = useStore();
-  const [initialThreats] = useState(selected);
   const { data: threats } = api.post.threats.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
@@ -33,8 +38,8 @@ function ThreatSelectorComponent() {
   );
 
   const handleResetClick = useCallback(() => {
-    setThreats(initialThreats);
-  }, [initialThreats, setThreats]);
+    setThreats(null);
+  }, [setThreats]);
 
   const handleGroupSelect = useCallback(() => {
     if (!threats) return;
@@ -50,6 +55,51 @@ function ThreatSelectorComponent() {
 
   const header = useDelayedResizeObserver("def-appTop");
   const footer = useDelayedResizeObserver("wb-info");
+
+  return (
+    <div className="relative">
+      <Button
+        variant="contained"
+        endIcon={<FontAwesomeIcon icon={faAngleDown} />}
+        onClick={handleOpenClick}
+      >
+        Filter View
+      </Button>
+      {open && (
+        <div className="absolute right-0 z-50 flex w-[600px] flex-col  border border-black bg-white p-10 text-2xl">
+          <div className="flex justify-end space-x-5">
+            <Button variant="contained" onClick={handleGroupSelect}>
+              {groupSelectText}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleResetClick}
+              color="error"
+            >
+              Reset to default
+            </Button>
+          </div>
+          <div className="max-h-[50vh] overflow-auto">
+            <FormGroup>
+              {threats?.map((threat, idx) => (
+                <FormControlLabel
+                  key={`threat_${idx}`}
+                  label={threat.text}
+                  control={
+                    <Checkbox
+                      value={threat.text}
+                      checked={selected.includes(threat.text)}
+                      onChange={handleCheckClick}
+                    />
+                  }
+                />
+              ))}
+            </FormGroup>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <Slider

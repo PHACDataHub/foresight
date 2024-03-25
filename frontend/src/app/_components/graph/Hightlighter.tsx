@@ -24,18 +24,6 @@ export default function Hightlighter() {
   const highlights = useRef<HighlightState>({});
 
   useEffect(() => {
-    // if (!ogma.styles.getClass("highlighted"))
-    //   ogma.styles.createClass({
-    //     name: "highlighted",
-    //     nodeAttributes: {
-    //       color: "#916699",
-    //       // radius: (n) => +n.getAttribute("radius") * 2,
-    //     },
-    //     edgeAttributes: {
-    //       color: "#916699",
-    //       // width: (e) => +e.getAttribute("width") * 2,
-    //     },
-    //   });
     if (!ogma.styles.getClass("dimmed"))
       ogma.styles.createClass({
         name: "dimmed",
