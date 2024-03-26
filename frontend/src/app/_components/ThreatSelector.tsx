@@ -66,7 +66,7 @@ function ThreatSelectorComponent() {
         Filter View
       </Button>
       {open && (
-        <div className="absolute right-0 z-50 flex w-[600px] flex-col  border border-black bg-white p-10 text-2xl">
+        <div className="absolute right-0 z-[402] flex w-[600px] flex-col  border border-black bg-white p-10 text-2xl">
           <div className="flex justify-end space-x-5">
             <Button variant="contained" onClick={handleGroupSelect}>
               {groupSelectText}

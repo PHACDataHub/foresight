@@ -212,7 +212,6 @@ export default function Graph() {
 
   useEffect(() => {
     if (ogmaRef.current && ogmaHoverContainerRef.current) {
-      console.log(" --- append child container thing ---");
       ogmaRef.current.geo
         .getMap()
         ?.getContainer()
@@ -291,7 +290,7 @@ export default function Graph() {
               onReady={(ogma) => {
                 setOgma(ogma);
                 ogma.events
-                  .on("mouseover", ({ target }) => {
+                  .on("mouseover", async ({ target }) => {
                     if (
                       !target ||
                       !target.isNode ||
@@ -300,7 +299,6 @@ export default function Graph() {
                       !ogmaHoverRef.current
                     )
                       return;
-
                     const subNodes = target.getSubNodes()!;
                     if (subNodes?.size <= 1) {
                       ogmaHoverContainerRef.current?.classList.add("hidden");
@@ -312,14 +310,19 @@ export default function Graph() {
                     });
                     ogmaHoverContainerRef.current.classList.remove("hidden");
                     if (subNodes) {
-                      void ogmaHoverRef.current.setGraph({
+                      const { x, y } = target.getPositionOnScreen();
+                      ogmaHoverContainerRef.current.style.left = `${x + 50}px`;
+                      ogmaHoverContainerRef.current.style.top = `${y}px`;
+                      await ogmaHoverRef.current.setGraph({
                         nodes: subNodes.toJSON(),
                         edges: subEdges.toJSON(),
                       });
+                      await ogmaHoverRef.current.layouts.force({
+                        gpu: true,
+                        locate: true,
+                        duration: 0,
+                      });
                     }
-                    const { x, y } = target.getPositionOnScreen();
-                    ogmaHoverContainerRef.current.style.left = `${x + 50}px`;
-                    ogmaHoverContainerRef.current.style.top = `${y}px`;
                   })
                   .on(["click", "dragStart", "viewChanged"], () => {
                     ogmaHoverContainerRef.current?.classList.add("hidden");
