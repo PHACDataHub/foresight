@@ -8,10 +8,8 @@ import useWetLang from "~/app/_hooks/useWetLang";
 
 export default function AppWrapper({
   children,
-  title,
 }: {
   children: React.ReactNode;
-  title: string;
 }) {
   const { locale } = useParams();
   const lang = useWetLang();
@@ -23,14 +21,15 @@ export default function AppWrapper({
   return (
     <div className="flex h-full max-h-[100%] min-h-[100%] flex-col">
       <AppTemplate
-        appName={[{ text: title, href: "/" }]}
+        appName={[]}
+        // appName={[{ text: title, href: "/" }]}
         lngLinks={lngLinks}
         showShare={false}
         showFeedback={false}
-        isApplication={true}
+        // isApplication={true}
         showPostContent={false}
       >
-        <div className="mr-[60px] flex flex-1 flex-col">{children}</div>
+        <div className="flex flex-1 flex-col">{children}</div>
       </AppTemplate>
     </div>
   );

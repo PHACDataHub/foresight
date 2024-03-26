@@ -3,6 +3,7 @@
 import {
   type Edge,
   type GeoClustering,
+  type MouseButtonEvent,
   type Node as OgmaNode,
 } from "@linkurious/ogma";
 
@@ -51,7 +52,6 @@ const LayoutService = forwardRef(
     const geoClustering = useRef<GeoClustering<unknown, unknown> | null>(null);
 
     const {
-      locateNode,
       treeDirection,
       geoMode,
       openNode,
@@ -65,16 +65,16 @@ const LayoutService = forwardRef(
       scale,
       refreshObserver,
       setFocus,
-      loadArticleGraph,
+      toggleExpandedCluster,
     } = useStore();
 
     const selectedPath = useMemo(() => {
       if (!selectedNode) return null;
-      const data = getNodeData(selectedNode);
+      const data = getNodeData(selectedNode.node);
       if (data?.type === "hierarchicalcluster")
-        return findAlongPath(selectedNode, "out", () => true);
+        return findAlongPath(selectedNode.node, "out", () => true);
       if (data?.type === "cluster" || data?.type === "threat")
-        return findAlongPath(selectedNode, "in", () => true);
+        return findAlongPath(selectedNode.node, "in", () => true);
       return null;
     }, [selectedNode]);
 
@@ -84,8 +84,9 @@ const LayoutService = forwardRef(
         const dataSource = e.getSource();
         return (
           selectedPath &&
-          ((selectedNode === dataTarget && selectedPath.includes(dataSource)) ||
-            (selectedNode === dataSource &&
+          ((selectedNode?.node === dataTarget &&
+            selectedPath.includes(dataSource)) ||
+            (selectedNode?.node === dataSource &&
               selectedPath.includes(dataTarget)) ||
             (selectedPath.includes(dataSource) &&
               selectedPath.includes(dataTarget)))
@@ -95,43 +96,18 @@ const LayoutService = forwardRef(
     );
 
     useEffect(() => {
-      if (locateNode) {
-        const locate = async () => {
-          const node = ogma
-            .getNodes()
-            .filter((n) => (n.getData() as { id: string }).id === locateNode);
-
-          const nodes = ogma.getNodes().filter((n) => {
-            const d = n.getData() as { id: string };
-            if (d.id === locateNode) return true;
-            const adj = n
-              .getAdjacentNodes()
-              .filter(
-                (na) => (na.getData() as { id: string }).id === locateNode,
-              );
-            if (adj.size > 0) return true;
-            return false;
-          });
-
-          await nodes.locate();
-          await node.pulse();
-        };
-        void locate();
-      }
-    }, [locateNode, ogma]);
-
-    useEffect(() => {
       if (openNode) {
         const nodes = ogma
           .getNodes()
           .filter((n) => (n.getData() as { id: string }).id === openNode);
         nodes.setSelected(true);
-        setSelectedNode(nodes.get(0));
+        setSelectedNode({ node: nodes.get(0), expand: ["summary", "qa"] });
         setOpenNode(undefined);
       }
     }, [openNode, ogma, setSelectedNode, setOpenNode]);
 
     const layoutGraph = useCallback(async () => {
+      console.log("--layout graph--");
       if (!ogma.geo.enabled() && !focus) {
         if (layout === "hierarchical" && !hover) {
           await ogma.layouts.hierarchical({
@@ -178,11 +154,20 @@ const LayoutService = forwardRef(
           await nodes
             // .filter((n) => getNodeData(n)?.type !== "threat")
             .setAttribute("y", box.maxY + (height.maxY - height.minY));
+
+          const clusters = nodes.filter(
+            (n) => n === focus || getNodeData(n)?.type === "cluster",
+          );
+
+          const locateClusters = getNodeData(focus)?.type === "threat";
+
           await ogma.layouts.hierarchical({
-            locate: true,
+            locate: !locateClusters,
             nodes,
             direction: treeDirection,
           });
+
+          if (locateClusters) await clusters.locate();
 
           await ogma
             .getEdges()
@@ -245,66 +230,77 @@ const LayoutService = forwardRef(
     }, [dataLoaded, updateLayout]);
 
     useEffect(() => {
-      // register listener
-      const onNodesAdded = () => {
-        updateLayout();
+      // register listeners
+      // const onNodesAdded = () => {
+      //   updateLayout();
+      // };
+
+      const clickHandler = ({ target }: MouseButtonEvent<unknown, unknown>) => {
+        console.log("click!");
+        setSelectedNode(
+          target &&
+            (!target.isVirtual() ||
+              (target.getData() as { location_generated?: boolean })
+                ?.location_generated === true) &&
+            target.isNode
+            ? { node: target, expand: ["summary", "qa"] }
+            : null,
+        );
+        setFocus(null);
       };
-      ogma.events.on(["addNodes", "removeNodes"], onNodesAdded);
+
+      const doubleClickHandler = ({
+        target,
+      }: MouseButtonEvent<unknown, unknown>) => {
+        console.log("--doubleclick");
+        if (target && !target.isVirtual() && target.isNode) {
+          const data = getNodeData(target);
+          if (data) console.log(`got data - ${data.type}`);
+          if (data?.type === "hierarchicalcluster" || data?.type === "threat") {
+            setFocus(target);
+          } else if (data?.type === "cluster") {
+            // if (
+            //   target
+            //     .getAdjacentNodes()
+            //     .filter((n) => getNodeData(n)?.type === "article").size > 0
+            // ) {
+            //   await ogma.removeNodes(
+            //     target.getAdjacentNodes().filter((n) => {
+            //       const d = getNodeData(n);
+            //       return d?.type === "article";
+            //     }),
+            //   );
+            //   setFocus(null);
+            // } else {
+            setFocus(null);
+            toggleExpandedCluster(data.id);
+            setLayout("force");
+            updateLayout();
+            // loadArticleGraph(true);
+            // setLayout("force");
+            // }
+          }
+        }
+      };
+
+      // ogma.events.on(["addNodes", "removeNodes"], onNodesAdded);
 
       ogma.events
-        .on("click", ({ target }) => {
-          setSelectedNode(
-            target &&
-              (!target.isVirtual() ||
-                (target.getData() as { location_generated?: boolean })
-                  ?.location_generated === true) &&
-              target.isNode
-              ? target
-              : null,
-          );
-          setFocus(null);
-        })
-        .on("doubleclick", async ({ target }) => {
-          if (target && !target.isVirtual() && target.isNode) {
-            const data = getNodeData(target);
-            if (
-              data?.type === "hierarchicalcluster" ||
-              data?.type === "threat"
-            ) {
-              setFocus(target);
-            } else if (data?.type === "cluster") {
-              if (
-                target
-                  .getAdjacentNodes()
-                  .filter((n) => getNodeData(n)?.type === "article").size > 0
-              ) {
-                await ogma.removeNodes(
-                  target.getAdjacentNodes().filter((n) => {
-                    const d = getNodeData(n);
-                    return d?.type === "article";
-                  }),
-                );
-                setFocus(null);
-              } else {
-                setFocus(null);
-                loadArticleGraph(true);
-                setLayout("force");
-              }
-            }
-          }
-        });
+        .on("click", clickHandler)
+        .on("doubleclick", doubleClickHandler);
 
       // cleanup
       return () => {
-        ogma.events.off(onNodesAdded);
+        // ogma.events.off(onNodesAdded);
+        ogma.events.off(clickHandler);
+        ogma.events.off(doubleClickHandler);
       };
     }, [
-      loadArticleGraph,
-      ogma,
-      ref,
+      ogma.events,
       setFocus,
       setLayout,
       setSelectedNode,
+      toggleExpandedCluster,
       updateLayout,
     ]);
 
@@ -431,29 +427,7 @@ const LayoutService = forwardRef(
                           ...data,
                         },
                       };
-                    const s = scale[data.type];
                     return {
-                      attributes: {
-                        color: "rgb(90,111,196)",
-                        radius: s
-                          ? s(
-                              nodes.reduce((p: number, c) => {
-                                const d = getNodeData(c);
-                                const r = d ? getNodeRadius(d) : 0;
-                                return Math.max(p, r);
-                              }, 0),
-                            )
-                          : 10,
-                        badges: {
-                          topRight: {
-                            scale: 0.6,
-                            stroke: {
-                              width: 0.5,
-                            },
-                            text: `${nodes.size}`,
-                          },
-                        },
-                      },
                       data: {
                         ...data,
                         location_generated: false,
@@ -465,6 +439,55 @@ const LayoutService = forwardRef(
             }}
           />
         )}
+        <NodeStyleRule
+          selector={(n) =>
+            n.isVirtual() &&
+            (n.getData() as { location_generated?: boolean })
+              ?.location_generated === false
+          }
+          attributes={{
+            color: "rgb(90,111,196)",
+            halo: (n) => {
+              if (
+                n
+                  .getSubNodes()
+                  ?.reduce((p: boolean, c) => p || isHaloed(c), false)
+              )
+                return {
+                  color: "yellow",
+                  strokeColor: "#ccc",
+                  width: 10,
+                };
+            },
+
+            badges: {
+              topRight: {
+                scale: 0.6,
+                stroke: {
+                  width: 0.5,
+                },
+                text: (n) => `${n.getSubNodes()?.size}`,
+              },
+            },
+            radius: (n) => {
+              const data = getNodeData(n);
+              if (!data) return;
+              const s = scale[data.type];
+              if (s) {
+                const r =
+                  n.getSubNodes()?.reduce((p: number, c) => {
+                    const d = getNodeData(c);
+                    const r = d ? getNodeRadius(d) : 0;
+                    return Math.max(p, r);
+                  }, 0) ?? 1;
+                return s(r);
+              } else {
+                console.log("no scale for virtual node");
+                return 10;
+              }
+            },
+          }}
+        />
         <NodeStyleRule
           selector={(n) =>
             !n.isVirtual() ||
@@ -503,7 +526,7 @@ const LayoutService = forwardRef(
               if (s) {
                 return s(r);
               } else {
-                console.log("no scale!");
+                console.log(`no scale!  ${data.type}`);
                 return 10;
               }
             },

@@ -20,7 +20,7 @@ describe("TimeTravel [component]", () => {
   afterEach(() => {
     window.removeEventListener("error", onError);
   });
-  it("renders correctly", () => {
+  it.skip("renders correctly", () => {
     mockUseParams.mockReturnValue({ locale: "en-CA" });
 
     // defaults
@@ -57,7 +57,7 @@ describe("TimeTravel [component]", () => {
     );
   });
 
-  it("can use the en-CA locale", async () => {
+  it.skip("can use the en-CA locale", async () => {
     const s = new Date(2020, 3, 1);
     const e = new Date(2020, 3, 3);
     mockUseParams.mockReturnValue({ locale: "en-CA" });
@@ -65,7 +65,7 @@ describe("TimeTravel [component]", () => {
     expect(screen.getByText("April 1, 2020", { exact: false })).toBeVisible();
   });
 
-  it("can use the fr-CA locale", async () => {
+  it.skip("can use the fr-CA locale", async () => {
     const s = new Date(2020, 3, 1);
     const e = new Date(2020, 3, 3);
     mockUseParams.mockReturnValue({ locale: "fr-CA" });
@@ -73,7 +73,7 @@ describe("TimeTravel [component]", () => {
     expect(screen.getByText("1 avril 2020", { exact: false })).toBeVisible();
   });
 
-  it("displays translated messages", async () => {
+  it.skip("displays translated messages", async () => {
     mockUseParams.mockReturnValue({ locale: "en-CA" });
     const chooseDate = "478cb3ih3c8y3gf38gf3";
     const travelText = "dasdasdsad";

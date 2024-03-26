@@ -1,10 +1,20 @@
 import { getTranslations } from "next-intl/server";
 
+import Typography from "@mui/material/Typography";
+
 import AppWrapper from "~/app/_components/AppWrapper";
 import Graph from "~/app/_components/graph";
 import HighlightTerms from "~/app/_components/HighlightTerms";
 import HistoryChooser from "~/app/_components/HistoryChooser";
 import TimeTravel from "~/app/_components/TimeTravel";
+
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import TodayIs from "~/app/_components/TodayIs";
+import ThreatSelector from "~/app/_components/ThreatSelector";
+import WorkingWith from "~/app/_components/WorkingWith";
 
 export default async function LocaleDayLayout({
   children,
@@ -22,8 +32,18 @@ export default async function LocaleDayLayout({
   date.setDate(date.getDate() + parseInt(params.day) - 1);
 
   return (
-    <AppWrapper title={t("title")}>
-      <div className="flex justify-between">
+    <AppWrapper>
+      <div className="flex items-center justify-between">
+        <Typography variant="h4" fontWeight="bold">
+          {t("title")}
+        </Typography>
+        <TodayIs
+          messages={{
+            todayIs: timeTravelMsg("chooseDate"),
+          }}
+          date={date}
+        />
+        <HighlightTerms />
         <TimeTravel
           startDate={startDate}
           endDate={endDate}
@@ -33,13 +53,13 @@ export default async function LocaleDayLayout({
             travelText: timeTravelMsg("travelText"),
           }}
         />
-        <HighlightTerms />
+        <WorkingWith />
         <HistoryChooser />
+        <ThreatSelector />
       </div>
       <div className="mb-10 flex flex-1 flex-col items-center justify-center overflow-hidden">
         <Graph />
       </div>
-      {/* <TextView /> */}
       {children}
     </AppWrapper>
   );

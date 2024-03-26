@@ -1,9 +1,6 @@
 import neo4j, {
   type Integer as Neo4jInteger,
-  type Node,
-  type Path,
   type QueryResult,
-  type RecordShape,
 } from "neo4j-driver";
 import OgmaLib, {
   type Neo4JEdgeData,
@@ -14,11 +11,7 @@ import OgmaLib, {
 import { z } from "zod";
 import { env } from "~/env";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export type Neo4JNumber = { low: number; high: number };
 export type Neo4JDate = {
@@ -83,7 +76,6 @@ export interface Cluster {
   summary: string;
   title: string;
   topic_id: string;
-  threats?: Threat[];
 
   // TODO: fix this
   // location: ClusterLocation;
@@ -152,6 +144,12 @@ export type AllRecordTypes =
   | HierarchicalClusterRecord
   | ArticleRecord;
 export type AllDataTypes = Threat | Cluster | HierarchicalCluster | Article;
+
+export type AllDataTypeProperties =
+  | "threat"
+  | "cluster"
+  | "hierarchicalcluster"
+  | "article";
 
 const translateGraph = (
   graph: RawGraph<
@@ -298,12 +296,30 @@ export const postRouter = createTRPCRouter({
       try {
         const result = await session.run(
           `
-        MATCH (c:Cluster {id: $id})-[r]-(a:Article)
-          OPTIONAL MATCH (c)-[rt]-(t:Threat)
-        WITH c,r,a,t,rt
-          OPTIONAL MATCH (a)-[or:SIMILAR_TO]-(oa)-[orc]-(oc:Cluster)
-            WHERE oa.pub_date >= c.start_date AND oa.pub_date <= c.end_date
-        RETURN c,r,a,t,rt,oa,or,orc
+          MATCH (c:Cluster {id: $id})<-[r:IN_CLUSTER]-(a:Article)
+            WITH c, r, a
+              OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
+          RETURN c, r, a, r_sim
+    `,
+          { id: input.id },
+        );
+        return translateGraph(await OgmaLib.parse.neo4j(result));
+      } finally {
+        await session.close();
+      }
+    }),
+
+  expandCluster: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      try {
+        const result = await session.run(
+          `
+          MATCH (c:Cluster {id: $id})<-[r:IN_CLUSTER]-(a:Article)
+            WITH c, r, a
+              OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
+          RETURN c, r, a, r_sim
         `,
           { id: input.id },
         );
@@ -331,13 +347,13 @@ export const postRouter = createTRPCRouter({
         MATCH (c:Cluster {id: $cluster_id}) 
         WITH c
           CALL apoc.load.jsonParams(
-            "http://34.118.173.82:8000/answer_question", 
+            $qa_service_url, 
             {method: "POST", \`Content-Type\`:"application/json"}, 
             apoc.convert.toJson({fulltext: c.summary, question: $question})) YIELD value 
         RETURN value['answer'] AS answer
       
       `,
-          { cluster_id, question },
+          { cluster_id, question, qa_service_url: env.QA_SERVICE_URL },
         );
         const answer = result.records.at(0)?.get("answer") as string[];
         return answer;
@@ -380,6 +396,7 @@ export const postRouter = createTRPCRouter({
         day: z.number().gte(1).lte(62),
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
         everything: z.boolean().optional(),
+        threats: z.array(z.string()),
       }),
     )
     .query(async ({ input }) => {
@@ -414,12 +431,12 @@ export const postRouter = createTRPCRouter({
           `
         WITH $period + '-\\d+' AS id_pattern
           MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
-            WHERE c.id =~ id_pattern
+            WHERE c.id =~ id_pattern AND t.text IN $threats
         WITH c
           MATCH articles=(a:Article)-[r:IN_CLUSTER]->(c)
         RETURN count(a) as count
         `,
-          { period },
+          { period, threats: input.threats },
         );
         for (const r of counter.records) {
           const count = r.get("count") as Neo4jInteger;
@@ -436,6 +453,7 @@ export const postRouter = createTRPCRouter({
         day: z.number().gte(1).lte(62),
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
         everything: z.boolean().optional(),
+        threats: z.array(z.string()),
       }),
     )
     .query(async ({ input }) => {
@@ -469,192 +487,15 @@ export const postRouter = createTRPCRouter({
         const result = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
-          MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
-            WHERE c.id =~ id_pattern
-        WITH c, t, r, collect(t) as threats
-
-        ${
-          input.everything
-            ? `
-          MATCH articles=(a:Article)-[r:IN_CLUSTER]->(c)
-        WITH c, t, r, threats, articles
-        `
-            : ""
-        }
-
-          MATCH path=(c)<-[:CONTAINS*..]-(:HierarchicalCluster)
-        RETURN path,t, r,${input.everything ? " articles," : ""} threats
+          MATCH (hr:HierarchicalCluster)-[hr_r:CONTAINS*..]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
+            WHERE c.id =~ id_pattern AND t.text IN $threats
+        RETURN hr, hr_r, c, r, t
         `,
-          { period },
+          { period, threats: input.threats },
         );
-        const threats: Record<string, Threat[]> = {};
-        const noThreats = {
-          ...result,
-          records: input.everything
-            ? result.records
-            : result.records.map((r) => {
-                const nr: RecordShape = { ...r, keys: ["path"] };
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                const threat = translateGraph({
-                  nodes:
-                    (nr._fields as Node[][]).pop()?.map((t) => ({
-                      data: {
-                        neo4jLabels: t.labels,
-                        neo4jProperties: t.properties,
-                      },
-                    })) ?? [],
-                  edges: [],
-                }).nodes;
-
-                if (threat) {
-                  const path = r.get("path") as Path;
-                  const cluster = path.start.identity.low;
-                  threats[cluster] = threat.map((t) => t.data as Threat);
-                }
-                nr.length -= 1;
-                nr._fieldLookup = { path: 0 };
-                return nr;
-              }),
-        };
-        return translateGraph(await OgmaLib.parse.neo4j(noThreats), (node) => {
-          if (node.data?.type === "cluster" && node.id) {
-            const threat = threats[node.id];
-            return { ...node, data: { ...node.data, threats: threat } };
-          }
-          return node;
-        });
-
-        // return JSON.parse(JSON.stringify(result)) as GraphResult;
+        return translateGraph(await OgmaLib.parse.neo4j(result));
       } finally {
         await session.close();
       }
     }),
-
-  // clusters: publicProcedure
-  //   .input(
-  //     z.object({
-  //       day: z.number().gte(1).lte(62),
-  //       history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
-  //       // , threats: z.string().array()
-  //     }),
-  //   )
-  //   .query(async ({ input }) => {
-  //     const session = driver.session();
-  //     const baseDate = new Date("2019-12-01");
-  //     baseDate.setDate(baseDate.getDate() + input.day - 1);
-
-  //     let endDate = "";
-  //     let startDate = "";
-
-  //     if (input.history) {
-  //       endDate = baseDate.toLocaleDateString("en-CA", {
-  //         year: "numeric",
-  //         month: "numeric",
-  //         day: "numeric",
-  //       });
-  //       baseDate.setDate(baseDate.getDate() - input.history + 1);
-  //     }
-
-  //     startDate = baseDate.toLocaleDateString("en-CA", {
-  //       year: "numeric",
-  //       month: "numeric",
-  //       day: "numeric",
-  //     });
-
-  //     const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
-  //     try {
-  //       const result = await session.run(
-  //         `
-  //       WITH $period + '-\\d+' AS id_pattern
-  //         MATCH (c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
-  //           WHERE c.id =~ id_pattern
-  //       RETURN c, r, t
-  //       ORDER BY r.score DESC
-  //       `,
-  //         { period },
-  //         // , threats: input.threats },
-  //       );
-  //       // AND t.text IN $threats
-  //       const threats: Record<string, string> = {};
-  //       result.records.forEach((rec) => {
-  //         const t = rec.get("t") as Node;
-  //         if (!threats[t.elementId])
-  //           threats[t.elementId] = t.properties.text as string;
-  //       });
-
-  //       result.records.forEach((rec) => {
-  //         const c = rec.get("c") as Node;
-  //         const r = rec.get("r") as EdgeRecord;
-  //         const id =
-  //           r.startNodeElementId === c.elementId
-  //             ? r.endNodeElementId
-  //             : r.startNodeElementId;
-  //         c.properties.primary_threat = threats[id];
-  //       });
-  //       const g = await OgmaLib.parse.neo4j(result);
-  //       const graph = {
-  //         nodes: g.nodes.map((n) => {
-  //           const data = n.data?.neo4jProperties;
-  //           if (data && n.data?.neo4jLabels.includes("Threat")) {
-  //             return {
-  //               ...n,
-  //               data: {
-  //                 type: "threat",
-  //                 title: (data.text as string) ?? "No text",
-  //               } as Threat,
-  //             };
-  //           } else if (data && n.data?.neo4jLabels.includes("Cluster")) {
-  //             return {
-  //               ...n,
-  //               data: {
-  //                 type: "cluster",
-  //                 answers: JSON.parse(
-  //                   (data.answers as string) ?? "[]",
-  //                 ) as ClusterQA[],
-  //                 id: data.id,
-  //                 nr_articles: parseInt(data.nr_articles as string),
-  //                 node_size: data.node_size,
-  //                 start_date: new Date(),
-  //                 summary: data.summary,
-  //                 title: data.title,
-  //                 topic_id: data.topic_id,
-  //                 primary_threat: data.primary_threat,
-  //               } as Cluster,
-  //             };
-  //           } else return n;
-  //         }),
-  //         edges: g.edges,
-  //       };
-  //       return graph;
-
-  //       // return JSON.parse(JSON.stringify(result)) as GraphResult;
-  //     } finally {
-  //       await session.close();
-  //     }
-  //   }),
-
-  create: protectedProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      return ctx.db.post.create({
-        data: {
-          name: input.name,
-          createdBy: { connect: { id: ctx.session.user.id } },
-        },
-      });
-    }),
-
-  getLatest: protectedProcedure.query(({ ctx }) => {
-    return ctx.db.post.findFirst({
-      orderBy: { createdAt: "desc" },
-      where: { createdBy: { id: ctx.session.user.id } },
-    });
-  }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-  }),
 });

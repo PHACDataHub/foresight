@@ -1,22 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import L from "leaflet";
 
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import {
+  type ImperativePanelGroupHandle,
+  Panel,
+  PanelGroup,
+  PanelResizeHandle,
+} from "react-resizable-panels";
 
 import { Geo, NodeFilter, Ogma } from "@linkurious/ogma-react";
-import OgmaLib, { type RawNode } from "@linkurious/ogma";
+import OgmaLib from "@linkurious/ogma";
 
 import {
-  faCaretLeft,
-  faCaretRight,
+  faArrowsRotate,
   faCircleNodes,
-  faCompress,
   faExpand,
   faMap,
   faMinimize,
   faSitemap,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -25,9 +35,7 @@ import { useResizeObserver } from "usehooks-ts";
 import { useParams } from "next/navigation";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
-import { type AllDataTypes } from "~/server/api/routers/post";
-import ThreatSelector from "~/app/_components/ThreatSelector";
-import { getNodeData, isNodeFiltered } from "~/app/_utils/graph";
+import { getNodeData } from "~/app/_utils/graph";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader from "./DataLoader";
@@ -63,12 +71,6 @@ OgmaLib.libraries.leaflet = L;
 //   throw new Error("Bad Hex");
 // }
 
-export function getRawNodeData(node: RawNode) {
-  const n = node as RawNode<AllDataTypes>;
-  const data = n.data;
-  return data;
-}
-
 export interface Country {
   country: string;
   latitude: string;
@@ -83,15 +85,15 @@ export default function Graph() {
   const ogmaHoverRef = useRef<OgmaLib | null>(null);
   const ogmaHoverContainerRef = useRef<HTMLDivElement | null>(null);
   const layoutService = useRef<LayoutServiceRef | null>(null);
+  const panelRef = useRef<ImperativePanelGroupHandle>(null);
+
   const { height, width } = useResizeObserver({ ref, box: "border-box" });
   const { day } = useParams();
   const [dataLoading, setDataLoading] = useState(false);
 
   const {
     showInfoPanel,
-    setShowInfoPanel,
     toggleTreeDirection,
-    setPanelWasToggled,
     layout,
     setLayout,
     geoMode,
@@ -99,12 +101,57 @@ export default function Graph() {
     threats,
     clusterId,
     setFocus,
-    articleCount,
+    refresh,
+    setOgma,
+    expandedClusters,
+    setExpandedClusters,
   } = useStore();
+
+  const MIN_SIZE_IN_PIXELS = 300;
+  const COLLAPSED_SIZE_IN_PIXELS = 50;
+
+  const [minSize, setMinSize] = useState(10);
+  const [collpasedSize, setCollapsedSize] = useState(10);
+  const [restoreLayout, setRestoreLayout] = useState<number[]>([]);
+
+  useLayoutEffect(() => {
+    const panelGroup = document.querySelector<HTMLDivElement>(
+      '[data-panel-group-id="group"]',
+    );
+    const resizeHandles = document.querySelectorAll<HTMLDivElement>(
+      "[data-panel-resize-handle-id]",
+    );
+    if (!panelGroup) return;
+    const observer = new ResizeObserver(() => {
+      let width = panelGroup.offsetWidth;
+
+      resizeHandles.forEach((resizeHandle) => {
+        width -= resizeHandle.offsetWidth;
+      });
+
+      // Minimum size in pixels is a percentage of the PanelGroup's width,
+      // less the (fixed) width of the resize handles.
+      setMinSize((MIN_SIZE_IN_PIXELS / width) * 100);
+      setCollapsedSize((COLLAPSED_SIZE_IN_PIXELS / width) * 100);
+    });
+    observer.observe(panelGroup);
+    resizeHandles.forEach((resizeHandle) => {
+      observer.observe(resizeHandle);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const handleDataLoading = useCallback((loading: boolean) => {
     setDataLoading(loading);
   }, []);
+
+  const handleReset = useCallback(() => {
+    setFocus(null);
+    refresh();
+  }, [refresh, setFocus]);
 
   const handleLayoutForceClick = useCallback(() => {
     setLayout("force");
@@ -125,13 +172,9 @@ export default function Graph() {
   }, [geoMode, setGeoMode]);
 
   const handleCollapseAllClick = useCallback(() => {
-    if (!ogmaRef.current) return;
-    void ogmaRef.current.removeNodes(
-      ogmaRef.current
-        .getNodes()
-        .filter((n) => ["article"].includes(getNodeData(n)?.type ?? "")),
-    );
-  }, []);
+    setExpandedClusters([]);
+    refresh();
+  }, [refresh, setExpandedClusters]);
 
   const handleMaximizeClick = useCallback(() => {
     setMaximized(!maximized);
@@ -186,40 +229,45 @@ export default function Graph() {
     }
   }, [height, width, maximized, resizeOgma]);
 
-  const handleNodeViewToggle = useCallback(() => {
-    if (showInfoPanel) setPanelWasToggled(true);
-    setShowInfoPanel(!showInfoPanel);
-  }, [setPanelWasToggled, setShowInfoPanel, showInfoPanel]);
+  useLayoutEffect(() => {
+    if (!panelRef.current) return;
+    if (!showInfoPanel) {
+      setRestoreLayout(panelRef.current.getLayout());
+      panelRef.current.setLayout([collpasedSize, 100 - collpasedSize]);
+    }
+  }, [collpasedSize, showInfoPanel]);
+
+  useLayoutEffect(() => {
+    if (!panelRef.current) return;
+    if (showInfoPanel) {
+      if (restoreLayout.length > 0) {
+        setRestoreLayout([]);
+        panelRef.current.setLayout(restoreLayout);
+      }
+    }
+  }, [restoreLayout, showInfoPanel]);
 
   if (typeof day !== "string") return "Day error";
 
   return (
-    <PanelGroup autoSaveId="example" direction="horizontal">
+    <PanelGroup
+      ref={panelRef}
+      autoSaveId="example"
+      direction="horizontal"
+      id="group"
+    >
       <Panel
         defaultSize={25}
-        minSize={25}
-        className={`${showInfoPanel ? "flex" : "hidden"} border`}
+        minSize={showInfoPanel ? minSize : collpasedSize}
+        className={`flex ${showInfoPanel ? "border" : ""}`}
+        order={1}
       >
-        <button
-          className="btn btn-default absolute -left-8"
-          onClick={handleNodeViewToggle}
-        >
-          <FontAwesomeIcon icon={faCaretLeft} />
-        </button>
         <NodeInfo />
       </Panel>
       <PanelResizeHandle />
-      <Panel className="flex flex-col border">
-        {!showInfoPanel && (
-          <button
-            className="btn btn-default absolute -left-8"
-            onClick={handleNodeViewToggle}
-          >
-            <FontAwesomeIcon icon={faCaretRight} />
-          </button>
-        )}
+
+      <Panel className="flex flex-col border" order={2}>
         <div className="relative w-full flex-1" ref={ref}>
-          <ThreatSelector />
           <div className="absolute h-full max-h-full w-full max-w-full">
             <Ogma
               // key={`ogma-${day}-${history}`}
@@ -241,6 +289,7 @@ export default function Graph() {
                 }
               }
               onReady={(ogma) => {
+                setOgma(ogma);
                 ogma.events
                   .on("mouseover", ({ target }) => {
                     if (
@@ -253,19 +302,21 @@ export default function Graph() {
                       return;
 
                     const subNodes = target.getSubNodes()!;
-                    if (subNodes.size <= 1) {
+                    if (subNodes?.size <= 1) {
                       ogmaHoverContainerRef.current?.classList.add("hidden");
                       return;
                     }
-                    const subEdges = subNodes.getAdjacentEdges({
+                    const subEdges = subNodes?.getAdjacentEdges({
                       filter: "all",
                       bothExtremities: true,
                     });
                     ogmaHoverContainerRef.current.classList.remove("hidden");
-                    void ogmaHoverRef.current.setGraph({
-                      nodes: subNodes.toJSON(),
-                      edges: subEdges.toJSON(),
-                    });
+                    if (subNodes) {
+                      void ogmaHoverRef.current.setGraph({
+                        nodes: subNodes.toJSON(),
+                        edges: subEdges.toJSON(),
+                      });
+                    }
                     const { x, y } = target.getPositionOnScreen();
                     ogmaHoverContainerRef.current.style.left = `${x + 50}px`;
                     ogmaHoverContainerRef.current.style.top = `${y}px`;
@@ -279,7 +330,15 @@ export default function Graph() {
 
               <NodeFilter
                 enabled
-                criteria={(n) => !isNodeFiltered(n, threats)}
+                criteria={(n) => {
+                  const data = getNodeData(n);
+                  if (data?.type === "article") {
+                    const cluster_id = n.getData("cluster_id") as string;
+                    if (expandedClusters.includes(cluster_id)) return true;
+                    return false;
+                  }
+                  return true;
+                }}
               />
               <LayoutService
                 ref={layoutService}
@@ -303,6 +362,13 @@ export default function Graph() {
                   <div className="flex space-x-2">
                     {!geoMode && (
                       <>
+                        <button
+                          className="btn btn-primary"
+                          title="Reset"
+                          onClick={handleReset}
+                        >
+                          <FontAwesomeIcon icon={faArrowsRotate} />
+                        </button>
                         <div className="btn-group">
                           <button
                             className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
@@ -325,13 +391,6 @@ export default function Graph() {
                             <FontAwesomeIcon icon={faCircleNodes} />
                           </button>
                         </div>
-                        <button
-                          className="btn btn-primary"
-                          onClick={handleCollapseAllClick}
-                          title="Remove articles and threats"
-                        >
-                          <FontAwesomeIcon icon={faCompress} />
-                        </button>
                       </>
                     )}
                     <button
@@ -353,16 +412,14 @@ export default function Graph() {
                         icon={maximized ? faMinimize : faExpand}
                       />
                     </button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleCollapseAllClick}
+                      title="Remove articles and threats"
+                    >
+                      <FontAwesomeIcon color="#da484a" icon={faTrash} />
+                    </button>
                   </div>
-                  {articleCount > 0 && (
-                    <div className="mt-4 text-xl">
-                      You are working with{" "}
-                      <span className="text-3xl">
-                        {articleCount.toLocaleString()}
-                      </span>{" "}
-                      articles.
-                    </div>
-                  )}
                 </div>
               </>
             </Ogma>
