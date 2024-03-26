@@ -69,7 +69,7 @@ export interface Cluster {
   id: string;
   keywords?: string[];
   labels?: string[];
-  locations: ClusterLocation[];
+  locations?: ClusterLocation[];
   name?: string;
   nr_articles: number;
   representative_docs?: number[];

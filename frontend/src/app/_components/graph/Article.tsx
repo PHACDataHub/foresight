@@ -3,7 +3,7 @@ import { type Article } from "~/server/api/routers/post";
 
 export default function ArticleComponent({ article }: { article: Article }) {
   return (
-    <article>
+    <article className="flex flex-1 flex-col">
       <div className="flex flex-col border border-gray-300 p-5">
         <table>
           <tbody>
@@ -55,16 +55,18 @@ export default function ArticleComponent({ article }: { article: Article }) {
         </table>
       </div>
 
-      {article.content?.split("\n").map((content, i) => (
-        <Typography
-          key={i}
-          variant="body1"
-          mt={2}
-          className="whitespace-pre-wrap"
-        >
-          {content}
-        </Typography>
-      ))}
+      <div className="h-0 flex-auto overflow-auto p-5">
+        {article.content?.split("\n").map((content, i) => (
+          <Typography
+            key={i}
+            variant="body1"
+            mt={2}
+            className="whitespace-pre-wrap"
+          >
+            {content}
+          </Typography>
+        ))}
+      </div>
     </article>
   );
 }

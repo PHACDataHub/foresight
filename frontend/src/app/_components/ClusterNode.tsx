@@ -257,15 +257,18 @@ export function ClusterNode(
                             {typeof answer === "undefined" && (
                               <FontAwesomeIcon spin icon={faSpinner} />
                             )}
-                            {answer?.map((a, i) => (
-                              <Typography
-                                variant="body1"
-                                color="secondary"
-                                key={`cluster_${cluster.id}-a-${i}`}
-                              >
-                                {a}
-                              </Typography>
-                            ))}
+                            <div>
+                              {answer?.map((a, i) => (
+                                <Typography
+                                  variant="body1"
+                                  color="secondary"
+                                  className="pb-2"
+                                  key={`cluster_${cluster.id}-a-${i}`}
+                                >
+                                  {a}
+                                </Typography>
+                              ))}
+                            </div>
                           </li>
                         </ul>
                       </li>

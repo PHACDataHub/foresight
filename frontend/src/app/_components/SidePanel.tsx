@@ -16,6 +16,7 @@ import { useStore } from "~/app/_store";
 import ClusterNodeList from "~/app/_components/ClusterNodeList";
 import { ClusterNode } from "~/app/_components/ClusterNode";
 import { findAlongPath, getNodeColor, getNodeData } from "~/app/_utils/graph";
+import { type Cluster } from "~/server/api/routers/post";
 import ArticleComponent from "./graph/Article";
 
 export default function SidePanel() {
@@ -25,6 +26,7 @@ export default function SidePanel() {
     setPanelWasToggled,
     setShowInfoPanel,
     selectedNode,
+    geoMode,
   } = useStore();
 
   const handleNodeViewToggle = useCallback(() => {
@@ -107,6 +109,15 @@ export default function SidePanel() {
   }, [selectedData]);
 
   const filteredClusters = useMemo(() => {
+    if (geoMode && clusters) {
+      return clusters.filter((c) => {
+        const d = getNodeData<Cluster>(c);
+        return d.locations && d.locations.filter(
+          (l) =>
+            typeof l.latitude === "number" && typeof l.longitude === "number",
+        ).length > 0},
+      );
+    }
     if (!clusters || !selectedData || !selectedNode?.node) return clusters;
     if (selectedData.type === "hierarchicalcluster") {
       const relatedNodes = findAlongPath(selectedNode.node, "out", () => true);
@@ -117,7 +128,7 @@ export default function SidePanel() {
       return clusters.filter((c) => relatedNodes.includes(c));
     }
     return clusters;
-  }, [clusters, selectedData, selectedNode?.node]);
+  }, [clusters, geoMode, selectedData, selectedNode?.node]);
 
   if (!clusters && showInfoPanel)
     return (

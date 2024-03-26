@@ -398,18 +398,17 @@ const LayoutService = forwardRef(
             enabled={!hover && geoMode}
             selector={(n) => {
               const d = getNodeData(n);
-              return d?.type === "cluster" && d.locations.length > 0;
+              return Boolean(d?.type === "cluster" && d.locations && d.locations.length > 0);
             }}
             neighborIdFunction={(n) => {
               const d = getNodeData(n);
               if (d?.type !== "cluster") return "UNKNOWN";
-              return d.locations
-                .filter(
+              return d.locations?.filter(
                   (l) =>
                     typeof l.latitude === "number" &&
                     typeof l.longitude === "number",
                 )
-                .map((l) => JSON.stringify(l));
+                .map((l) => JSON.stringify(l)) ?? [];
             }}
             nodeGenerator={(id, nodes) => {
               const n = nodes.get(0);
