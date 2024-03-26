@@ -370,7 +370,7 @@ export function ClusterNode(
                     </li>
                   ))}
 
-                  {Object.entries(cluster.answers).map(
+                  {Object.entries(cluster.answers ?? []).map(
                     ([question, answer], i) => (
                       <li key={`${cluster.id}_question_${i}`}>
                         {question}

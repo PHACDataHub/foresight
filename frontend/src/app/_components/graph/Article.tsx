@@ -21,7 +21,7 @@ export default function ArticleComponent({ article }: { article: Article }) {
               </th>
               <td>
                 <Typography variant="body1">
-                  {article.pub_date.toLocaleDateString()}
+                  {article.pub_date?.toLocaleDateString()}
                 </Typography>
               </td>
             </tr>
@@ -31,7 +31,7 @@ export default function ArticleComponent({ article }: { article: Article }) {
               </th>
               <td>
                 <Typography variant="body1">
-                  {article.pub_time.toLocaleTimeString()}
+                  {article.pub_time?.toLocaleTimeString()}
                 </Typography>
               </td>
             </tr>
@@ -55,7 +55,7 @@ export default function ArticleComponent({ article }: { article: Article }) {
         </table>
       </div>
 
-      {article.content.split("\n").map((content, i) => (
+      {article.content?.split("\n").map((content, i) => (
         <Typography key={i} variant="body1" mt={2}>
           {content}
         </Typography>

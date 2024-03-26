@@ -58,6 +58,7 @@ const LayoutService = forwardRef(
       layout,
       setLayout,
       setOpenNode,
+      everything,
       setSelectedNode,
       focus,
       searchTerms,
@@ -109,12 +110,12 @@ const LayoutService = forwardRef(
     const layoutGraph = useCallback(async () => {
       console.log("--layout graph--");
       if (!ogma.geo.enabled() && !focus) {
-        if (layout === "hierarchical" && !hover) {
+        if (layout === "hierarchical" && !hover && !everything) {
           await ogma.layouts.hierarchical({
             locate: true,
             direction: treeDirection,
           });
-        } else if (hover ?? layout === "force") {
+        } else if ((hover ?? layout === "force") || everything) {
           await ogma.layouts.force({
             locate: true,
             gpu: true,
@@ -128,6 +129,7 @@ const LayoutService = forwardRef(
         }
       }
     }, [
+      everything,
       focus,
       hover,
       layout,
@@ -314,7 +316,7 @@ const LayoutService = forwardRef(
         if (data?.type === "cluster") {
           for (const term of searchTerms) {
             if (
-              data.summary.toLowerCase().includes(term) ||
+              data.summary?.toLowerCase().includes(term) ??
               data.title.toLowerCase().includes(term)
             )
               return true;
@@ -329,7 +331,7 @@ const LayoutService = forwardRef(
         } else if (data?.type === "article") {
           for (const term of searchTerms) {
             if (
-              data.content.toLowerCase().includes(term) ||
+              data.content?.toLowerCase().includes(term) ??
               data.title.toLowerCase().includes(term)
             )
               return true;

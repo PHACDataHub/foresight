@@ -9,6 +9,7 @@ import OgmaLib, {
   type RawNode,
 } from "@linkurious/ogma";
 import { z } from "zod";
+
 import { env } from "~/env";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -63,22 +64,19 @@ export type ClusterLocation = {
 
 export interface Cluster {
   type: "cluster";
-  answers: Record<string, string>;
-  countries: string[];
+  answers?: Record<string, string>;
+  countries?: string[];
   id: string;
-  keywords: string[];
-  labels: string[];
+  keywords?: string[];
+  labels?: string[];
   locations: ClusterLocation[];
-  name: string;
+  name?: string;
   nr_articles: number;
-  representative_docs: number[];
-  start_date: Date;
+  representative_docs?: number[];
+  start_date?: Date;
   summary: string;
   title: string;
-  topic_id: string;
-
-  // TODO: fix this
-  // location: ClusterLocation;
+  topic_id?: string;
 }
 
 export interface ClusterRecord
@@ -100,17 +98,17 @@ export interface ClusterRecord
 export type Article = {
   type: "article";
   outlier: boolean;
-  content: string;
-  factiva_file_name: string;
-  factiva_folder: string;
-  gphin_score: number;
-  gphin_state: string;
+  content?: string;
+  factiva_file_name?: string;
+  factiva_folder?: string;
+  gphin_score?: number;
+  gphin_state?: string;
   id: number;
   prob_size: number;
-  probability: number;
-  pub_date: Date;
-  pub_name: string;
-  pub_time: Date;
+  probability?: number;
+  pub_date?: Date;
+  pub_name?: string;
+  pub_time?: Date;
   title: string;
 };
 
@@ -489,11 +487,48 @@ export const postRouter = createTRPCRouter({
         WITH $period + '-\\d+' AS id_pattern
           MATCH (hr:HierarchicalCluster)-[hr_r:CONTAINS*..]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
             WHERE c.id =~ id_pattern AND t.text IN $threats
-        RETURN hr, hr_r, c, r, t
+
+          ${
+            input.everything
+              ? `WITH hr, hr_r, c, r, t
+            OPTIONAL MATCH (c)<-[r2:IN_CLUSTER]-(a:Article)
+          WITH hr, hr_r, c, r, t, r2, a
+            OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
+`
+              : ""
+          }
+        RETURN hr, hr_r, c, r, t ${input.everything ? ", a, r2, r_sim" : ""}
         `,
           { period, threats: input.threats },
         );
-        return translateGraph(await OgmaLib.parse.neo4j(result));
+        return translateGraph(await OgmaLib.parse.neo4j(result), (n) => {
+          if (!input.everything) return n;
+          if (n.data?.type === "cluster")
+            return {
+              ...n,
+              data: {
+                type: "cluster",
+                id: n.data.id,
+                locations: n.data.locations,
+                nr_articles: n.data.nr_articles,
+                title: n.data.title,
+                summary: n.data.summary,
+              },
+            };
+          if (n.data?.type === "article") 
+            return {
+              ...n,
+              data: {
+                type: "article",
+                id: n.data.id,
+                outlier: n.data.outlier,
+                prob_size: n.data.prob_size,
+                title: n.data.title,
+              },
+            };
+          
+          return n;
+        });
       } finally {
         await session.close();
       }

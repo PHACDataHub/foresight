@@ -30,6 +30,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
 import { useParams } from "next/navigation";
@@ -105,6 +108,8 @@ export default function Graph() {
     setOgma,
     expandedClusters,
     setExpandedClusters,
+    everything,
+    setEverything,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 300;
@@ -147,6 +152,10 @@ export default function Graph() {
   const handleDataLoading = useCallback((loading: boolean) => {
     setDataLoading(loading);
   }, []);
+
+  const handleEverythingChange = useCallback(() => {
+    setEverything(!everything);
+  }, [everything, setEverything]);
 
   const handleReset = useCallback(() => {
     setFocus(null);
@@ -334,6 +343,7 @@ export default function Graph() {
               <NodeFilter
                 enabled
                 criteria={(n) => {
+                  if (everything) return true;
                   const data = getNodeData(n);
                   if (data?.type === "article") {
                     const cluster_id = n.getData("cluster_id") as string;
@@ -365,6 +375,15 @@ export default function Graph() {
                   <div className="flex space-x-2">
                     {!geoMode && (
                       <>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={everything}
+                              onChange={handleEverythingChange}
+                            />
+                          }
+                          label="Fetch All"
+                        />
                         <button
                           className="btn btn-primary"
                           title="Reset"
@@ -372,7 +391,9 @@ export default function Graph() {
                         >
                           <FontAwesomeIcon icon={faArrowsRotate} />
                         </button>
-                        <div className="btn-group">
+                        <div
+                          className={`btn-group ${everything ? "hidden" : ""}`}
+                        >
                           <button
                             className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
                             onClick={handleLayoutHierarchicalClick}

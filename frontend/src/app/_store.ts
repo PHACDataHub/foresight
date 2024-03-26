@@ -56,8 +56,6 @@ export interface ForesightStore {
 
   articleCount: number;
   setArticleCount: (articleCount: number) => void;
-  _loadArticleGraph: number;
-  loadArticleGraph: (s?: boolean) => void;
   showInfoPanel: boolean;
   setShowInfoPanel: (showInfoPanel: boolean) => void;
   panelWasToggled: boolean;
@@ -151,11 +149,6 @@ export const useStore = create<ForesightStore>((set) => ({
   articleCount: 0,
   setArticleCount: (articleCount: number) => set({ articleCount }),
 
-  _loadArticleGraph: 0,
-  loadArticleGraph: (s) =>
-    set((state) => ({
-      _loadArticleGraph: s ? state._loadArticleGraph + 1 : 0,
-    })),
   showInfoPanel: false,
   setShowInfoPanel: (showInfoPanel) => set({ showInfoPanel }),
   panelWasToggled: false,

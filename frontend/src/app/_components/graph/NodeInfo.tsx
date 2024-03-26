@@ -2,7 +2,6 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   useCallback,
-  useEffect,
   useMemo,
 } from "react";
 import Highlighter from "react-highlight-words";
@@ -54,9 +53,6 @@ export default function NodeInfo() {
     setSelectedNode,
     qa,
     addQA,
-    setArticleGraph,
-    _loadArticleGraph,
-    loadArticleGraph,
   } = useStore();
 
   const data = selectedNode && getNodeData(selectedNode.node);
@@ -70,13 +66,6 @@ export default function NodeInfo() {
   );
 
   const questionApi = api.post.question.useMutation();
-
-  useEffect(() => {
-    if (rawGraph && _loadArticleGraph > 0) {
-      setArticleGraph(rawGraph);
-      loadArticleGraph();
-    }
-  }, [_loadArticleGraph, loadArticleGraph, rawGraph, setArticleGraph]);
 
   const handleCloseClick = useCallback(() => {
     setSelectedNode(null);
@@ -151,7 +140,7 @@ export default function NodeInfo() {
           const t = term.toLowerCase();
           const c = getNodeData<Cluster>(a);
           if (
-            c.summary.toLowerCase().includes(t) ||
+            c.summary?.toLowerCase().includes(t) ??
             c.title.toLowerCase().includes(t)
           )
             return -1;
@@ -228,7 +217,7 @@ export default function NodeInfo() {
                   <p>
                     <Highlighter
                       searchWords={searchTerms}
-                      textToHighlight={cluster.summary}
+                      textToHighlight={cluster.summary ?? ""}
                     />
                   </p>
                 </section>
@@ -290,11 +279,11 @@ export default function NodeInfo() {
                   </tr>
                   <tr>
                     <th>Pub Date</th>
-                    <td>{data.pub_date.toLocaleDateString()}</td>
+                    <td>{data.pub_date?.toLocaleDateString()}</td>
                   </tr>
                   <tr>
                     <th>Pub Time</th>
-                    <td>{data.pub_time.toLocaleTimeString()}</td>
+                    <td>{data.pub_time?.toLocaleTimeString()}</td>
                   </tr>
                   <tr>
                     <th className="pr-5">GPHIN Score</th>
@@ -330,7 +319,7 @@ export default function NodeInfo() {
                     textToHighlight={cluster.title}
                   />
                 </h4>
-                {cluster.labels.length > 1 && (
+                {cluster.labels && cluster.labels.length > 1 && (
                   <ul className="list-inline">
                     {cluster.labels.map((label, i) => (
                       <li key={`${cluster.id}-label-${i}`}>
@@ -352,12 +341,12 @@ export default function NodeInfo() {
                 <p>
                   <Highlighter
                     searchWords={searchTerms}
-                    textToHighlight={cluster.summary}
+                    textToHighlight={cluster.summary ?? ""}
                   />
                 </p>
                 <h4>Questions about this cluster</h4>
                 <ul>
-                  {Object.entries(cluster.answers).map(
+                  {Object.entries(cluster.answers ?? []).map(
                     ([question, answer], i) => (
                       <li key={`${cluster.id}_question_${i}`}>
                         {question}
@@ -442,15 +431,16 @@ export default function NodeInfo() {
                                         Publication Date
                                       </div>
                                       <div className="col-xs-6">
-                                        {article.pub_date.toLocaleDateString()}
+                                        {article.pub_date?.toLocaleDateString()}
                                       </div>
                                       <div className="col-xs-6">
                                         Publication Time
                                       </div>
                                       <div className="col-xs-6">
-                                        {new Date(
-                                          article.pub_time,
-                                        ).toLocaleTimeString()}
+                                        {article.pub_time &&
+                                          new Date(
+                                            article.pub_time,
+                                          ).toLocaleTimeString()}
                                       </div>
                                       <div className="col-xs-6">
                                         Factiva Folder
