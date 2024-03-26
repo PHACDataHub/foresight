@@ -118,6 +118,8 @@ function TimeTravelComponent({
         customInput={
           <Button
             variant="contained"
+            style={{ backgroundColor: "#2196F3"}}
+            size="medium"
             endIcon={<FontAwesomeIcon icon={faAngleDown} />}
           >
             {date.toLocaleDateString(locale, {

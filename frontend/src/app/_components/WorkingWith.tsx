@@ -8,9 +8,12 @@ export default function WorkingWith() {
   if (articleCount === 0) return;
 
   return (
-    <Typography variant="body2">
+    <Typography variant="body1" fontSize={16}>
       You are working with{" "}
-      <Typography variant="h5" component="span">{articleCount.toLocaleString()}</Typography> articles.
+      <Typography variant="body1" fontSize={22} component="span">
+        {articleCount.toLocaleString()}
+      </Typography>{" "}
+      articles.
     </Typography>
   );
 }

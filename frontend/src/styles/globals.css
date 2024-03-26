@@ -4,11 +4,18 @@
 
 
 #def-appTop {
-  border-bottom: 2px solid #000;
+  border-bottom: 1px solid #000;
+  height: 80px;
+  overflow: clip;
+}
+
+#def-appTop .brand {
+  position: absolute;
+  top: 10px;
 }
 
 #wb-info {
-  height: 70px !important;
+  height: 84px !important;
   overflow: clip;
 }
 

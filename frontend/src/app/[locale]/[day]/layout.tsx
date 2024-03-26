@@ -33,8 +33,13 @@ export default async function LocaleDayLayout({
 
   return (
     <AppWrapper>
-      <div className="flex items-center justify-between">
-        <Typography variant="h4" fontWeight="bold">
+      <div className="flex items-center justify-between pb-[16px] pt-[16px]">
+        <Typography
+          variant="h4"
+          fontSize={24}
+          fontWeight="medium"
+          className="pr-[24px]"
+        >
           {t("title")}
         </Typography>
         <TodayIs
@@ -43,18 +48,20 @@ export default async function LocaleDayLayout({
           }}
           date={date}
         />
-        <HighlightTerms />
-        <TimeTravel
-          startDate={startDate}
-          endDate={endDate}
-          date={date}
-          messages={{
-            chooseDate: timeTravelMsg("chooseDate"),
-            travelText: timeTravelMsg("travelText"),
-          }}
-        />
-        <WorkingWith />
-        <HistoryChooser />
+        <div className="flex items-center space-x-4">
+          <HighlightTerms />
+          <TimeTravel
+            startDate={startDate}
+            endDate={endDate}
+            date={date}
+            messages={{
+              chooseDate: timeTravelMsg("chooseDate"),
+              travelText: timeTravelMsg("travelText"),
+            }}
+          />
+          <WorkingWith />
+          <HistoryChooser />
+        </div>
         <ThreatSelector />
       </div>
       <div className="mb-10 flex flex-1 flex-col items-center justify-center overflow-hidden">

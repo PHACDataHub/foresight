@@ -31,7 +31,7 @@ function TodayIsComponent({
   const dateToStr = useDateToStr(locale);
 
   return (
-    <Typography variant="subtitle1" fontSize={14}>
+    <Typography variant="subtitle1" fontSize={16} className="w-[290px]">
       {messages?.todayIs ?? "title"} {dateToStr(date)}
     </Typography>
   );
