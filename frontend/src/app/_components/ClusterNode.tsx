@@ -1,13 +1,8 @@
 import { type Node as OgmaNode } from "@linkurious/ogma";
-import Highlighter from "react-highlight-words";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAngleDown,
-  faAngleLeft,
-  faAngleRight,
-  faCircleInfo,
-  faClose,
-  faMagnifyingGlass,
+  faMessage,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import React, {
@@ -19,14 +14,12 @@ import React, {
 } from "react";
 
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
 import InputAdornment from "@mui/material/InputAdornment";
+import { styled } from "@mui/material/styles";
 
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import IconButton from "@mui/material/IconButton";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
@@ -36,92 +29,31 @@ import { type ClusterNodeSections, useStore } from "~/app/_store";
 import { createScale, getNodeData, getRawNodeData } from "~/app/_utils/graph";
 import { api } from "~/trpc/react";
 import ArticleComponent from "./graph/Article";
+import { HighlightSearchTerms } from "./HighlightTerms";
+import { NodeTitle } from "./NodeTitle";
+
+const Location = styled("div")(({ theme }) => {
+  return {
+    ...theme.typography.button,
+    color: theme.palette.primary.main,
+    border: `1px solid ${theme.palette.primary.main}`,
+    whiteSpace: "pretty",
+    padding: 3,
+  };
+});
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   if (!cluster?.locations) return;
   return (
-    <Stack direction="row" spacing={1}>
+    <ul className="flex list-none flex-wrap">
       {cluster.locations
         .filter((l) => Boolean(l.location))
         .map((l, i) => (
-          <Chip
-            key={`loc_${i}`}
-            color="primary"
-            variant="outlined"
-            label={l.location}
-          />
+          <li key={`loc_${i}`} className="m-1 p-0">
+            <Location>{l.location}</Location>
+          </li>
         ))}
-    </Stack>
-  );
-}
-
-function ClusterTitle({
-  cluster,
-  clusterNode,
-  details,
-}: {
-  cluster: Cluster;
-  clusterNode: OgmaNode<Cluster>;
-  details?: boolean;
-}) {
-  const { searchTerms, setSelectedNode } = useStore();
-  const handleLocate = useCallback(async () => {
-    // const node = ogma
-    //   .getNodes()
-    //   .filter((n) => (n.getData() as { id: string }).id === locateNode);
-
-    // const nodes = ogma.getNodes().filter((n) => {
-    //   const d = n.getData() as { id: string };
-    //   if (d.id === locateNode) return true;
-    //   const adj = n
-    //     .getAdjacentNodes()
-    //     .filter((na) => (na.getData() as { id: string }).id === locateNode);
-    //   if (adj.size > 0) return true;
-    //   return false;
-    // });
-
-    await clusterNode.locate();
-    await clusterNode.pulse();
-  }, [clusterNode]);
-
-  const handleOpenCluster = useCallback(() => {
-    clusterNode.setSelected(true);
-    setSelectedNode({ node: clusterNode, expand: ["qa"] });
-  }, [clusterNode, setSelectedNode]);
-
-  const handleCloseCluster = useCallback(() => {
-    clusterNode.setSelected(false);
-    setSelectedNode(null);
-  }, [clusterNode, setSelectedNode]);
-
-  if (!cluster) return <></>;
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex-1">
-        <Typography variant="h6">
-          <Highlighter
-            searchWords={searchTerms}
-            textToHighlight={cluster.title}
-          />
-        </Typography>
-      </div>
-      <div className="flex">
-        <IconButton onClick={handleOpenCluster}>
-          <FontAwesomeIcon icon={faCircleInfo} />
-        </IconButton>
-
-        <IconButton onClick={handleLocate}>
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
-        </IconButton>
-
-        {details && (
-          <IconButton defaultValue={cluster.id} onClick={handleCloseCluster}>
-            <FontAwesomeIcon icon={faClose} />
-          </IconButton>
-        )}
-      </div>
-    </div>
+    </ul>
   );
 }
 
@@ -141,18 +73,7 @@ export function ClusterNode(
 
   const [question, setQuestion] = useState("");
 
-  const {
-    searchTerms,
-    qa,
-    addQA,
-    ogma,
-    refresh,
-    expandedClusters,
-    setScale,
-    showInfoPanel,
-    setShowInfoPanel,
-    setPanelWasToggled,
-  } = useStore();
+  const { qa, addQA, ogma, refresh, expandedClusters, setScale } = useStore();
 
   const { data, isFetching } = api.post.cluster.useQuery(
     {
@@ -273,11 +194,6 @@ export function ClusterNode(
       });
   }, [data, details]);
 
-  const handleNodeViewToggle = useCallback(() => {
-    if (showInfoPanel) setPanelWasToggled(true);
-    setShowInfoPanel(!showInfoPanel);
-  }, [setPanelWasToggled, setShowInfoPanel, showInfoPanel]);
-
   const [tab, setTab] = useState(0);
 
   const handleTabChange = useCallback(
@@ -287,37 +203,15 @@ export function ClusterNode(
     [],
   );
 
-  if (details && !showInfoPanel)
-    return (
-      <div
-        className="flex justify-between"
-        style={{ background: "rgb(90,111,196)", padding: 5 }}
-      >
-        <IconButton onClick={handleNodeViewToggle}>
-          <FontAwesomeIcon icon={faAngleRight} color="white" />
-        </IconButton>
-      </div>
-    );
-
   if (!cluster) return;
 
   if (details)
     return (
-      <div className="flex flex-1 flex-col">
-        <div
-          className="flex items-center justify-between text-white"
-          style={{ background: "rgb(90,111,196)", padding: 5 }}
-        >
-          <Typography variant="h6">Selected Cluster</Typography>
-          <IconButton onClick={handleNodeViewToggle}>
-            <FontAwesomeIcon
-              color="white"
-              icon={showInfoPanel ? faAngleLeft : faAngleRight}
-            />
-          </IconButton>
-        </div>
+      <>
+        <NodeTitle dataNode={clusterNode} />
+        <ClusterLocations cluster={cluster} />
         <Tabs value={tab} onChange={handleTabChange} centered>
-          <Tab label="Summary" />
+          <Tab label={<span style={{ paddingTop: 10 }}>Summary</span>} />
           <Tab
             label={
               <Badge
@@ -331,7 +225,9 @@ export function ClusterNode(
                 max={10000}
                 color="info"
               >
-                Articles
+                <span style={{ marginRight: 10, paddingTop: 10 }}>
+                  Articles
+                </span>
               </Badge>
             }
           />
@@ -339,51 +235,60 @@ export function ClusterNode(
         {tab === 0 && (
           <div className="flex flex-1 flex-col">
             <div className="flex flex-1 flex-col p-5">
-              <ClusterTitle
-                cluster={cluster}
-                clusterNode={clusterNode}
-                details={details}
-              />
-              <ClusterLocations cluster={cluster} />
               <div className="h-0 flex-auto overflow-auto">
-                <Highlighter
-                  searchWords={searchTerms}
-                  textToHighlight={cluster.summary ?? ""}
-                />
-                <Typography variant="h6">
-                  Questions about this cluster
-                </Typography>
-                <ul style={{ listStyleType: "circle" }}>
-                  {qa[cluster.id]?.map(({ question, answer }, i) => (
-                    <li className="font-bold" key={`qes_${cluster.id}_${i}`}>
-                      {question}
-                      <ul className="ml-10" style={{ listStyleType: "square" }}>
-                        <li className="whitespace-pre-wrap font-normal">
-                          {typeof answer === "undefined" && (
-                            <FontAwesomeIcon spin icon={faSpinner} />
-                          )}
-                          {answer?.map((a, i) => (
-                            <p key={`cluster_${cluster.id}-a-${i}`}>{a}</p>
-                          ))}
-                        </li>
-                      </ul>
-                    </li>
-                  ))}
-
-                  {Object.entries(cluster.answers ?? []).map(
-                    ([question, answer], i) => (
-                      <li key={`${cluster.id}_question_${i}`}>
-                        {question}
-                        <ul
-                          className="ml-10"
-                          style={{ listStyleType: "square" }}
-                        >
-                          <li>{answer}</li>
+                <section>
+                  <Typography variant="body1">
+                    <HighlightSearchTerms text={cluster.summary ?? ""} />
+                  </Typography>
+                </section>
+                <section className="mt-5 border-t pt-5">
+                  <Typography variant="h5">
+                    Questions about this cluster
+                  </Typography>
+                  <ul className="border-t">
+                    {qa[cluster.id]?.map(({ question, answer }, i) => (
+                      <li key={`qes_${cluster.id}_${i}`}>
+                        <Typography color="primary" variant="body1">
+                          &gt; {question}
+                        </Typography>
+                        <ul className="ml-10">
+                          <li className="flex items-center space-x-4 whitespace-pre-wrap">
+                            <FontAwesomeIcon icon={faMessage} fontSize={10} />
+                            {typeof answer === "undefined" && (
+                              <FontAwesomeIcon spin icon={faSpinner} />
+                            )}
+                            {answer?.map((a, i) => (
+                              <Typography
+                                variant="body1"
+                                color="secondary"
+                                key={`cluster_${cluster.id}-a-${i}`}
+                              >
+                                {a}
+                              </Typography>
+                            ))}
+                          </li>
                         </ul>
                       </li>
-                    ),
-                  )}
-                </ul>
+                    ))}
+
+                    {Object.entries(cluster.answers ?? []).map(
+                      ([question, answer], i) => (
+                        <li key={`${cluster.id}_question_${i}`}>
+                          <Typography variant="body1">
+                            &gt; {question}
+                          </Typography>
+
+                          <ul className="ml-10">
+                            <li className="flex items-center space-x-4">
+                              <FontAwesomeIcon icon={faMessage} fontSize={10} />
+                              <Typography variant="body1">{answer}</Typography>
+                            </li>
+                          </ul>
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </section>
               </div>
             </div>
             <div className="flex flex-col border-t p-5">
@@ -408,7 +313,7 @@ export function ClusterNode(
                 <AccordionSummary
                   expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
                 >
-                  {article.title}
+                  <Typography variant="h5">{article.title}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <ArticleComponent article={article} />
@@ -417,22 +322,15 @@ export function ClusterNode(
             ))}
           </div>
         )}
-      </div>
+      </>
     );
 
   return (
     <section className="flex flex-1 flex-col">
-      <ClusterTitle
-        cluster={cluster}
-        clusterNode={clusterNode}
-        details={details}
-      />
+      <NodeTitle dataNode={clusterNode} />
       <ClusterLocations cluster={cluster} />
-      <Typography>
-        <Highlighter
-          searchWords={searchTerms}
-          textToHighlight={cluster.summary ?? ""}
-        />
+      <Typography variant="body1">
+        <HighlightSearchTerms text={cluster.summary ?? ""} />
       </Typography>
     </section>
   );

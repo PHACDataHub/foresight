@@ -7,6 +7,11 @@
   border-bottom: 2px solid #000;
 }
 
+#wb-info {
+  height: 70px !important;
+  overflow: clip;
+}
+
 .container {
   width: calc(100vw - 30px) !important;
   max-width: calc(100vw - 30px) !important;

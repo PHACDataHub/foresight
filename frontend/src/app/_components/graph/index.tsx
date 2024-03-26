@@ -23,6 +23,7 @@ import {
   faArrowsRotate,
   faCircleNodes,
   faExpand,
+  faGripLinesVertical,
   faMap,
   faMinimize,
   faSitemap,
@@ -39,10 +40,10 @@ import { useParams } from "next/navigation";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
 import { getNodeData } from "~/app/_utils/graph";
+import SidePanel from "~/app/_components/SidePanel";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader from "./DataLoader";
-import NodeInfo from "./NodeInfo";
 import TimeLine from "./TimeLine";
 
 // const colors = d3.scaleOrdinal(d3.schemeCategory10);
@@ -268,11 +269,16 @@ export default function Graph() {
         defaultSize={25}
         minSize={showInfoPanel ? minSize : collpasedSize}
         className={`flex ${showInfoPanel ? "border" : ""}`}
+        style={{ transition: "flex 0.1s" }}
         order={1}
       >
-        <NodeInfo />
+        <SidePanel />
       </Panel>
-      <PanelResizeHandle />
+      {showInfoPanel && (
+        <PanelResizeHandle className="mr-5 ml-2 flex items-center">
+          <FontAwesomeIcon icon={faGripLinesVertical} />
+        </PanelResizeHandle>
+      )}
 
       <Panel className="flex flex-col border" order={2}>
         <div className="relative w-full flex-1" ref={ref}>

@@ -23,8 +23,15 @@ import {
   useRef,
 } from "react";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
+import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 import { useStore } from "~/app/_store";
-import { findAlongPath, getNodeData, getNodeRadius } from "~/app/_utils/graph";
+import {
+  findAlongPath,
+  getNodeColor,
+  getNodeData,
+  getNodeRadius,
+} from "~/app/_utils/graph";
+
 
 export interface LayoutServiceRef {
   refresh: () => void;
@@ -61,7 +68,6 @@ const LayoutService = forwardRef(
       everything,
       setSelectedNode,
       focus,
-      searchTerms,
       selectedNode,
       scale,
       refreshObserver,
@@ -310,11 +316,13 @@ const LayoutService = forwardRef(
       refresh: updateLayout,
     }));
 
+    const terms = useSearchTerms();
+
     const isHaloed = useCallback(
       (n: OgmaNode) => {
         const data = getNodeData(n);
         if (data?.type === "cluster") {
-          for (const term of searchTerms) {
+          for (const term of terms) {
             if (
               data.summary?.toLowerCase().includes(term) ??
               data.title.toLowerCase().includes(term)
@@ -329,7 +337,7 @@ const LayoutService = forwardRef(
           ).filter((node) => isHaloed(node));
           if (clusters.size > 1) return true;
         } else if (data?.type === "article") {
-          for (const term of searchTerms) {
+          for (const term of terms) {
             if (
               data.content?.toLowerCase().includes(term) ??
               data.title.toLowerCase().includes(term)
@@ -339,7 +347,7 @@ const LayoutService = forwardRef(
         }
         return false;
       },
-      [searchTerms],
+      [terms],
     );
 
     return (
@@ -511,14 +519,7 @@ const LayoutService = forwardRef(
             },
             color: (n) => {
               const data = getNodeData(n);
-              if (data?.type === "hierarchicalcluster") return "#bacf99";
-              if (data?.type === "cluster") return "rgb(90,111,196)";
-              if (data?.type === "threat") return "#ffb700";
-              if (data?.type === "article") {
-                if (data.outlier) return "rgb(194,165,247)";
-                return "rgb(104,75,157)";
-              }
-              return "#d9dae2";
+              return getNodeColor(data);
             },
             radius: (n) => {
               const data = getNodeData(n);

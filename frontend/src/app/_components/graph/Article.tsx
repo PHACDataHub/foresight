@@ -4,7 +4,7 @@ import { type Article } from "~/server/api/routers/post";
 export default function ArticleComponent({ article }: { article: Article }) {
   return (
     <article>
-      <div className="float-right flex flex-col border border-gray-300 p-5">
+      <div className="flex flex-col border border-gray-300 p-5">
         <table>
           <tbody>
             <tr>
@@ -56,7 +56,12 @@ export default function ArticleComponent({ article }: { article: Article }) {
       </div>
 
       {article.content?.split("\n").map((content, i) => (
-        <Typography key={i} variant="body1" mt={2}>
+        <Typography
+          key={i}
+          variant="body1"
+          mt={2}
+          className="whitespace-pre-wrap"
+        >
           {content}
         </Typography>
       ))}

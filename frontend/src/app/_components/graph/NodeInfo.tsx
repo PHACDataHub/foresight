@@ -4,7 +4,6 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import Highlighter from "react-highlight-words";
 
 import {
   Accordion,
@@ -30,6 +29,7 @@ import { type Article, type Cluster } from "~/server/api/routers/post";
 import { findAlongPath, getNodeData, getRawNodeData } from "~/app/_utils/graph";
 import ClusterNodeList from "~/app/_components/ClusterNodeList";
 import { ClusterNode } from "~/app/_components/ClusterNode";
+import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   return (
@@ -171,7 +171,7 @@ export default function NodeInfo() {
 
   if (!cluster && !selectedNode && clusters)
     return (
-      <div className="flex flex-col">
+      <div className="flex w-full flex-col">
         <ClusterNodeList clusterNodes={clusters} />
       </div>
     );
@@ -191,10 +191,7 @@ export default function NodeInfo() {
                 <section key={`cluster${cluster.id}`}>
                   <div className="flex items-center justify-between">
                     <h4>
-                      <Highlighter
-                        searchWords={searchTerms}
-                        textToHighlight={cluster.title}
-                      />
+                      <HighlightSearchTerms text={cluster.title} />
                     </h4>
                     <div className="flex space-x-2">
                       <button
@@ -215,10 +212,7 @@ export default function NodeInfo() {
                   </div>
                   <ClusterLocations cluster={cluster} />
                   <p>
-                    <Highlighter
-                      searchWords={searchTerms}
-                      textToHighlight={cluster.summary ?? ""}
-                    />
+                    <HighlightSearchTerms text={cluster.summary ?? ""} />
                   </p>
                 </section>
               ))}
@@ -313,11 +307,7 @@ export default function NodeInfo() {
             {cluster && (
               <>
                 <h4 className="mt-0 flex items-end">
-                  TEST
-                  <Highlighter
-                    searchWords={searchTerms}
-                    textToHighlight={cluster.title}
-                  />
+                  <HighlightSearchTerms text={cluster.title} />
                 </h4>
                 {cluster.labels && cluster.labels.length > 1 && (
                   <ul className="list-inline">
@@ -339,10 +329,7 @@ export default function NodeInfo() {
                   })}
                 </ul> */}
                 <p>
-                  <Highlighter
-                    searchWords={searchTerms}
-                    textToHighlight={cluster.summary ?? ""}
-                  />
+                  <HighlightSearchTerms text={cluster.summary ?? ""} />
                 </p>
                 <h4>Questions about this cluster</h4>
                 <ul>

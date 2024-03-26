@@ -90,6 +90,8 @@ export interface ForesightStore {
   setFocus: (focus: OgmaNode | null) => void;
   clusterId?: string;
   setClusterId: (clusterId?: string) => void;
+  searchAsYouType: string;
+  setSearchAsYouType: (searchAsYouType: string) => void;
   searchTerms: string[];
   setSearchTerms: (searchTerms: string[]) => void;
   clusters?: NodeList<Cluster>;
@@ -111,7 +113,6 @@ export interface ForesightStore {
 export const useStore = create<ForesightStore>((set) => ({
   ogma: null,
   setOgma: (ogma) => set({ ogma }),
-
   expandedClusters: [],
   setExpandedClusters: (expandedClusters: string[]) =>
     set({ expandedClusters }),
@@ -174,6 +175,8 @@ export const useStore = create<ForesightStore>((set) => ({
   setHistory: (history?: 3 | 7 | 30) => set({ history }),
   clusterId: undefined,
   setClusterId: (clusterId) => set({ clusterId }),
+  searchAsYouType: "",
+  setSearchAsYouType: (searchAsYouType) => set({ searchAsYouType }),
   searchTerms: [],
   setSearchTerms: (searchTerms: string[]) => set({ searchTerms }),
   clusters: undefined,

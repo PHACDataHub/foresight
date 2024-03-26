@@ -6,22 +6,27 @@ import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 
+import Highlighter from "react-highlight-words";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { useDebounceCallback } from "usehooks-ts";
 import { useStore } from "~/app/_store";
+import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 
 export default function HighlightTerms() {
-  const { searchTerms, setSearchTerms } = useStore();
-  const [search, setSearch] = useState("");
+  const { searchTerms, setSearchTerms, setSearchAsYouType, searchAsYouType } =
+    useStore();
+  const [search, setSearch] = useState(searchAsYouType);
+
+  const updateSearchAsYouType = useDebounceCallback(setSearchAsYouType, 300);
 
   const handleSearchChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      setSearchTerms(
-        searchTerms.filter((s) => s !== search).concat([e.target.value]),
-      );
+      updateSearchAsYouType(e.target.value);
       setSearch(e.target.value);
     },
-    [search, searchTerms, setSearchTerms],
+    [updateSearchAsYouType],
   );
 
   const handleOnKeyUp = useCallback(
@@ -30,10 +35,11 @@ export default function HighlightTerms() {
         setSearchTerms(
           [search].concat(searchTerms.filter((s) => s !== search)),
         );
+        setSearchAsYouType("");
         setSearch("");
       }
     },
-    [search, searchTerms, setSearchTerms],
+    [search, searchTerms, setSearchAsYouType, setSearchTerms],
   );
 
   const handleDeleteChip = useCallback(
@@ -74,4 +80,9 @@ export default function HighlightTerms() {
       />
     </div>
   );
+}
+
+export function HighlightSearchTerms({ text }: { text: string }) {
+  const terms = useSearchTerms();
+  return <Highlighter searchWords={terms} textToHighlight={text} />;
 }

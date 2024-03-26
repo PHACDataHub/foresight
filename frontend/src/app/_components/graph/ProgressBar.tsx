@@ -74,7 +74,7 @@ export default function ProgressBar({
             <div className={`${className}--num`}>
               {showPercent && (
                 <h2>
-                  {percent.toFixed(2)}
+                  {Math.min(100, percent).toFixed(2)}
                   <span>%</span>
                 </h2>
               )}

@@ -1,5 +1,6 @@
 "use client";
 
+import Typography from "@mui/material/Typography";
 import { useStore } from "~/app/_store";
 
 export default function WorkingWith() {
@@ -7,10 +8,9 @@ export default function WorkingWith() {
   if (articleCount === 0) return;
 
   return (
-    <div className="mt-4 text-xl">
+    <Typography variant="body2">
       You are working with{" "}
-      <span className="text-3xl">{articleCount.toLocaleString()}</span>{" "}
-      articles.
-    </div>
+      <Typography variant="h5" component="span">{articleCount.toLocaleString()}</Typography> articles.
+    </Typography>
   );
 }

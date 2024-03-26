@@ -6,10 +6,25 @@ import {
   type RawNode,
 } from "@linkurious/ogma";
 import * as d3 from "d3";
-import { type AllDataTypes } from "~/server/api/routers/post";
+import {
+  type AllDataTypeProperties,
+  type AllDataTypes,
+} from "~/server/api/routers/post";
 
 export const MAX_RADIUS = 20;
 export const MIN_RADIUS = 2;
+
+export const nodeColours: Record<
+  AllDataTypeProperties | "article_outlier" | "other",
+  string
+> = {
+  hierarchicalcluster: "#5A6FC4",
+  cluster: "#9073C5",
+  threat: "#DA484A",
+  article: "#92A771",
+  article_outlier: "#BACF99",
+  other: "#D6DAE5",
+};
 
 export function findAlongPath(
   n: OgmaNode,
@@ -42,6 +57,19 @@ export function getNodeRadius(data: AllDataTypes) {
   if (data?.type === "threat") return data.score ? data.score * 5 : 2.5;
   if (data?.type === "article") return data.prob_size;
   return -1;
+}
+
+export function getNodeColor(data?: AllDataTypes) {
+  if (
+    data?.type &&
+    ["hierarchicalcluster", "cluster", "threat"].includes(data.type)
+  )
+    return nodeColours[data.type];
+  if (data?.type === "article") {
+    if (data.outlier) return nodeColours.article_outlier;
+    return nodeColours.article;
+  }
+  return nodeColours.other;
 }
 
 export function isNodeFiltered(n: OgmaNode, threats: string[]) {
