@@ -58,7 +58,7 @@ export const env = createEnv({
     NEO4J_USERNAME: process.env.NEO4J_USERNAME,
     NEO4J_PASSWORD: process.env.NEO4J_PASSWORD,
     NEO4J_URL: process.env.NEO4J_URL ?? "",
-    QA_SERVICE_URL: process.env.QA_SERVICE_URL,
+    QA_SERVICE_URL: process.env.QA_SERVICE_URL ?? "",
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
