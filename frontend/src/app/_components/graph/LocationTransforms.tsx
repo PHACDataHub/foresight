@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+// import L from "leaflet";
+
 import { type GeoClustering } from "@linkurious/ogma";
 import { NeighborGeneration, useOgma } from "@linkurious/ogma-react";
 
@@ -19,6 +21,16 @@ export default function LocationTransforms() {
         maxZoomLevel: 10,
         sizeRatio: 0.8,
       });
+    //   const map = ogma.geo.getMap();
+    //   L.gridLayer
+    //     .googleMutant({
+    //       type: "roadmap",
+    //       styles: [
+    //         { elementType: "labels", stylers: [{ visibility: "off" }] },
+    //         { featureType: "water", stylers: [{ color: "#444444" }] },
+    //       ],
+    //     })
+    //     .addTo(map);
     };
     const disableGeoMode = async (t: GeoClustering<unknown, unknown>) => {
       await t.disable();

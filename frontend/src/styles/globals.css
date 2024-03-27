@@ -227,8 +227,7 @@ main.container {
 }
 
 .foresight-graph-btn.disabled {
-  opacity: 0.5;
-  color: #ccc !important;
+  color: #ddd !important;
 }
 
 

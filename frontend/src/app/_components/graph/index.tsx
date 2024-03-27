@@ -10,6 +10,9 @@ import {
 } from "react";
 import L from "leaflet";
 
+// import "leaflet.gridlayer.googlemutant";
+// import { Loader } from '@googlemaps/js-api-loader';
+
 import {
   type ImperativePanelGroupHandle,
   Panel,
@@ -24,6 +27,7 @@ import {
   faArrowsRotate,
   faArrowsToDot,
   faArrowsToEye,
+  faBroom,
   faCircleNodes,
   faExpand,
   faGripLinesVertical,
@@ -31,7 +35,6 @@ import {
   faMap,
   faMinimize,
   faSitemap,
-  faTrash,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -206,6 +209,17 @@ export default function Graph() {
       }
     },
   );
+
+  // useEffect(() => {
+  //   const loadGoogleMaps = async () => {
+  //     const loader = new Loader({
+  //       apiKey: ""
+  //     });
+  
+  //     const Map = await loader.importLibrary("maps");
+  //   }
+  //   void loadGoogleMaps();
+  // }, [])
 
   useEffect(() => {
     if (ogmaRef.current && ogmaHoverContainerRef.current) {
@@ -388,17 +402,25 @@ export default function Graph() {
                           }
                           label="Fetch All"
                         />
-
-                        <IconButton
-                          className="foresight-graph-btn"
-                          title="Reset"
-                          onClick={handleReset}
-                        >
-                          <FontAwesomeIcon
-                            icon={faArrowsRotate}
-                            color="inherit"
-                          />
-                        </IconButton>
+                        <ButtonGroup>
+                          <IconButton
+                            className="foresight-graph-btn"
+                            title="Apply layout algorithm"
+                            onClick={handleReset}
+                          >
+                            <FontAwesomeIcon
+                              icon={faArrowsRotate}
+                              color="inherit"
+                            />
+                          </IconButton>
+                         <IconButton
+                            className="foresight-graph-btn"
+                            onClick={handleCollapseAllClick}
+                            title="Collapsed expanded articles"
+                          >
+                            <FontAwesomeIcon icon={faBroom} color="inherit" />
+                          </IconButton>
+                        </ButtonGroup>
                         <ButtonGroup>
                           {layouts.map(([l, icon, enabled]) => (
                             <IconButton
@@ -432,13 +454,6 @@ export default function Graph() {
                         color="inherit"
                         icon={maximized ? faMinimize : faExpand}
                       />
-                    </IconButton>
-                    <IconButton
-                      className="foresight-graph-btn"
-                      onClick={handleCollapseAllClick}
-                      title="Remove articles"
-                    >
-                      <FontAwesomeIcon color="#da484a" icon={faTrash} />
                     </IconButton>
                   </div>
                 </div>
