@@ -87,14 +87,21 @@ export default function SidePanel() {
   }, [filteredClusters?.size, selectedData]);
 
   const headerClassNames = useMemo(() => {
-    let base = ["flex", "items-center", "justify-between", "h-[50px]"];
+    let base = [
+      "flex",
+      "items-center",
+      "justify-between",
+      "h-[48px]",
+      "pl-[30px]",
+      "pr-[12px]",
+    ];
     if (showInfoPanel)
-      base = base.concat(["border-b", "border-gray-200", "p-5"]);
+      base = base.concat(["border-b", "border-t", "border-gray-200"]);
     return base.join(" ");
   }, [showInfoPanel]);
 
   const headerStyles = useMemo(() => {
-    const style: CSSProperties = {};
+    const style: CSSProperties = { backgroundColor: "#fff" };
     if (selectedData) {
       style.backgroundColor = getNodeColor(selectedData);
       style.color = "#fff";
@@ -103,7 +110,7 @@ export default function SidePanel() {
   }, [selectedData]);
 
   const clusterListClassNames = useMemo(() => {
-    let base = ["flex", "flex-1", "flex-col"];
+    let base = ["flex", "flex-1", "flex-col", "pl-[30px]"];
     let hide = false;
     if (!showInfoPanel) hide = true;
     if (!hide && selectedData) {
@@ -147,7 +154,7 @@ export default function SidePanel() {
   if (!filteredClusters) return;
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col border-b border-r">
       <div className={headerClassNames} style={headerStyles}>
         {showInfoPanel && (
           <>
@@ -155,6 +162,7 @@ export default function SidePanel() {
               <Typography
                 variant="h5"
                 fontWeight="bold"
+                fontSize={20}
                 style={{ marginRight: 10 }}
               >
                 {panelTitle}
@@ -242,7 +250,7 @@ export default function SidePanel() {
         </div>
       )}
       {article && (
-        <div className={clusterNodeClassNames}>
+        <div className={clusterNodeClassNames} style={{ paddingLeft: 30}}>
           <ArticleComponent article={article} standAlone />
         </div>
       )}

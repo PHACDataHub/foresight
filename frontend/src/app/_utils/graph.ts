@@ -18,8 +18,8 @@ export const nodeColours: Record<
   AllDataTypeProperties | "article_outlier" | "other",
   string
 > = {
-  hierarchicalcluster: "orange",
-  cluster: "#9073C5",
+  hierarchicalcluster: "#5A6FC4",
+  cluster: "#FFAA29",
   threat: "#DA484A",
   article: "#92A771",
   article_outlier: "#BACF99",

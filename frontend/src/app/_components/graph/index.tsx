@@ -96,7 +96,7 @@ export default function Graph() {
     selectedNode,
   } = useStore();
 
-  const MIN_SIZE_IN_PIXELS = 300;
+  const MIN_SIZE_IN_PIXELS = 500;
   const COLLAPSED_SIZE_IN_PIXELS = 50;
 
   const [minSize, setMinSize] = useState(10);
@@ -271,7 +271,7 @@ export default function Graph() {
       <Panel
         defaultSize={25}
         minSize={showInfoPanel ? minSize : collpasedSize}
-        className={`flex ${showInfoPanel ? "border" : ""}`}
+        className="flex"
         style={{ transition: "flex 0.1s" }}
         order={1}
       >

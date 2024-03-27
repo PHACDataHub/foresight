@@ -12,16 +12,34 @@
 #def-appTop .brand {
   position: absolute;
   top: 10px;
+  left: 30px;
 }
 
 #wb-info {
   height: 84px !important;
   overflow: clip;
+  
+}
+
+.gc-sub-footer {
+  padding-left: 30px !important;
 }
 
 .container {
   width: calc(100vw - 30px) !important;
   max-width: calc(100vw - 30px) !important;
+  padding: 0 !important;
+  margin: 0px !important;
+}
+
+main.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#def-preFooter {
+  display: none;
 }
 
 .react-datepicker-popper {
@@ -89,16 +107,6 @@
   font-size: 0.7em;
   padding: 0;
   margin: 0;
-}
-
-main.container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-#def-preFooter {
-  display: none;
 }
 
 .ogma-tooltip,

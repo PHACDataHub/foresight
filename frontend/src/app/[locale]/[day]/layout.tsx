@@ -33,7 +33,7 @@ export default async function LocaleDayLayout({
 
   return (
     <AppWrapper>
-      <div className="flex items-center justify-between pb-[16px] pt-[16px]">
+      <div className="flex items-center justify-between pb-[16px] pt-[16px] pl-[30px]">
         <Typography
           variant="h4"
           fontSize={24}
@@ -64,7 +64,7 @@ export default async function LocaleDayLayout({
         </div>
         <ThreatSelector />
       </div>
-      <div className="mb-10 flex flex-1 flex-col items-center justify-center overflow-hidden">
+      <div className="mb-[10px] flex flex-1 flex-col items-center justify-center overflow-hidden">
         <Graph />
       </div>
       {children}

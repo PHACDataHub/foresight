@@ -44,7 +44,7 @@ export default function ClusterNodeList({
   }, [clusterNodes, containsTerm, terms.length]);
 
   return (
-    <div className="h-0 flex-auto overflow-auto p-5">
+    <div className="h-0 flex-auto overflow-auto pr-[12px] space-y-[10px] pt-[10px]">
       {ordered.map((c, i) => (
         <ClusterNode key={`clusterList_${i}`} clusterNode={c} />
       ))}
