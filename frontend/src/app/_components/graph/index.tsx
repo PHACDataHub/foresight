@@ -97,7 +97,7 @@ export default function Graph() {
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
-  const COLLAPSED_SIZE_IN_PIXELS = 50;
+  const COLLAPSED_SIZE_IN_PIXELS = 70;
 
   const [minSize, setMinSize] = useState(10);
   const [collpasedSize, setCollapsedSize] = useState(10);

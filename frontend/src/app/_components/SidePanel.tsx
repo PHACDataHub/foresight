@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
+import Chip from "@mui/material/Chip";
 
 import { useStore } from "~/app/_store";
 
@@ -95,8 +95,8 @@ export default function SidePanel() {
       "pl-[30px]",
       "pr-[12px]",
     ];
-    if (showInfoPanel)
-      base = base.concat(["border-b", "border-t", "border-gray-200"]);
+    if (showInfoPanel) base = base.concat(["border-b", "border-t"]);
+    if (!showInfoPanel) base = base.concat(["border-b", "border-gray-100"]);
     return base.join(" ");
   }, [showInfoPanel]);
 
@@ -131,6 +131,10 @@ export default function SidePanel() {
     return false;
   }, [selectedData]);
 
+  const clickHandler = useCallback(() => {
+    if (!showInfoPanel) setShowInfoPanel(true);
+  }, [setShowInfoPanel, showInfoPanel]);
+
   const clusterNodeClassNames = useMemo(() => {
     let base: string[] = ["flex", "flex-1", "flex-col"];
     if (!showInfoPanel || !selectedNode?.node) base = base.concat(["hidden"]);
@@ -154,20 +158,29 @@ export default function SidePanel() {
   if (!filteredClusters) return;
 
   return (
-    <div className="flex w-full flex-col border-b border-r">
+    <div
+      className={`flex w-full flex-col border-b border-r${!showInfoPanel ? " border-t bg-gray-50 cursor-pointer" : ""} `}
+      onClick={clickHandler}
+    >
       <div className={headerClassNames} style={headerStyles}>
         {showInfoPanel && (
           <>
-            <Badge max={10000} badgeContent={panelBadge} color="info">
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                fontSize={20}
-                style={{ marginRight: 10 }}
-              >
-                {panelTitle}
-              </Typography>
-            </Badge>
+            {/* <Badge max={10000} badgeContent={panelBadge} color="info"> */}
+            <Typography variant="h5" fontWeight="bold" fontSize={20}>
+              {panelTitle}
+              {Boolean(panelBadge && panelBadge > 0) && (
+                <Chip
+                  label={panelBadge}
+                  style={{
+                    marginLeft: 10,
+                    color: "inherit",
+                    fontSize: "0.6em",
+                  }}
+                />
+              )}
+            </Typography>
+
+            {/* </Badge> */}
           </>
         )}
         <IconButton onClick={handleNodeViewToggle} color="inherit">
@@ -184,22 +197,26 @@ export default function SidePanel() {
               <tbody>
                 <tr>
                   <th className="whitespace-nowrap p-2">
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant="body2" fontWeight="bold" fontSize={16}>
                       ID
                     </Typography>
                   </th>
                   <td className="p-2">
-                    <Typography variant="body2">{selectedData.id}</Typography>
+                    <Typography fontSize={16} variant="body2">
+                      {selectedData.id}
+                    </Typography>
                   </td>
                 </tr>
                 <tr>
                   <th className="whitespace-nowrap p-2">
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography fontSize={16} variant="body2" fontWeight="bold">
                       Generated Name
                     </Typography>
                   </th>
                   <td className="p-2">
-                    <Typography variant="body2">{selectedData.name}</Typography>
+                    <Typography fontSize={16} variant="body2">
+                      {selectedData.name}
+                    </Typography>
                   </td>
                 </tr>
               </tbody>
@@ -212,24 +229,24 @@ export default function SidePanel() {
               <tbody>
                 <tr>
                   <th className="whitespace-nowrap p-2">
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant="body2" fontWeight="bold" fontSize={16}>
                       Title
                     </Typography>
                   </th>
                   <td className="p-2">
-                    <Typography variant="body2">
+                    <Typography variant="body2" fontSize={16}>
                       {selectedData.title}
                     </Typography>
                   </td>
                 </tr>
                 <tr>
                   <th className="whitespace-nowrap p-2">
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant="body2" fontWeight="bold" fontSize={16}>
                       Score
                     </Typography>
                   </th>
                   <td className="p-2">
-                    <Typography variant="body2">
+                    <Typography variant="body2" fontSize={16}>
                       {selectedData.score}
                     </Typography>
                   </td>
@@ -250,7 +267,7 @@ export default function SidePanel() {
         </div>
       )}
       {article && (
-        <div className={clusterNodeClassNames} style={{ paddingLeft: 30}}>
+        <div className={clusterNodeClassNames} style={{ paddingLeft: 30 }}>
           <ArticleComponent article={article} standAlone />
         </div>
       )}

@@ -111,23 +111,8 @@ const LayoutService = forwardRef(
 
     const layoutGraph = useCallback(async () => {
       if (!geoMode && !focus) {
-        if (selectedNode?.node && layout === "radial") {
-          await ogma.layouts.radial({
-            centralNode: selectedNode.node,
-            locate: true,
-          });
-        } else if (selectedNode?.node && layout === "concentric") {
-          await ogma.layouts.concentric({
-            centralNode: selectedNode.node,
-            locate: true,
-          });
-        } else if (layout === "grid" && !hover && !everything) {
+        if (layout === "grid" && !hover) {
           await ogma.layouts.grid({ locate: true });
-        } else if (layout === "hierarchical" && !hover && !everything) {
-          await ogma.layouts.hierarchical({
-            locate: true,
-            direction: treeDirection,
-          });
         } else if ((hover ?? layout === "force") || everything) {
           await ogma.layouts.force({
             locate: true,
@@ -139,6 +124,21 @@ const LayoutService = forwardRef(
           if (hover) {
             await ogma.view.locateGraph({ padding: 75 });
           }
+        } else if (selectedNode?.node && layout === "radial") {
+          await ogma.layouts.radial({
+            centralNode: selectedNode.node,
+            locate: true,
+          });
+        } else if (selectedNode?.node && layout === "concentric") {
+          await ogma.layouts.concentric({
+            centralNode: selectedNode.node,
+            locate: true,
+          });
+        } else if (layout === "hierarchical" && !hover) {
+          await ogma.layouts.hierarchical({
+            locate: true,
+            direction: treeDirection,
+          });
         }
       }
     }, [
