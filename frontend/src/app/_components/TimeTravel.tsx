@@ -83,6 +83,12 @@ function TimeTravelComponent({
     () =>
       [
         {
+          special_day: [
+            new Date(2019, 11, 31),
+            new Date(2020, 0, 5),
+          ]
+        },
+        {
           cluster_3_day: [
             new Date(2020, 0, 1),
             new Date(2020, 0, 2),
