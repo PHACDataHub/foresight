@@ -108,8 +108,10 @@ export interface ForesightStore {
   treeDirection: "BT" | "TB" | "LR" | "RL";
   setTreeDirection: (treeDirection: "BT" | "TB" | "LR" | "RL") => void;
   toggleTreeDirection: () => void;
-  layout: "force" | "hierarchical";
-  setLayout: (layout: "force" | "hierarchical") => void;
+  layout: "force" | "hierarchical" | "grid" | "concentric" | "radial";
+  setLayout: (
+    layout: "force" | "hierarchical" | "grid" | "concentric" | "radial",
+  ) => void;
   geoMode: boolean;
   setGeoMode: (geoMode: boolean) => void;
   threats: string[];
@@ -175,15 +177,19 @@ export const useStore = create<ForesightStore>((set) => ({
   articleGraph: null,
   setArticleGraph: (articleGraph) => set({ articleGraph }),
   setScale: (scale) => set({ scale }),
-  augmentScale: (scale) => set((state) => {
-    return { scale: {
-      global: scale.global ?? state.scale.global,
-      cluster: scale.cluster ?? state.scale.cluster,
-      hierarchicalcluster: scale.hierarchicalcluster ?? state.scale.hierarchicalcluster,
-      threat: scale.threat ?? state.scale.threat,
-      article: scale.article ?? state.scale.article,
-    }}
-  }),
+  augmentScale: (scale) =>
+    set((state) => {
+      return {
+        scale: {
+          global: scale.global ?? state.scale.global,
+          cluster: scale.cluster ?? state.scale.cluster,
+          hierarchicalcluster:
+            scale.hierarchicalcluster ?? state.scale.hierarchicalcluster,
+          threat: scale.threat ?? state.scale.threat,
+          article: scale.article ?? state.scale.article,
+        },
+      };
+    }),
   focus: null,
   setFocus: (focus: OgmaNode | null) => set({ focus }),
   history: undefined,

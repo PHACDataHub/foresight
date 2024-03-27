@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -21,18 +22,24 @@ import OgmaLib from "@linkurious/ogma";
 
 import {
   faArrowsRotate,
+  faArrowsToDot,
+  faArrowsToEye,
   faCircleNodes,
   faExpand,
   faGripLinesVertical,
+  faGripVertical,
   faMap,
   faMinimize,
   faSitemap,
   faTrash,
+  type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import ButtonGroup from "@mui/material/ButtonGroup";
 
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
@@ -86,6 +93,7 @@ export default function Graph() {
     setExpandedClusters,
     everything,
     setEverything,
+    selectedNode,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 300;
@@ -134,16 +142,24 @@ export default function Graph() {
     refresh();
   }, [refresh, setFocus]);
 
-  const handleLayoutForceClick = useCallback(() => {
-    setLayout("force");
-    setFocus(null);
-  }, [setFocus, setLayout]);
-
-  const handleLayoutHierarchicalClick = useCallback(() => {
-    if (layout === "hierarchical") toggleTreeDirection();
-    setLayout("hierarchical");
-    setFocus(null);
-  }, [layout, setFocus, setLayout, toggleTreeDirection]);
+  const handleLayoutClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement, Event>) => {
+      const l = e.currentTarget.getAttribute("data-layout");
+      if (l === "hierarchical" && layout === l) toggleTreeDirection();
+      if (
+        l &&
+        (l === "force" ||
+          l === "hierarchical" ||
+          l === "grid" ||
+          l === "radial" ||
+          l === "concentric")
+      ) {
+        setLayout(l);
+        setFocus(null);
+      }
+    },
+    [layout, setFocus, setLayout, toggleTreeDirection],
+  );
 
   // Controls
   const [maximized, setMaximized] = useState(false);
@@ -232,6 +248,16 @@ export default function Graph() {
       }
     }
   }, [restoreLayout, showInfoPanel]);
+
+  const layouts: [string, IconDefinition, boolean][] = useMemo(() => {
+    return [
+      ["force", faCircleNodes, true],
+      ["hierarchical", faSitemap, !everything],
+      ["grid", faGripVertical, true],
+      ["radial", faArrowsToDot, Boolean(selectedNode?.node)],
+      ["concentric", faArrowsToEye, Boolean(selectedNode?.node)],
+    ];
+  }, [everything, selectedNode]);
 
   if (typeof day !== "string") return "Day error";
 
@@ -362,65 +388,58 @@ export default function Graph() {
                           }
                           label="Fetch All"
                         />
-                        <button
-                          className="btn btn-primary"
+
+                        <IconButton
+                          className="foresight-graph-btn"
                           title="Reset"
                           onClick={handleReset}
                         >
-                          <FontAwesomeIcon icon={faArrowsRotate} />
-                        </button>
-                        <div
-                          className={`btn-group ${everything ? "hidden" : ""}`}
-                        >
-                          <button
-                            className={`btn btn-primary${layout === "hierarchical" ? " active" : ""}`}
-                            onClick={handleLayoutHierarchicalClick}
-                            title="Hierarchical Layout"
-                          >
-                            <span className="wb-inv">
-                              Layout nodes using a hierarchical algorithm
-                            </span>
-                            <FontAwesomeIcon icon={faSitemap} />
-                          </button>
-                          <button
-                            className={`btn btn-primary${layout === "force" ? " active" : ""}`}
-                            onClick={handleLayoutForceClick}
-                            title="Force Layout"
-                          >
-                            <span className="wb-inv">
-                              Layout nodes using a force layout
-                            </span>
-                            <FontAwesomeIcon icon={faCircleNodes} />
-                          </button>
-                        </div>
+                          <FontAwesomeIcon
+                            icon={faArrowsRotate}
+                            color="inherit"
+                          />
+                        </IconButton>
+                        <ButtonGroup>
+                          {layouts.map(([l, icon, enabled]) => (
+                            <IconButton
+                              key={`layout${l}`}
+                              className={`foresight-graph-btn${layout === l ? " active" : ""}${!enabled ? " disabled" : ""}`}
+                              data-layout={l}
+                              disabled={!enabled}
+                              onClick={handleLayoutClick}
+                              title={`Layout nodes using the ${l} algorithm`}
+                            >
+                              <FontAwesomeIcon icon={icon} color="inherit" />
+                            </IconButton>
+                          ))}
+                        </ButtonGroup>
                       </>
                     )}
-                    <button
-                      className="btn btn-primary"
+                    <IconButton
+                      className="foresight-graph-btn"
                       onClick={handleGeoBtnClick}
-                      title="Map view"
+                      title="View clusters on a map"
                     >
-                      <span className="wb-inv">View clusters on a map</span>
-                      <FontAwesomeIcon icon={faMap} />
-                    </button>
+                      <FontAwesomeIcon icon={faMap} color="inherit" />
+                    </IconButton>
 
-                    <button
-                      className="btn btn-primary"
+                    <IconButton
+                      className="foresight-graph-btn"
                       onClick={handleMaximizeClick}
-                      title="Fullscreen"
+                      title="Switch to Full Screen View"
                     >
-                      <span className="wb-inv">Switch to Full Screen View</span>
                       <FontAwesomeIcon
+                        color="inherit"
                         icon={maximized ? faMinimize : faExpand}
                       />
-                    </button>
-                    <button
-                      className="btn btn-primary"
+                    </IconButton>
+                    <IconButton
+                      className="foresight-graph-btn"
                       onClick={handleCollapseAllClick}
-                      title="Remove articles and threats"
+                      title="Remove articles"
                     >
                       <FontAwesomeIcon color="#da484a" icon={faTrash} />
-                    </button>
+                    </IconButton>
                   </div>
                 </div>
               </>

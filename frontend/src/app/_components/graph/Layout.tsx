@@ -111,7 +111,19 @@ const LayoutService = forwardRef(
 
     const layoutGraph = useCallback(async () => {
       if (!geoMode && !focus) {
-        if (layout === "hierarchical" && !hover && !everything) {
+        if (selectedNode?.node && layout === "radial") {
+          await ogma.layouts.radial({
+            centralNode: selectedNode.node,
+            locate: true,
+          });
+        } else if (selectedNode?.node && layout === "concentric") {
+          await ogma.layouts.concentric({
+            centralNode: selectedNode.node,
+            locate: true,
+          });
+        } else if (layout === "grid" && !hover && !everything) {
+          await ogma.layouts.grid({ locate: true });
+        } else if (layout === "hierarchical" && !hover && !everything) {
           await ogma.layouts.hierarchical({
             locate: true,
             direction: treeDirection,
@@ -135,6 +147,7 @@ const LayoutService = forwardRef(
       focus,
       hover,
       layout,
+      selectedNode,
       ogma.layouts,
       ogma.view,
       treeDirection,

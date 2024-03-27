@@ -205,6 +205,25 @@ main.container {
   padding: 10px;
 }
 
+.foresight-graph-btn {
+  border: 1px solid #ccc !important;
+  border-radius: 0 !important;
+  width: 40px;
+  height: 40px;
+  color: #000 !important;
+  background-color: #fff !important;
+}
+
+.foresight-graph-btn.active {
+  background-color: #eee !important;
+}
+
+.foresight-graph-btn.disabled {
+  opacity: 0.5;
+  color: #ccc !important;
+}
+
+
 .control-buttons {
   position: absolute;
   display: flex;
