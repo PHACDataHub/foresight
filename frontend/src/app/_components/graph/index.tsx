@@ -16,7 +16,7 @@ import {
   PanelResizeHandle,
 } from "react-resizable-panels";
 
-import { Geo, NodeFilter, Ogma } from "@linkurious/ogma-react";
+import { NodeFilter, Ogma } from "@linkurious/ogma-react";
 import OgmaLib from "@linkurious/ogma";
 
 import {
@@ -45,35 +45,9 @@ import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader from "./DataLoader";
 import TimeLine from "./TimeLine";
-
-// const colors = d3.scaleOrdinal(d3.schemeCategory10);
+import LocationTransforms from "./LocationTransforms";
 
 OgmaLib.libraries.leaflet = L;
-
-// function hexToRgbA(hex: string, opacity = 1) {
-//   let c: string[] | string;
-//   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
-//     c = hex.substring(1).split("");
-//     if (c.length == 3) {
-//       c = [
-//         c[0] ?? "0",
-//         c[0] ?? "0",
-//         c[1] ?? "0",
-//         c[1] ?? "0",
-//         c[2] ?? "0",
-//         c[2] ?? "0",
-//       ];
-//     }
-//     const h = Number("0x" + c.join(""));
-
-//     return (
-//       "rgba(" +
-//       [(h >> 16) & 255, (h >> 8) & 255, h & 255].join(",") +
-//       `,${opacity})`
-//     );
-//   }
-//   throw new Error("Bad Hex");
-// }
 
 export interface Country {
   country: string;
@@ -84,6 +58,7 @@ export interface Country {
 
 export default function Graph() {
   const ref = useRef<HTMLDivElement | null>(null);
+  const ogmaParentContainer = useRef<HTMLDivElement | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const ogmaRef = useRef<OgmaLib | null>(null);
   const ogmaHoverRef = useRef<OgmaLib | null>(null);
@@ -120,6 +95,7 @@ export default function Graph() {
   const [collpasedSize, setCollapsedSize] = useState(10);
   const [restoreLayout, setRestoreLayout] = useState<number[]>([]);
 
+  // Convert left panel minimum size from pixels to %.
   useLayoutEffect(() => {
     const panelGroup = document.querySelector<HTMLDivElement>(
       '[data-panel-group-id="group"]',
@@ -130,13 +106,9 @@ export default function Graph() {
     if (!panelGroup) return;
     const observer = new ResizeObserver(() => {
       let width = panelGroup.offsetWidth;
-
       resizeHandles.forEach((resizeHandle) => {
         width -= resizeHandle.offsetWidth;
       });
-
-      // Minimum size in pixels is a percentage of the PanelGroup's width,
-      // less the (fixed) width of the resize handles.
       setMinSize((MIN_SIZE_IN_PIXELS / width) * 100);
       setCollapsedSize((COLLAPSED_SIZE_IN_PIXELS / width) * 100);
     });
@@ -144,7 +116,6 @@ export default function Graph() {
     resizeHandles.forEach((resizeHandle) => {
       observer.observe(resizeHandle);
     });
-
     return () => {
       observer.disconnect();
     };
@@ -222,10 +193,16 @@ export default function Graph() {
 
   useEffect(() => {
     if (ogmaRef.current && ogmaHoverContainerRef.current) {
-      ogmaRef.current.geo
-        .getMap()
-        ?.getContainer()
-        .appendChild(ogmaHoverContainerRef.current);
+      if (geoMode) {
+        ogmaRef.current.geo
+          .getMap()
+          ?.getContainer()
+          .appendChild(ogmaHoverContainerRef.current);
+      } else {
+        ogmaHoverContainerRef.current.classList.add("hidden");
+        void ogmaHoverRef.current?.clearGraph();
+        ogmaParentContainer.current?.appendChild(ogmaHoverContainerRef.current);
+      }
     }
   }, [geoMode]);
 
@@ -275,14 +252,17 @@ export default function Graph() {
         <SidePanel />
       </Panel>
       {showInfoPanel && (
-        <PanelResizeHandle className="mr-5 ml-2 flex items-center">
+        <PanelResizeHandle className="ml-2 mr-5 flex items-center">
           <FontAwesomeIcon icon={faGripLinesVertical} />
         </PanelResizeHandle>
       )}
 
       <Panel className="flex flex-col border" order={2}>
         <div className="relative w-full flex-1" ref={ref}>
-          <div className="absolute h-full max-h-full w-full max-w-full">
+          <div
+            className="absolute h-full max-h-full w-full max-w-full"
+            ref={ogmaParentContainer}
+          >
             <Ogma
               // key={`ogma-${day}-${history}`}
               ref={ogmaRef}
@@ -367,15 +347,7 @@ export default function Graph() {
                 onExitFullScreen={handleMaximizeClick}
               />
               {clusterId && <TimeLine container={timelineRef} />}
-              <Geo
-                enabled={geoMode}
-                longitudePath="location.longitude"
-                latitudePath="location.latitude"
-                minZoomLevel={2}
-                maxZoomLevel={10}
-                sizeRatio={0.8}
-                duration={0}
-              />
+              <LocationTransforms />
               <>
                 <div className="control-buttons">
                   <div className="flex space-x-2">

@@ -1,7 +1,13 @@
 import { Typography } from "@mui/material";
 import { type Article } from "~/server/api/routers/post";
 
-export default function ArticleComponent({ article }: { article: Article }) {
+export default function ArticleComponent({
+  article,
+  standAlone,
+}: {
+  article: Article;
+  standAlone?: boolean;
+}) {
   return (
     <article className="flex flex-1 flex-col">
       <div className="flex flex-col border border-gray-300 p-5">
@@ -55,7 +61,9 @@ export default function ArticleComponent({ article }: { article: Article }) {
         </table>
       </div>
 
-      <div className="h-0 flex-auto overflow-auto p-5">
+      <div
+        className={`${standAlone ? "h-0 flex-auto overflow-auto p-5" : ""}`}
+      >
         {article.content?.split("\n").map((content, i) => (
           <Typography
             key={i}

@@ -18,7 +18,7 @@ export const nodeColours: Record<
   AllDataTypeProperties | "article_outlier" | "other",
   string
 > = {
-  hierarchicalcluster: "#5A6FC4",
+  hierarchicalcluster: "orange",
   cluster: "#9073C5",
   threat: "#DA484A",
   article: "#92A771",
@@ -52,9 +52,9 @@ export function getRawNodeData<T = AllDataTypes | undefined>(node: RawNode): T {
 }
 
 export function getNodeRadius(data: AllDataTypes) {
-  if (data?.type === "hierarchicalcluster") return data.clusters.length / 3;
-  if (data?.type === "cluster") return data.nr_articles * 5;
-  if (data?.type === "threat") return data.score ? data.score * 5 : 2.5;
+  if (data?.type === "hierarchicalcluster") return data.clusters.length;
+  if (data?.type === "cluster") return data.nr_articles;
+  if (data?.type === "threat") return data.score ? data.score : 1;
   if (data?.type === "article") return data.prob_size;
   return -1;
 }
@@ -172,3 +172,28 @@ export function createScale(
         : null,
   };
 }
+
+//export function hexToRgbA(hex: string, opacity = 1) {
+//   let c: string[] | string;
+//   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+//     c = hex.substring(1).split("");
+//     if (c.length == 3) {
+//       c = [
+//         c[0] ?? "0",
+//         c[0] ?? "0",
+//         c[1] ?? "0",
+//         c[1] ?? "0",
+//         c[2] ?? "0",
+//         c[2] ?? "0",
+//       ];
+//     }
+//     const h = Number("0x" + c.join(""));
+
+//     return (
+//       "rgba(" +
+//       [(h >> 16) & 255, (h >> 8) & 255, h & 255].join(",") +
+//       `,${opacity})`
+//     );
+//   }
+//   throw new Error("Bad Hex");
+// }

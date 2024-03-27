@@ -39,23 +39,52 @@ export default function SidePanel() {
     return null;
   }, [selectedNode?.node]);
 
+  const filteredClusters = useMemo(() => {
+    if (geoMode && clusters) {
+      return clusters.filter((c) => {
+        const d = getNodeData<Cluster>(c);
+        return (
+          d.locations &&
+          d.locations.filter(
+            (l) =>
+              typeof l.latitude === "number" && typeof l.longitude === "number",
+          ).length > 0
+        );
+      });
+    }
+    if (!clusters || !selectedData || !selectedNode?.node) return clusters;
+    if (selectedData.type === "hierarchicalcluster") {
+      const relatedNodes = findAlongPath(selectedNode.node, "out", () => true);
+      return clusters.filter((c) => relatedNodes.includes(c));
+    }
+    if (selectedData.type === "threat") {
+      const relatedNodes = findAlongPath(selectedNode.node, "in", () => true);
+      return clusters.filter((c) => relatedNodes.includes(c));
+    }
+    return clusters;
+  }, [clusters, geoMode, selectedData, selectedNode?.node]);
+
   const panelTitle = useMemo(() => {
     if (selectedData) {
       if (selectedData.type === "cluster") return "Selected Cluster";
       if (selectedData.type === "article") return "Selected Article";
       if (selectedData.type === "hierarchicalcluster")
-        return "Clusters in selected hierarchy";
-      if (selectedData.type === "threat")
-        return "Clusters related to selected threat";
+        return "Clusters in hierarchy";
+      if (selectedData.type === "threat") return "Clusters related to threat";
       return "Selected";
     }
     return "Article Clusters";
   }, [selectedData]);
 
   const panelBadge = useMemo(() => {
-    if (selectedNode?.node) return 0;
-    return clusters?.size;
-  }, [clusters?.size, selectedNode?.node]);
+    if (
+      !selectedData ||
+      selectedData.type === "threat" ||
+      selectedData.type === "hierarchicalcluster"
+    )
+      return filteredClusters?.size;
+    return 0;
+  }, [filteredClusters?.size, selectedData]);
 
   const headerClassNames = useMemo(() => {
     let base = ["flex", "items-center", "justify-between", "h-[50px]"];
@@ -107,28 +136,6 @@ export default function SidePanel() {
     }
     return false;
   }, [selectedData]);
-
-  const filteredClusters = useMemo(() => {
-    if (geoMode && clusters) {
-      return clusters.filter((c) => {
-        const d = getNodeData<Cluster>(c);
-        return d.locations && d.locations.filter(
-          (l) =>
-            typeof l.latitude === "number" && typeof l.longitude === "number",
-        ).length > 0},
-      );
-    }
-    if (!clusters || !selectedData || !selectedNode?.node) return clusters;
-    if (selectedData.type === "hierarchicalcluster") {
-      const relatedNodes = findAlongPath(selectedNode.node, "out", () => true);
-      return clusters.filter((c) => relatedNodes.includes(c));
-    }
-    if (selectedData.type === "threat") {
-      const relatedNodes = findAlongPath(selectedNode.node, "in", () => true);
-      return clusters.filter((c) => relatedNodes.includes(c));
-    }
-    return clusters;
-  }, [clusters, geoMode, selectedData, selectedNode?.node]);
 
   if (!clusters && showInfoPanel)
     return (
@@ -191,9 +198,41 @@ export default function SidePanel() {
             </table>
           </div>
         )}
+        {selectedData?.type === "threat" && (
+          <div className="overflow-auto">
+            <table className="m-5 overflow-scroll border">
+              <tbody>
+                <tr>
+                  <th className="whitespace-nowrap p-2">
+                    <Typography variant="body2" fontWeight="bold">
+                      Title
+                    </Typography>
+                  </th>
+                  <td className="p-2">
+                    <Typography variant="body2">
+                      {selectedData.title}
+                    </Typography>
+                  </td>
+                </tr>
+                <tr>
+                  <th className="whitespace-nowrap p-2">
+                    <Typography variant="body2" fontWeight="bold">
+                      Score
+                    </Typography>
+                  </th>
+                  <td className="p-2">
+                    <Typography variant="body2">
+                      {selectedData.score}
+                    </Typography>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
         <ClusterNodeList clusterNodes={filteredClusters} />
       </div>
-      {showClusterNode && selectedNode && (
+      {showClusterNode && selectedNode?.node && (
         <div className={clusterNodeClassNames}>
           <ClusterNode
             clusterNode={selectedNode.node}
@@ -204,7 +243,7 @@ export default function SidePanel() {
       )}
       {article && (
         <div className={clusterNodeClassNames}>
-          <ArticleComponent article={article} />
+          <ArticleComponent article={article} standAlone />
         </div>
       )}
     </div>

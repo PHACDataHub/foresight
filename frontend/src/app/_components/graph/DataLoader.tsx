@@ -100,7 +100,6 @@ export default function DataLoader({
       setTotalSize(rawGraph.nodes.length + rawGraph.edges.length);
       setScale(createScale(rawGraph));
       await ogma.setGraph(rawGraph);
-      console.log("--- updating cluster list ---");
       setClusters(
         ogma
           .getNodes()

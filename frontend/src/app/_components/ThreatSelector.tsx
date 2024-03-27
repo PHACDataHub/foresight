@@ -1,10 +1,13 @@
 "use client";
 
-import React, { type ChangeEvent, useCallback, useMemo, useState } from "react";
+import React, {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-
-// @ts-expect-error No type declarations
-import Slider from "react-slide-out";
 
 import "react-slide-out/lib/index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,7 +17,6 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import { useStore } from "~/app/_store";
-import useDelayedResizeObserver from "~/app/_hooks/useDelayedResizeObserver";
 import { api } from "~/trpc/react";
 
 function ThreatSelectorComponent() {
@@ -23,6 +25,18 @@ function ThreatSelectorComponent() {
   const { data: threats } = api.post.threats.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (open) {
+      const onClose = () => setOpen(false);
+      setTimeout(() => {
+        window.addEventListener("click", onClose);
+      }, 100);
+      return () => {
+        window.removeEventListener("click", onClose);
+      };
+    }
+  }, [open]);
 
   const handleOpenClick = useCallback(() => {
     setOpen(!open);
@@ -35,6 +49,13 @@ function ThreatSelectorComponent() {
       setThreats(items);
     },
     [selected, setThreats],
+  );
+
+  const preventPropagation = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, Event>) => {
+      e.stopPropagation();
+    },
+    [],
   );
 
   const handleResetClick = useCallback(() => {
@@ -53,11 +74,8 @@ function ThreatSelectorComponent() {
     return "Select None";
   }, [selected.length, threats]);
 
-  const header = useDelayedResizeObserver("def-appTop");
-  const footer = useDelayedResizeObserver("wb-info");
-
   return (
-    <div className="relative">
+    <div className="relative" onClick={preventPropagation}>
       <Button
         variant="contained"
         endIcon={<FontAwesomeIcon icon={faAngleDown} />}
@@ -66,7 +84,7 @@ function ThreatSelectorComponent() {
         Filter View
       </Button>
       {open && (
-        <div className="absolute right-0 z-[402] flex w-[600px] flex-col  border border-black bg-white p-10 text-2xl">
+        <div className="absolute right-0 z-[402] flex w-[450px] flex-col  border border-black bg-white p-10 text-2xl">
           <div className="flex justify-end space-x-5">
             <Button variant="contained" onClick={handleGroupSelect}>
               {groupSelectText}
@@ -79,14 +97,16 @@ function ThreatSelectorComponent() {
               Reset to default
             </Button>
           </div>
-          <div className="max-h-[50vh] overflow-auto">
+          <div className="m-5 max-h-[50vh] overflow-auto pl-5">
             <FormGroup>
               {threats?.map((threat, idx) => (
                 <FormControlLabel
+                  className=""
                   key={`threat_${idx}`}
                   label={threat.text}
                   control={
                     <Checkbox
+                      style={{ padding: "0px 5px 0px 0px" }}
                       value={threat.text}
                       checked={selected.includes(threat.text)}
                       onChange={handleCheckClick}
@@ -99,56 +119,6 @@ function ThreatSelectorComponent() {
         </div>
       )}
     </div>
-  );
-
-  return (
-    <Slider
-      verticalOffset={{ top: header, bottom: footer }}
-      isOpen
-      foldMode
-      isFolded={!open}
-      foldWidth="66px"
-    >
-      {open && (
-        <div className="flex flex-col text-2xl">
-          <div className="flex justify-end space-x-5">
-            <button className="btn btn-primary" onClick={handleGroupSelect}>
-              {groupSelectText}
-            </button>
-            <button className="btn btn-danger" onClick={handleResetClick}>
-              Reset
-            </button>
-            <button className="btn btn-primary" onClick={handleOpenClick}>
-              <span className="glyphicon glyphicon-chevron-right" />
-            </button>
-          </div>
-          <ul>
-            {threats?.map((threat, idx) => (
-              <li key={`threat_${idx}`}>
-                <input
-                  type="checkbox"
-                  id={`threat_box_${idx}`}
-                  value={threat.text}
-                  onChange={handleCheckClick}
-                  checked={selected.includes(threat.text)}
-                />
-                <label className="small" htmlFor={`threat_box_${idx}`}>
-                  {threat.text}
-                </label>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {!open && (
-        <div className="flex justify-end space-x-5">
-          <button className="btn btn-primary" onClick={handleOpenClick}>
-            <span className="glyphicon glyphicon-chevron-left" />
-          </button>
-        </div>
-      )}
-    </Slider>
   );
 }
 

@@ -51,6 +51,8 @@ export default function TimeLine({
   const { history } = useStore();
   const { day } = useParams();
 
+  console.log("TIMELINE TIMELINE TIMELINE");
+
   const timeline = useRef<TimelinePluginInterface | null>(null);
   useEffect(() => {
     ogma.events.once("idle", () => {

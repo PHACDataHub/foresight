@@ -74,6 +74,12 @@ export interface ForesightStore {
       ScaleLinear<number, number> | null
     >,
   ) => void;
+  augmentScale: (
+    scale: Record<
+      "cluster" | "hierarchicalcluster" | "threat" | "article" | "global",
+      ScaleLinear<number, number> | null
+    >,
+  ) => void;
   articleGraph: RawGraph<
     AllDataTypes,
     Neo4JEdgeData<Record<string, unknown>>
@@ -169,6 +175,15 @@ export const useStore = create<ForesightStore>((set) => ({
   articleGraph: null,
   setArticleGraph: (articleGraph) => set({ articleGraph }),
   setScale: (scale) => set({ scale }),
+  augmentScale: (scale) => set((state) => {
+    return { scale: {
+      global: scale.global ?? state.scale.global,
+      cluster: scale.cluster ?? state.scale.cluster,
+      hierarchicalcluster: scale.hierarchicalcluster ?? state.scale.hierarchicalcluster,
+      threat: scale.threat ?? state.scale.threat,
+      article: scale.article ?? state.scale.article,
+    }}
+  }),
   focus: null,
   setFocus: (focus: OgmaNode | null) => set({ focus }),
   history: undefined,
@@ -193,7 +208,7 @@ export const useStore = create<ForesightStore>((set) => ({
       return {};
     });
   },
-  layout: "hierarchical",
+  layout: "force",
   setLayout: (layout) => set({ layout }),
   geoMode: false,
   setGeoMode: (geoMode: boolean) => set({ geoMode }),

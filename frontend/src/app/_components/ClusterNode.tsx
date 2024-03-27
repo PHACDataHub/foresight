@@ -73,13 +73,20 @@ export function ClusterNode(
 
   const [question, setQuestion] = useState("");
 
-  const { qa, addQA, ogma, refresh, expandedClusters, setScale } = useStore();
+  const { qa, addQA, ogma, refresh, expandedClusters, augmentScale } = useStore();
+
+  const id = useMemo(() => {
+    if (!clusterNode) return null;
+    const data = getNodeData<Cluster | undefined>(clusterNode);
+    if (!data) return null;
+    return data.id;
+  }, [clusterNode]);
 
   const { data, isFetching } = api.post.cluster.useQuery(
     {
-      id: clusterNode ? getNodeData<Cluster>(clusterNode).id : "",
+      id: id ?? "",
     },
-    { enabled: Boolean(details && clusterNode), refetchOnWindowFocus: false },
+    { enabled: Boolean(details && id), refetchOnWindowFocus: false },
   );
   const questionApi = api.post.question.useMutation();
 
@@ -106,7 +113,6 @@ export function ClusterNode(
           const nodes = ogma
             ?.getNodes()
             .filter((n) => `${getNodeData<Article>(n).id}` in node_ids);
-          console.log(nodes?.size);
           void nodes?.locate();
         });
       }, 2000);
@@ -124,7 +130,6 @@ export function ClusterNode(
     async (e: KeyboardEvent<HTMLInputElement>) => {
       if (!cluster) return;
       if (e.key === "Enter") {
-        console.log(question);
         addQA({ clusterId: cluster.id, question });
         setQuestion("");
         try {
@@ -159,7 +164,7 @@ export function ClusterNode(
         .getNodes()
         .map((n) => n.getId())
         .concat(data.nodes.map((n) => `${n.id}`));
-      setScale(
+      augmentScale(
         createScale({
           nodes: data.nodes.concat(
             ogma.getNodes().map((n) => ({ data: getNodeData(n) })),
@@ -179,7 +184,7 @@ export function ClusterNode(
       handleArticleLocate();
     };
     void loadData();
-  }, [cluster, data, handleArticleLocate, ogma, setScale]);
+  }, [cluster, data, handleArticleLocate, ogma, augmentScale]);
 
   const articles = useMemo(() => {
     if (!details || !data) return [];
