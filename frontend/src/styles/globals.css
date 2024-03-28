@@ -18,10 +18,10 @@
 #wb-info {
   height: 84px !important;
   overflow: clip;
-  
+
 }
 
-.gc-sub-footer {
+.gc-sub-footer>.container {
   padding-left: 30px !important;
 }
 
@@ -216,7 +216,7 @@ main.container {
 .foresight-graph-btn {
   border-width: 1px !important;
   border-style: solid !important;
-  border-color: rgba(0,0,0,0.12) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
 
   border-radius: 4px !important;
   width: 48px;
@@ -228,14 +228,17 @@ main.container {
 .MuiButtonGroup-root .foresight-graph-btn {
   border-radius: 0 !important;
 }
+
 .MuiButtonGroup-root .foresight-graph-btn:first-child {
   border-radius: 4px 0 0 4px !important;
 }
+
 .MuiButtonGroup-root .foresight-graph-btn:last-child {
   border-radius: 0 4px 4px 0 !important;
 }
 
-.foresight-graph-btn.active, .foresight-graph-btn:hover {
+.foresight-graph-btn.active,
+.foresight-graph-btn:hover {
   background-color: #EBEBEB !important;
 }
 
@@ -350,11 +353,11 @@ main.container {
   font-size: 0.6em !important;
 }
 
-.hoverogma{
+.hoverogma {
   border-radius: 50%;
   position: absolute;
   z-index: 10000;
-  transform: translate(0,-50%);
+  transform: translate(0, -50%);
   overflow: hidden;
   border: 1px dashed black;
 }
