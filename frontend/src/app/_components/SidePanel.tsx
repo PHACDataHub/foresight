@@ -95,7 +95,7 @@ export default function SidePanel() {
       "pl-[30px]",
       "pr-[12px]",
     ];
-    if (showInfoPanel) base = base.concat(["border-b", "border-t"]);
+    if (showInfoPanel) base = base.concat(["border-b"]);
     if (!showInfoPanel) base = base.concat(["border-b", "border-gray-100"]);
     return base.join(" ");
   }, [showInfoPanel]);
@@ -159,7 +159,7 @@ export default function SidePanel() {
 
   return (
     <div
-      className={`flex w-full flex-col ${!showInfoPanel ? " cursor-pointer border-t" : ""} `}
+      className={`flex w-full flex-col ${!showInfoPanel ? " cursor-pointer" : ""} `}
       onClick={clickHandler}
     >
       <div className={headerClassNames} style={headerStyles}>

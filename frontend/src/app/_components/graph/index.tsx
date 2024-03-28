@@ -442,36 +442,50 @@ export default function Graph() {
                   <div className="flex space-x-[8px]">
                     {rodMode && (
                       <FormGroup className="border bg-white p-5">
-                        <FormLabel sx={{ fontWeight: "bold", fontSize: 16 }} >
+                        <FormLabel sx={{ fontWeight: "bold", fontSize: 16 }}>
                           Rod Mode
                         </FormLabel>
                         <FormControlLabel
                           control={
                             <Checkbox
+                              size="large"
                               checked={everything}
                               onChange={handleEverythingChange}
                               disabled={geoMode}
                             />
                           }
-                          label="Fetch All"
+                          label={
+                            <span style={{ fontSize: 14 }}>Fetch All</span>
+                          }
                         />
 
-                        <FormControl variant="standard" sx={{ fontSize: 16 }}>
-                          <InputLabel>Map Mode</InputLabel>
+                        <FormControl variant="standard">
+                          <InputLabel sx={{ fontSize: 14 }}>
+                            Map Mode
+                          </InputLabel>
                           <Select
                             labelId="demo-simple-select-standard-label"
                             id="demo-simple-select-standard"
                             value={mapMode}
                             onChange={handleMapModeChange}
                             label="Map Mode"
+                            sx={{ fontSize: 14 }}
                           >
-                            <MenuItem value="open">OpenStreet</MenuItem>
-                            <MenuItem value="terrain">Google Terrain</MenuItem>
-                            <MenuItem value="hybrid">Google Hybrid</MenuItem>
-                            <MenuItem value="satellite">
+                            <MenuItem value="open" sx={{ fontSize: 14 }}>
+                              OpenStreet
+                            </MenuItem>
+                            <MenuItem value="terrain" sx={{ fontSize: 14 }}>
+                              Google Terrain
+                            </MenuItem>
+                            <MenuItem value="hybrid" sx={{ fontSize: 14 }}>
+                              Google Hybrid
+                            </MenuItem>
+                            <MenuItem value="satellite" sx={{ fontSize: 14 }}>
                               Google Satellite
                             </MenuItem>
-                            <MenuItem value="roadmap">Google Roadmap</MenuItem>
+                            <MenuItem value="roadmap" sx={{ fontSize: 14 }}>
+                              Google Roadmap
+                            </MenuItem>
                           </Select>
                         </FormControl>
                       </FormGroup>
