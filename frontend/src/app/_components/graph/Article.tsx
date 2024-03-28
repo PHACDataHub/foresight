@@ -1,25 +1,16 @@
-import { useMemo } from "react";
 import { Typography } from "@mui/material";
 
-import { type Node as OgmaNode } from "@linkurious/ogma";
 
 import { type Article } from "~/server/api/routers/post";
 import { NodeTitle } from "~/app/_components/NodeTitle";
-import { getNodeData } from "~/app/_utils/graph";
 
 export default function ArticleComponent({
-  dataNode,
+  article,
   standAlone,
 }: {
-  dataNode: OgmaNode;
+  article: Article;
   standAlone?: boolean;
 }) {
-  const article = useMemo(() => {
-    return getNodeData<Article>(dataNode);
-  }, [dataNode]);
-
-  if (!article) return;
-
   return (
     <article className="flex flex-1 flex-col">
       <div className="mr-[12px] flex flex-col space-y-[8px] pb-[12px] pt-[12px]">
@@ -70,9 +61,12 @@ export default function ArticleComponent({
           </div>
         </div>
       </div>
-      <div className="mr-[12px]">
-        <NodeTitle dataNode={dataNode} />
-      </div>
+
+      {standAlone && (
+        <div className="mr-[12px]">
+          <NodeTitle title={article.title} />
+        </div>
+      )}
 
       <div
         className={`${standAlone ? "h-0 flex-auto overflow-auto pr-[12px] pt-[10px]" : ""}`}
@@ -81,7 +75,9 @@ export default function ArticleComponent({
           <Typography
             key={i}
             variant="body1"
-            fontSize={16}
+            fontSize={14}
+            lineHeight={1.4}
+            mt={1}
             className="whitespace-pre-wrap"
           >
             {content}

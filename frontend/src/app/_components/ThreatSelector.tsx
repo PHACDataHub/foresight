@@ -77,6 +77,7 @@ function ThreatSelectorComponent() {
   return (
     <div className="relative" onClick={preventPropagation}>
       <Button
+        sx={{ fontSize: 14 }}
         variant="contained"
         endIcon={<FontAwesomeIcon icon={faAngleDown} />}
         onClick={handleOpenClick}
@@ -84,15 +85,20 @@ function ThreatSelectorComponent() {
         Filter View
       </Button>
       {open && (
-        <div className="absolute right-0 z-[402] flex w-[450px] flex-col  border border-black bg-white p-10 text-2xl">
+        <div className="absolute right-0 z-[402] flex w-[650px] flex-col  border border-black bg-white p-10 text-2xl">
           <div className="flex justify-end space-x-5">
-            <Button variant="contained" onClick={handleGroupSelect}>
+            <Button
+              variant="contained"
+              onClick={handleGroupSelect}
+              sx={{ fontSize: 14 }}
+            >
               {groupSelectText}
             </Button>
             <Button
               variant="contained"
               onClick={handleResetClick}
               color="error"
+              sx={{ fontSize: 14 }}
             >
               Reset to default
             </Button>
@@ -101,11 +107,11 @@ function ThreatSelectorComponent() {
             <FormGroup>
               {threats?.map((threat, idx) => (
                 <FormControlLabel
-                  className=""
                   key={`threat_${idx}`}
-                  label={threat.text}
+                  label={<span style={{ fontSize: 14}}>{threat.text}</span>}
                   control={
                     <Checkbox
+                    size="large"
                       style={{ padding: "0px 5px 0px 0px" }}
                       value={threat.text}
                       checked={selected.includes(threat.text)}

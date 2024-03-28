@@ -38,6 +38,7 @@ const Location = styled("div")(({ theme }) => {
     fontSize: 13,
     color: theme.palette.primary.main,
     border: `1px solid ${theme.palette.primary.main}`,
+    borderRadius: 100,
     whiteSpace: "pretty",
     padding: "4px 10px 4px 10px",
   };
@@ -189,10 +190,17 @@ export function ClusterNode(
   }, [cluster, data, handleArticleLocate, ogma, augmentScale]);
 
   const articles = useMemo(() => {
-    return clusterNode
-      .getAdjacentNodes()
-      .filter((n) => details && data && getNodeData(n)?.type === "article");
-  }, [clusterNode, data, details]);
+    if (!details || !data) return [];
+    return data.nodes
+      .filter((n) => getRawNodeData(n)?.type === "article")
+      .filter((n, i, arr) => {
+        return i === arr.findIndex((b) => b.id === n.id);
+      })
+      .map((n) => {
+        const data = getRawNodeData<Article>(n);
+        return data;
+      });
+  }, [data, details]);
 
   const [tab, setTab] = useState(0);
 
@@ -210,7 +218,7 @@ export function ClusterNode(
       <>
         <Tabs
           value={tab}
-          className="pl-[30px]"
+          className="h-[42px] pl-[30px]"
           onChange={handleTabChange}
           centered
           variant="fullWidth"
@@ -227,7 +235,7 @@ export function ClusterNode(
                     isFetching ? (
                       <FontAwesomeIcon icon={faSpinner} spin />
                     ) : (
-                      articles.size
+                      articles.length
                     )
                   }
                 />
@@ -330,18 +338,18 @@ export function ClusterNode(
           </>
         )}
         {tab === 1 && (
-          <div className="h-0 flex-auto flex-col overflow-scroll pl-[30px]">
+          <div className="h-0 flex-auto flex-col overflow-scroll pl-[30px] pr-[12px] pt-[12px]">
             {articles.map((article) => (
-              <Accordion key={article.getId()}>
+              <Accordion key={article.id}>
                 <AccordionSummary
                   expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
                 >
                   <Typography variant="h5">
-                    {getNodeData<Article>(article)?.title}
+                    {article.title}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <ArticleComponent dataNode={article} />
+                  <ArticleComponent article={article} />
                 </AccordionDetails>
               </Accordion>
             ))}

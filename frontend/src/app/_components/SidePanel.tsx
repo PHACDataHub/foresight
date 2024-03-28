@@ -141,6 +141,13 @@ export default function SidePanel() {
     return base.join(" ");
   }, [selectedNode?.node, showInfoPanel]);
 
+  const article = useMemo(() => {
+    if (selectedData) {
+      if (selectedData.type === "article") return selectedData;
+    }
+    return false;
+  }, [selectedData]);
+
   if (!clusters && showInfoPanel)
     return (
       <div className="flex w-full flex-col justify-center">
@@ -152,7 +159,7 @@ export default function SidePanel() {
 
   return (
     <div
-      className={`flex w-full flex-col border-b border-r${!showInfoPanel ? " cursor-pointer border-t bg-gray-50" : ""} `}
+      className={`flex w-full flex-col ${!showInfoPanel ? " cursor-pointer border-t" : ""} `}
       onClick={clickHandler}
     >
       <div className={headerClassNames} style={headerStyles}>
@@ -172,8 +179,6 @@ export default function SidePanel() {
                 />
               )}
             </Typography>
-
-            {/* </Badge> */}
           </>
         )}
         <IconButton onClick={handleNodeViewToggle} color="inherit">
@@ -197,10 +202,10 @@ export default function SidePanel() {
               </div>
               <div className="flex space-x-2">
                 <Typography variant="body1" fontSize={14}>
-                  Generated name:
+                  Clusters:
                 </Typography>
                 <Typography variant="body1" fontSize={14} fontWeight={500}>
-                  {selectedData.name}
+                  {selectedData.clusters.join(", ")}
                 </Typography>
               </div>
             </div>
@@ -239,9 +244,9 @@ export default function SidePanel() {
           />
         </div>
       )}
-      {selectedNode?.node && selectedData?.type === "article" && (
+      {article && (
         <div className={clusterNodeClassNames} style={{ paddingLeft: 30 }}>
-          <ArticleComponent dataNode={selectedNode.node} standAlone />
+          <ArticleComponent article={article} standAlone />
         </div>
       )}
     </div>

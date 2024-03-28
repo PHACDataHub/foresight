@@ -36,21 +36,30 @@ export default function HistoryChooser() {
 
   return (
     <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
-      <InputLabel id="select-timespan">Time Span</InputLabel>
+      <InputLabel sx={{ fontSize: 16 }} id="select-timespan">
+        Time Span
+      </InputLabel>
       <Select
+        sx={{ fontSize: 16 }}
         labelId="select-timespan"
         value={history ? `${history}` : "1"}
         onChange={handleChange}
         label="Time Span"
       >
-        <MenuItem value={1}>Today</MenuItem>
-        <MenuItem disabled={dayNum < 33 || dayNum > 39} value={3}>
+        <MenuItem sx={{ fontSize: 16 }} value={1}>
+          Today
+        </MenuItem>
+        <MenuItem
+          sx={{ fontSize: 16 }}
+          disabled={dayNum < 33 || dayNum > 39}
+          value={3}
+        >
           Last 3 Days
         </MenuItem>
-        <MenuItem disabled={dayNum !== 37} value={7}>
+        <MenuItem sx={{ fontSize: 16 }} disabled={dayNum !== 37} value={7}>
           Last 7 Days
         </MenuItem>
-        <MenuItem disabled={dayNum !== 60} value={30}>
+        <MenuItem sx={{ fontSize: 16 }} disabled={dayNum !== 60} value={30}>
           Last 30 Days
         </MenuItem>
       </Select>

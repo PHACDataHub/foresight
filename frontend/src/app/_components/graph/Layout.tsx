@@ -308,9 +308,10 @@ const LayoutService = forwardRef(
         const data = getNodeData(n);
         if (data?.type === "cluster") {
           for (const term of terms) {
+            const t = term.toLowerCase();
             if (
-              data.summary?.toLowerCase().includes(term) ??
-              data.title.toLowerCase().includes(term)
+              data.summary?.toLowerCase().includes(t) ??
+              data.title.toLowerCase().includes(t)
             )
               return true;
           }
@@ -323,9 +324,10 @@ const LayoutService = forwardRef(
           if (clusters.size > 1) return true;
         } else if (data?.type === "article") {
           for (const term of terms) {
+            const t = term.toLowerCase();
             if (
-              data.content?.toLowerCase().includes(term) ??
-              data.title.toLowerCase().includes(term)
+              data.content?.toLowerCase().includes(t) ??
+              data.title.toLowerCase().includes(t)
             )
               return true;
           }
@@ -436,14 +438,14 @@ const LayoutService = forwardRef(
           }
           attributes={{
             text: {
-              // scaling: true,
               size: 15,
               content: (n) => {
                 const data = getNodeData(n);
                 if (data?.type === "hierarchicalcluster")
-                  return data.name.replaceAll("_", " ");
+                  return `${data.id} (${data.clusters.length})`;
                 if (data?.type === "cluster") return data.title;
                 if (data?.type === "threat") return data.title;
+                if (fullScreen && data?.type === "article") return data.title;
               },
             },
             color: (n) => {

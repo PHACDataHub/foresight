@@ -12,9 +12,13 @@ import { useStore } from "~/app/_store";
 import { type Cluster } from "~/server/api/routers/post";
 import { HighlightSearchTerms } from "./HighlightTerms";
 
-export function NodeTitle({ dataNode }: { dataNode: OgmaNode }) {
+export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
   const { ogma } = useStore();
+
+  const dataNode = "dataNode" in opts ? opts.dataNode : null;
+
   const handleLocate = useCallback(async () => {
+    if (!dataNode) return;
     if (!dataNode.isVisible() && ogma) {
       const d1 = getNodeData<Cluster>(dataNode);
       if (!d1) return;
@@ -39,23 +43,33 @@ export function NodeTitle({ dataNode }: { dataNode: OgmaNode }) {
   }, [dataNode, ogma]);
 
   const title = useMemo(() => {
+    if ("title" in opts) return opts.title;
+    if (!dataNode) return "";
     const d = getNodeData(dataNode);
     if (d?.type === "hierarchicalcluster") return d.name ?? "";
     return d?.title ?? "";
-  }, [dataNode]);
+  }, [dataNode, opts]);
 
   return (
-    <div className="flex items-center justify-between space-x-[12px] p-0">
+    <div className="flex items-start justify-between space-x-[24px] p-0">
       <div className="flex-1">
-        <Typography variant="h4" fontSize={20} padding={0} margin={0}>
+        <Typography
+          variant="h4"
+          fontWeight={900}
+          fontSize={20}
+          padding={0}
+          margin={0}
+        >
           <HighlightSearchTerms text={title} />
         </Typography>
       </div>
-      <div className="flex">
-        <IconButton className="foresight-graph-btn" onClick={handleLocate}>
-          <FontAwesomeIcon icon={faMagnifyingGlass} fontSize={24} />
-        </IconButton>
-      </div>
+      {dataNode && (
+        <div className="flex">
+          <IconButton className="foresight-graph-btn" onClick={handleLocate}>
+            <FontAwesomeIcon icon={faMagnifyingGlass} fontSize={22} />
+          </IconButton>
+        </div>
+      )}
     </div>
   );
 }

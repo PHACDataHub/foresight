@@ -83,10 +83,7 @@ function TimeTravelComponent({
     () =>
       [
         {
-          special_day: [
-            new Date(2019, 11, 31),
-            new Date(2020, 0, 5),
-          ]
+          special_day: [new Date(2019, 11, 31), new Date(2020, 0, 5)],
         },
         {
           cluster_3_day: [
@@ -111,7 +108,7 @@ function TimeTravelComponent({
   );
 
   return (
-    <nav className="mb-3 mt-3 flex items-center space-x-10">
+    <nav className="mb-3 mt-3 flex items-center space-x-10 whitespace-nowrap">
       <DatePicker
         selected={date}
         minDate={startDate}
@@ -123,8 +120,8 @@ function TimeTravelComponent({
         locale={locale === "fr-CA" ? frCA : enCA}
         customInput={
           <Button
+            sx={{ fontSize: 14 }}
             variant="contained"
-            style={{ backgroundColor: "#2196F3"}}
             size="medium"
             endIcon={<FontAwesomeIcon icon={faAngleDown} />}
           >

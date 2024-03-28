@@ -38,16 +38,22 @@ export default function HighlightTerms() {
 
   return (
     <Autocomplete
-      className="min-w-[250px] max-w-[500px]"
+      className="min-w-[300px] max-w-[500px]"
       sx={{ fontSize: 16 }}
       freeSolo
+      fullWidth
       options={[]}
       value={searchTerms}
       onChange={handleSearchChange}
       multiple
       renderTags={(value, props) =>
         value.map((option, index) => (
-          <Chip label={option} {...props({ index })} key={`chip-${index}`} />
+          <Chip
+            sx={{ fontSize: 13, padding: "3px 4px 3px 4px" }}
+            label={option}
+            {...props({ index })}
+            key={`chip-${index}`}
+          />
         ))
       }
       renderInput={(params) => (

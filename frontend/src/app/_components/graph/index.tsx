@@ -334,7 +334,7 @@ export default function Graph() {
       <Panel
         defaultSize={25}
         minSize={showInfoPanel ? minSize : collpasedSize}
-        className="flex"
+        className={`flex ${showInfoPanel ? "border-r" : ""}`}
         style={{ transition: "flex 0.1s" }}
         order={1}
       >
@@ -346,7 +346,7 @@ export default function Graph() {
         </PanelResizeHandle>
       )}
 
-      <Panel className="flex flex-col border" order={2}>
+      <Panel className="flex flex-col" order={2}>
         <div className="relative w-full flex-1" ref={ref}>
           <div
             className="absolute h-full max-h-full w-full max-w-full"
@@ -442,7 +442,7 @@ export default function Graph() {
                   <div className="flex space-x-[8px]">
                     {rodMode && (
                       <FormGroup className="border bg-white p-5">
-                        <FormLabel sx={{ fontWeight: "bold" }}>
+                        <FormLabel sx={{ fontWeight: "bold", fontSize: 16 }} >
                           Rod Mode
                         </FormLabel>
                         <FormControlLabel
@@ -481,13 +481,13 @@ export default function Graph() {
                         <ButtonGroup>
                           <IconButton
                             className="foresight-graph-btn"
-                            title="Apply layout algorithm"
+                            title="Reset layout"
                             onClick={handleReset}
                           >
                             <FontAwesomeIcon
                               icon={faArrowsRotate}
                               color="inherit"
-                              fontSize={24}
+                              fontSize={22}
                             />
                           </IconButton>
                           <IconButton
@@ -496,7 +496,7 @@ export default function Graph() {
                             title="Collapsed expanded articles"
                           >
                             <FontAwesomeIcon
-                              fontSize={24}
+                              fontSize={22}
                               icon={faBroom}
                               color="inherit"
                             />
@@ -513,7 +513,7 @@ export default function Graph() {
                               title={`Layout nodes using the ${l} algorithm`}
                             >
                               <FontAwesomeIcon
-                                fontSize={24}
+                                fontSize={22}
                                 icon={icon}
                                 color="inherit"
                               />
@@ -528,7 +528,7 @@ export default function Graph() {
                       title="View clusters on a map"
                     >
                       <FontAwesomeIcon
-                        fontSize={24}
+                        fontSize={22}
                         icon={faMap}
                         color="inherit"
                       />
@@ -539,7 +539,7 @@ export default function Graph() {
                       title="Switch to Full Screen View"
                     >
                       <FontAwesomeIcon
-                        fontSize={24}
+                        fontSize={22}
                         color="inherit"
                         icon={maximized ? faMinimize : faExpand}
                       />
