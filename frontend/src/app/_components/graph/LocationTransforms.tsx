@@ -96,8 +96,11 @@ export default function LocationTransforms() {
         enabled={geoMode}
         selector={(n) => {
           const d = getNodeData(n);
-          return Boolean(
-            d?.type === "cluster" && d.locations && d.locations.length > 0,
+          return (
+            d?.type === "cluster" &&
+            Boolean(
+              d.locations && d.locations.filter(isLocationValid).length > 0,
+            )
           );
         }}
         neighborIdFunction={(n) => {
@@ -106,7 +109,7 @@ export default function LocationTransforms() {
           return (
             d.locations
               ?.filter((l) => isLocationValid(l))
-              .map((l) => JSON.stringify(l)) ?? []
+              .map((l) => JSON.stringify({ ...l, id: d.id })) ?? []
           );
         }}
         nodeGenerator={(id, nodes) => {
