@@ -262,7 +262,7 @@ export default function Graph() {
   useEffect(() => {
     const loadGoogleMaps = async () => {
       const loader = new Loader({
-        apiKey: env.GOOGLE_API_KEY,
+        apiKey: env.NEXT_PUBLIC_GOOGLE_API_KEY,
       });
 
       await loader.importLibrary("maps");

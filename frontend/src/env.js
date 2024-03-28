@@ -33,7 +33,6 @@ export const env = createEnv({
     NEO4J_PASSWORD: z.string(),
     NEO4J_URL: z.string(),
     QA_SERVICE_URL: z.string(),
-    GOOGLE_API_KEY: z.string(),
   },
 
   /**
@@ -42,6 +41,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
+    NEXT_PUBLIC_GOOGLE_API_KEY: z.string(),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
 
@@ -60,7 +60,7 @@ export const env = createEnv({
     NEO4J_PASSWORD: process.env.NEO4J_PASSWORD,
     NEO4J_URL: process.env.NEO4J_URL ?? "",
     QA_SERVICE_URL: process.env.QA_SERVICE_URL ?? "",
-    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ?? "",
+    NEXT_PUBLIC_GOOGLE_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? "",
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
