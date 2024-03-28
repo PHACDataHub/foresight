@@ -35,7 +35,15 @@ export interface ForesightStore {
   ogma: OgmaLib | null;
   setOgma: (ogma: OgmaLib | null) => void;
 
+  mapMode: "open" | "roadmap" | "satellite" | "terrain" | "hybrid";
+  setMapMode: (
+    mapMode: "open" | "roadmap" | "satellite" | "terrain" | "hybrid",
+  ) => void;
+
   clearSelections: () => void;
+
+  rodMode: boolean;
+  toggleRodMode: () => void;
 
   expandedClusters: string[];
   setExpandedClusters: (expandedClusters: string[]) => void;
@@ -121,6 +129,10 @@ export interface ForesightStore {
 export const useStore = create<ForesightStore>((set) => ({
   ogma: null,
   setOgma: (ogma) => set({ ogma }),
+  rodMode: false,
+  mapMode: "terrain",
+  setMapMode: (mapMode) => set({ mapMode }),
+  toggleRodMode: () => set((state) => ({ rodMode: !state.rodMode })),
   expandedClusters: [],
   setExpandedClusters: (expandedClusters: string[]) =>
     set({ expandedClusters }),

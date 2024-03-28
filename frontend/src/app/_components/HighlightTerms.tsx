@@ -39,6 +39,7 @@ export default function HighlightTerms() {
   return (
     <Autocomplete
       className="min-w-[250px] max-w-[500px]"
+      sx={{ fontSize: 16 }}
       freeSolo
       options={[]}
       value={searchTerms}
@@ -56,6 +57,11 @@ export default function HighlightTerms() {
           placeholder="Search terms"
           onChange={handleSearchInputChange}
           {...params}
+          InputLabelProps={{ sx: { fontSize: 16 } }}
+          InputProps={{
+            ...params.InputProps,
+            sx: { fontSize: 16 },
+          }}
         />
       )}
     />

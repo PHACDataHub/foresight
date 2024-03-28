@@ -9,6 +9,7 @@ import * as d3 from "d3";
 import {
   type AllDataTypeProperties,
   type AllDataTypes,
+  type ClusterLocation,
 } from "~/server/api/routers/post";
 
 export const MAX_RADIUS = 20;
@@ -94,6 +95,12 @@ export function isNodeFiltered(n: OgmaNode, threats: string[]) {
   }
   // Filter out threats if they aren't in the list.
   if (data?.type === "threat" && !threats.includes(data.title)) return true;
+}
+
+export function isLocationValid(l: ClusterLocation) {
+  if (typeof l.latitude !== "number" || typeof l.longitude !== "number") return false;
+  if (l.location === "") return false;
+  return true;
 }
 
 export function createScale(

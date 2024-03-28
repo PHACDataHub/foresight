@@ -15,7 +15,12 @@ import { useStore } from "~/app/_store";
 
 import ClusterNodeList from "~/app/_components/ClusterNodeList";
 import { ClusterNode } from "~/app/_components/ClusterNode";
-import { findAlongPath, getNodeColor, getNodeData } from "~/app/_utils/graph";
+import {
+  findAlongPath,
+  getNodeColor,
+  getNodeData,
+  isLocationValid,
+} from "~/app/_utils/graph";
 import { type Cluster } from "~/server/api/routers/post";
 import ArticleComponent from "./graph/Article";
 
@@ -43,13 +48,8 @@ export default function SidePanel() {
     if (geoMode && clusters) {
       return clusters.filter((c) => {
         const d = getNodeData<Cluster>(c);
-        return (
-          d.locations &&
-          d.locations.filter(
-            (l) =>
-              typeof l.latitude === "number" && typeof l.longitude === "number",
-          ).length > 0
-        );
+        if (!d.locations) return false;
+        return d.locations.filter((l) => isLocationValid(l)).length > 0;
       });
     }
     if (!clusters || !selectedData || !selectedNode?.node) return clusters;
@@ -159,7 +159,7 @@ export default function SidePanel() {
 
   return (
     <div
-      className={`flex w-full flex-col border-b border-r${!showInfoPanel ? " border-t bg-gray-50 cursor-pointer" : ""} `}
+      className={`flex w-full flex-col border-b border-r${!showInfoPanel ? " cursor-pointer border-t bg-gray-50" : ""} `}
       onClick={clickHandler}
     >
       <div className={headerClassNames} style={headerStyles}>

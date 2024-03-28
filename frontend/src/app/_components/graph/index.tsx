@@ -10,8 +10,8 @@ import {
 } from "react";
 import L from "leaflet";
 
-// import "leaflet.gridlayer.googlemutant";
-// import { Loader } from '@googlemaps/js-api-loader';
+import "leaflet.gridlayer.googlemutant";
+import { Loader } from "@googlemaps/js-api-loader";
 
 import {
   type ImperativePanelGroupHandle,
@@ -40,9 +40,15 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import FormControlLabel from "@mui/material/FormControlLabel";
+import FormLabel from "@mui/material/FormLabel";
+import FormGroup from "@mui/material/FormGroup";
+import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import ButtonGroup from "@mui/material/ButtonGroup";
+import InputLabel from "@mui/material/InputLabel";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
@@ -56,6 +62,7 @@ import LayoutService, { type LayoutServiceRef } from "./Layout";
 import DataLoader from "./DataLoader";
 import TimeLine from "./TimeLine";
 import LocationTransforms from "./LocationTransforms";
+import { env } from "~/env";
 
 OgmaLib.libraries.leaflet = L;
 
@@ -97,6 +104,10 @@ export default function Graph() {
     everything,
     setEverything,
     selectedNode,
+    rodMode,
+    toggleRodMode,
+    mapMode,
+    setMapMode,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -105,6 +116,25 @@ export default function Graph() {
   const [minSize, setMinSize] = useState(10);
   const [collpasedSize, setCollapsedSize] = useState(10);
   const [restoreLayout, setRestoreLayout] = useState<number[]>([]);
+
+  const rodModeTracker = useRef<string>("");
+  const rodModeTrackerTimer = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const rod = (e: KeyboardEvent) => {
+      if (rodModeTrackerTimer.current)
+        clearTimeout(rodModeTrackerTimer.current);
+      rodModeTrackerTimer.current = setTimeout(() => {
+        rodModeTracker.current = "";
+      }, 500);
+      rodModeTracker.current += e.key;
+      if (rodModeTracker.current === "rodmode") toggleRodMode();
+    };
+    window.addEventListener("keyup", rod);
+    return () => {
+      window.removeEventListener("keyup", rod);
+    };
+  }, [toggleRodMode]);
 
   // Convert left panel minimum size from pixels to %.
   useLayoutEffect(() => {
@@ -180,6 +210,25 @@ export default function Graph() {
     setMaximized(!maximized);
   }, [maximized]);
 
+  const handleMapModeChange = useCallback(
+    (
+      event: SelectChangeEvent<
+        "open" | "roadmap" | "satellite" | "terrain" | "hybrid"
+      >,
+    ) => {
+      const v = event.target.value;
+      if (
+        v === "open" ||
+        v === "roadmap" ||
+        v === "terrain" ||
+        v === "hybrid" ||
+        v === "satellite"
+      )
+        setMapMode(v);
+    },
+    [setMapMode],
+  );
+
   const resizeOgma = useDebounceCallback(
     (ogma: OgmaLib, max: boolean, w: number, h: number) => {
       const currentSize = ogma.view.getSize();
@@ -210,16 +259,16 @@ export default function Graph() {
     },
   );
 
-  // useEffect(() => {
-  //   const loadGoogleMaps = async () => {
-  //     const loader = new Loader({
-  //       apiKey: ""
-  //     });
-  
-  //     const Map = await loader.importLibrary("maps");
-  //   }
-  //   void loadGoogleMaps();
-  // }, [])
+  useEffect(() => {
+    const loadGoogleMaps = async () => {
+      const loader = new Loader({
+        apiKey: env.GOOGLE_API_KEY,
+      });
+
+      await loader.importLibrary("maps");
+    };
+    void loadGoogleMaps();
+  }, []);
 
   useEffect(() => {
     if (ogmaRef.current && ogmaHoverContainerRef.current) {
@@ -391,17 +440,42 @@ export default function Graph() {
               <>
                 <div className="control-buttons">
                   <div className="flex space-x-2">
-                    {!geoMode && (
-                      <>
+                    {rodMode && (
+                      <FormGroup className="border bg-white p-5">
+                        <FormLabel sx={{ fontWeight: "bold" }}>Rod Mode</FormLabel>
                         <FormControlLabel
                           control={
                             <Checkbox
                               checked={everything}
                               onChange={handleEverythingChange}
+                              disabled={geoMode}
                             />
                           }
                           label="Fetch All"
                         />
+
+                        <FormControl variant="standard" sx={{ fontSize: 16 }}>
+                          <InputLabel>Map Mode</InputLabel>
+                          <Select
+                            labelId="demo-simple-select-standard-label"
+                            id="demo-simple-select-standard"
+                            value={mapMode}
+                            onChange={handleMapModeChange}
+                            label="Map Mode"
+                          >
+                            <MenuItem value="open">OpenStreet</MenuItem>
+                            <MenuItem value="terrain">Google Terrain</MenuItem>
+                            <MenuItem value="hybrid">Google Hybrid</MenuItem>
+                            <MenuItem value="satellite">
+                              Google Satellite
+                            </MenuItem>
+                            <MenuItem value="roadmap">Google Roadmap</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </FormGroup>
+                    )}
+                    {!geoMode && (
+                      <>
                         <ButtonGroup>
                           <IconButton
                             className="foresight-graph-btn"
@@ -413,7 +487,7 @@ export default function Graph() {
                               color="inherit"
                             />
                           </IconButton>
-                         <IconButton
+                          <IconButton
                             className="foresight-graph-btn"
                             onClick={handleCollapseAllClick}
                             title="Collapsed expanded articles"
@@ -444,7 +518,6 @@ export default function Graph() {
                     >
                       <FontAwesomeIcon icon={faMap} color="inherit" />
                     </IconButton>
-
                     <IconButton
                       className="foresight-graph-btn"
                       onClick={handleMaximizeClick}

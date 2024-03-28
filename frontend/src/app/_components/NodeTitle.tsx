@@ -16,7 +16,10 @@ export function NodeTitle({ dataNode }: { dataNode: OgmaNode }) {
   const { ogma } = useStore();
   const handleLocate = useCallback(async () => {
     if (!dataNode.isVisible() && ogma) {
+      console.log("meep!");
+      
       const d1 = getNodeData<Cluster>(dataNode);
+      console.log(d1);
       const containerNode = ogma.getNodes().filter((n) => {
         if (n.isVirtual()) {
           const subNodes = n.getSubNodes();

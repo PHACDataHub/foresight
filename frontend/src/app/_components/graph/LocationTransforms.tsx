@@ -1,16 +1,48 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 // import L from "leaflet";
 
 import { type GeoClustering } from "@linkurious/ogma";
 import { NeighborGeneration, useOgma } from "@linkurious/ogma-react";
 
+import L, { type Map } from "leaflet";
 import { useStore } from "~/app/_store";
-import { getNodeData } from "~/app/_utils/graph";
+import { getNodeData, isLocationValid } from "~/app/_utils/graph";
+
+type GoogleMutant = {
+  googleMutant: (opts: { type: string }) => {
+    addTo: (map: Map) => void;
+    removeFrom: (map: Map) => void;
+  };
+};
 
 export default function LocationTransforms() {
-  const { geoMode, refresh } = useStore();
+  const { geoMode, refresh, mapMode } = useStore();
   const ogma = useOgma();
+
+  const tiles = useMemo(() => {
+    const gm: GoogleMutant = L.gridLayer as unknown as GoogleMutant;
+    return gm.googleMutant({
+      type: mapMode,
+    });
+  }, [mapMode]);
+
+  useEffect(() => {
+    const ogmaUpdate = () => {
+      if (mapMode === "open" || !geoMode) return;
+      const map = ogma.geo.getMap();
+      if (map) tiles.addTo(map);
+    };
+    if (ogma.geo.enabled()) ogmaUpdate();
+
+    ogma.events.on("geoReady", ogmaUpdate);
+
+    return () => {
+      ogma.events.off(ogmaUpdate);
+      const map = ogma.geo.getMap();
+      if (map) tiles.removeFrom(map);
+    };
+  }, [geoMode, mapMode, ogma, tiles]);
 
   useEffect(() => {
     const enableGeoMode = async () => {
@@ -21,16 +53,6 @@ export default function LocationTransforms() {
         maxZoomLevel: 10,
         sizeRatio: 0.8,
       });
-    //   const map = ogma.geo.getMap();
-    //   L.gridLayer
-    //     .googleMutant({
-    //       type: "roadmap",
-    //       styles: [
-    //         { elementType: "labels", stylers: [{ visibility: "off" }] },
-    //         { featureType: "water", stylers: [{ color: "#444444" }] },
-    //       ],
-    //     })
-    //     .addTo(map);
     };
     const disableGeoMode = async (t: GeoClustering<unknown, unknown>) => {
       await t.disable();
@@ -83,11 +105,7 @@ export default function LocationTransforms() {
           if (d?.type !== "cluster") return "UNKNOWN";
           return (
             d.locations
-              ?.filter(
-                (l) =>
-                  typeof l.latitude === "number" &&
-                  typeof l.longitude === "number",
-              )
+              ?.filter((l) => isLocationValid(l))
               .map((l) => JSON.stringify(l)) ?? []
           );
         }}

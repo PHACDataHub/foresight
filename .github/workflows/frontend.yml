@@ -100,6 +100,7 @@ jobs:
             NEO4J_PASSWORD=${{ secrets.NEO4J_PASSWORD }}
             NEO4J_URL=${{ secrets.NEO4J_URL }}
             QA_SERVICE_URL=${{ secrets.QA_SERVICE_URL }}
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v0.4.0
