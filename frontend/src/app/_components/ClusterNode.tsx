@@ -114,7 +114,7 @@ export function ClusterNode(
         ogma?.events.once("idle", () => {
           const nodes = ogma
             ?.getNodes()
-            .filter((n) => `${getNodeData<Article>(n).id}` in node_ids);
+            .filter((n) => `${getNodeData<Article>(n)?.id}` in node_ids);
           void nodes?.locate();
         });
       }, 2000);
@@ -189,17 +189,10 @@ export function ClusterNode(
   }, [cluster, data, handleArticleLocate, ogma, augmentScale]);
 
   const articles = useMemo(() => {
-    if (!details || !data) return [];
-    return data.nodes
-      .filter((n) => getRawNodeData(n)?.type === "article")
-      .filter((n, i, arr) => {
-        return i === arr.findIndex((b) => b.id === n.id);
-      })
-      .map((n) => {
-        const data = getRawNodeData<Article>(n);
-        return data;
-      });
-  }, [data, details]);
+    return clusterNode
+      .getAdjacentNodes()
+      .filter((n) => details && data && getNodeData(n)?.type === "article");
+  }, [clusterNode, data, details]);
 
   const [tab, setTab] = useState(0);
 
@@ -234,7 +227,7 @@ export function ClusterNode(
                     isFetching ? (
                       <FontAwesomeIcon icon={faSpinner} spin />
                     ) : (
-                      articles.length
+                      articles.size
                     )
                   }
                 />
@@ -339,14 +332,16 @@ export function ClusterNode(
         {tab === 1 && (
           <div className="h-0 flex-auto flex-col overflow-scroll pl-[30px]">
             {articles.map((article) => (
-              <Accordion key={article.id}>
+              <Accordion key={article.getId()}>
                 <AccordionSummary
                   expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
                 >
-                  <Typography variant="h5">{article.title}</Typography>
+                  <Typography variant="h5">
+                    {getNodeData<Article>(article)?.title}
+                  </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <ArticleComponent article={article} />
+                  <ArticleComponent dataNode={article} />
                 </AccordionDetails>
               </Accordion>
             ))}

@@ -214,16 +214,29 @@ main.container {
 }
 
 .foresight-graph-btn {
-  border: 1px solid #ccc !important;
-  border-radius: 0 !important;
-  width: 40px;
-  height: 40px;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: rgba(0,0,0,0.12) !important;
+
+  border-radius: 4px !important;
+  width: 48px;
+  height: 48px;
   color: #000 !important;
   background-color: #fff !important;
 }
 
-.foresight-graph-btn.active {
-  background-color: #eee !important;
+.MuiButtonGroup-root .foresight-graph-btn {
+  border-radius: 0 !important;
+}
+.MuiButtonGroup-root .foresight-graph-btn:first-child {
+  border-radius: 4px 0 0 4px !important;
+}
+.MuiButtonGroup-root .foresight-graph-btn:last-child {
+  border-radius: 0 4px 4px 0 !important;
+}
+
+.foresight-graph-btn.active, .foresight-graph-btn:hover {
+  background-color: #EBEBEB !important;
 }
 
 .foresight-graph-btn.disabled {

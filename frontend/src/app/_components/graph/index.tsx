@@ -57,12 +57,12 @@ import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
 import { getNodeData } from "~/app/_utils/graph";
 import SidePanel from "~/app/_components/SidePanel";
+import { env } from "~/env";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader from "./DataLoader";
 import TimeLine from "./TimeLine";
 import LocationTransforms from "./LocationTransforms";
-import { env } from "~/env";
 
 OgmaLib.libraries.leaflet = L;
 
@@ -439,10 +439,12 @@ export default function Graph() {
               <LocationTransforms />
               <>
                 <div className="control-buttons">
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-[8px]">
                     {rodMode && (
                       <FormGroup className="border bg-white p-5">
-                        <FormLabel sx={{ fontWeight: "bold" }}>Rod Mode</FormLabel>
+                        <FormLabel sx={{ fontWeight: "bold" }}>
+                          Rod Mode
+                        </FormLabel>
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -485,6 +487,7 @@ export default function Graph() {
                             <FontAwesomeIcon
                               icon={faArrowsRotate}
                               color="inherit"
+                              fontSize={24}
                             />
                           </IconButton>
                           <IconButton
@@ -492,7 +495,11 @@ export default function Graph() {
                             onClick={handleCollapseAllClick}
                             title="Collapsed expanded articles"
                           >
-                            <FontAwesomeIcon icon={faBroom} color="inherit" />
+                            <FontAwesomeIcon
+                              fontSize={24}
+                              icon={faBroom}
+                              color="inherit"
+                            />
                           </IconButton>
                         </ButtonGroup>
                         <ButtonGroup>
@@ -505,7 +512,11 @@ export default function Graph() {
                               onClick={handleLayoutClick}
                               title={`Layout nodes using the ${l} algorithm`}
                             >
-                              <FontAwesomeIcon icon={icon} color="inherit" />
+                              <FontAwesomeIcon
+                                fontSize={24}
+                                icon={icon}
+                                color="inherit"
+                              />
                             </IconButton>
                           ))}
                         </ButtonGroup>
@@ -516,7 +527,11 @@ export default function Graph() {
                       onClick={handleGeoBtnClick}
                       title="View clusters on a map"
                     >
-                      <FontAwesomeIcon icon={faMap} color="inherit" />
+                      <FontAwesomeIcon
+                        fontSize={24}
+                        icon={faMap}
+                        color="inherit"
+                      />
                     </IconButton>
                     <IconButton
                       className="foresight-graph-btn"
@@ -524,6 +539,7 @@ export default function Graph() {
                       title="Switch to Full Screen View"
                     >
                       <FontAwesomeIcon
+                        fontSize={24}
                         color="inherit"
                         icon={maximized ? faMinimize : faExpand}
                       />

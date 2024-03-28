@@ -16,16 +16,14 @@ export function NodeTitle({ dataNode }: { dataNode: OgmaNode }) {
   const { ogma } = useStore();
   const handleLocate = useCallback(async () => {
     if (!dataNode.isVisible() && ogma) {
-      console.log("meep!");
-      
       const d1 = getNodeData<Cluster>(dataNode);
-      console.log(d1);
+      if (!d1) return;
       const containerNode = ogma.getNodes().filter((n) => {
         if (n.isVirtual()) {
           const subNodes = n.getSubNodes();
           if (subNodes) {
             return (
-              subNodes.filter((sn) => getNodeData<Cluster>(sn).id === d1.id)
+              subNodes.filter((sn) => getNodeData<Cluster>(sn)?.id === d1.id)
                 .size > 0
             );
           }
@@ -47,15 +45,15 @@ export function NodeTitle({ dataNode }: { dataNode: OgmaNode }) {
   }, [dataNode]);
 
   return (
-    <div className="flex items-center justify-between p-0">
+    <div className="flex items-center justify-between space-x-[12px] p-0">
       <div className="flex-1">
         <Typography variant="h4" fontSize={20} padding={0} margin={0}>
           <HighlightSearchTerms text={title} />
         </Typography>
       </div>
       <div className="flex">
-        <IconButton onClick={handleLocate} sx={{padding: 0, margin: 0}}>
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
+        <IconButton className="foresight-graph-btn" onClick={handleLocate}>
+          <FontAwesomeIcon icon={faMagnifyingGlass} fontSize={24} />
         </IconButton>
       </div>
     </div>

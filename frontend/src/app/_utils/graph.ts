@@ -40,8 +40,11 @@ export function findAlongPath(
   return found;
 }
 
-export function getNodeData<T = AllDataTypes | undefined>(node: OgmaNode): T {
+export function getNodeData<T = AllDataTypes | undefined>(
+  node: OgmaNode,
+): T | undefined {
   const n = node as OgmaNode<AllDataTypes>;
+  if (!n) return;
   const data = n.getData();
   return data as T;
 }
@@ -98,7 +101,8 @@ export function isNodeFiltered(n: OgmaNode, threats: string[]) {
 }
 
 export function isLocationValid(l: ClusterLocation) {
-  if (typeof l.latitude !== "number" || typeof l.longitude !== "number") return false;
+  if (typeof l.latitude !== "number" || typeof l.longitude !== "number")
+    return false;
   if (l.location === "") return false;
   return true;
 }

@@ -105,8 +105,10 @@ export default function DataLoader({
           .getNodes()
           .filter((n) => getNodeData(n)?.type === "cluster")
           .sort((a, b) => {
-            const anr = getNodeData<Cluster>(a).nr_articles;
-            const bnr = getNodeData<Cluster>(b).nr_articles;
+            const anr = getNodeData<Cluster>(a)?.nr_articles;
+            const bnr = getNodeData<Cluster>(b)?.nr_articles;
+            if (typeof anr === "undefined" || typeof bnr === "undefined")
+              return 0;
             if (anr > bnr) return -1;
             if (anr < bnr) return 1;
             return 0;

@@ -17,8 +17,8 @@ export default function ClusterNodeList({
       const t = term.toLowerCase();
       const data = getNodeData<Cluster>(c);
       if (
-        data.title.toLowerCase().includes(t) ||
-        data.summary?.toLowerCase().includes(t)
+        data?.title.toLowerCase().includes(t) ??
+        data?.summary?.toLowerCase().includes(t)
       )
         return true;
     }
@@ -37,6 +37,7 @@ export default function ClusterNodeList({
         if (bc && !ac) return 1;
         const ad = getNodeData<Cluster>(a);
         const bd = getNodeData<Cluster>(b);
+        if (!ad || !bd) return 0;
         if (ad.nr_articles > bd.nr_articles) return -1;
         if (ad.nr_articles < bd.nr_articles) return 1;
         return 0;

@@ -48,7 +48,7 @@ export default function SidePanel() {
     if (geoMode && clusters) {
       return clusters.filter((c) => {
         const d = getNodeData<Cluster>(c);
-        if (!d.locations) return false;
+        if (!d?.locations) return false;
         return d.locations.filter((l) => isLocationValid(l)).length > 0;
       });
     }
@@ -141,13 +141,6 @@ export default function SidePanel() {
     return base.join(" ");
   }, [selectedNode?.node, showInfoPanel]);
 
-  const article = useMemo(() => {
-    if (selectedData) {
-      if (selectedData.type === "article") return selectedData;
-    }
-    return false;
-  }, [selectedData]);
-
   if (!clusters && showInfoPanel)
     return (
       <div className="flex w-full flex-col justify-center">
@@ -193,66 +186,46 @@ export default function SidePanel() {
       <div className={clusterListClassNames}>
         {selectedData?.type === "hierarchicalcluster" && (
           <div className="overflow-auto">
-            <table className="m-5 overflow-scroll border">
-              <tbody>
-                <tr>
-                  <th className="whitespace-nowrap p-2">
-                    <Typography variant="body2" fontWeight="bold" fontSize={16}>
-                      ID
-                    </Typography>
-                  </th>
-                  <td className="p-2">
-                    <Typography fontSize={16} variant="body2">
-                      {selectedData.id}
-                    </Typography>
-                  </td>
-                </tr>
-                <tr>
-                  <th className="whitespace-nowrap p-2">
-                    <Typography fontSize={16} variant="body2" fontWeight="bold">
-                      Generated Name
-                    </Typography>
-                  </th>
-                  <td className="p-2">
-                    <Typography fontSize={16} variant="body2">
-                      {selectedData.name}
-                    </Typography>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="flex flex-col space-y-[8px] pb-[12px] pt-[12px]">
+              <div className="flex space-x-2">
+                <Typography variant="body1" fontSize={14}>
+                  ID:
+                </Typography>
+                <Typography variant="body1" fontSize={14} fontWeight={500}>
+                  {selectedData.id}
+                </Typography>
+              </div>
+              <div className="flex space-x-2">
+                <Typography variant="body1" fontSize={14}>
+                  Generated name:
+                </Typography>
+                <Typography variant="body1" fontSize={14} fontWeight={500}>
+                  {selectedData.name}
+                </Typography>
+              </div>
+            </div>
           </div>
         )}
         {selectedData?.type === "threat" && (
           <div className="overflow-auto">
-            <table className="m-5 overflow-scroll border">
-              <tbody>
-                <tr>
-                  <th className="whitespace-nowrap p-2">
-                    <Typography variant="body2" fontWeight="bold" fontSize={16}>
-                      Title
-                    </Typography>
-                  </th>
-                  <td className="p-2">
-                    <Typography variant="body2" fontSize={16}>
-                      {selectedData.title}
-                    </Typography>
-                  </td>
-                </tr>
-                <tr>
-                  <th className="whitespace-nowrap p-2">
-                    <Typography variant="body2" fontWeight="bold" fontSize={16}>
-                      Score
-                    </Typography>
-                  </th>
-                  <td className="p-2">
-                    <Typography variant="body2" fontSize={16}>
-                      {selectedData.score}
-                    </Typography>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="flex flex-col space-y-[8px] pb-[12px] pt-[12px]">
+              <div className="flex space-x-2">
+                <Typography variant="body1" fontSize={14}>
+                  Title:
+                </Typography>
+                <Typography variant="body1" fontSize={14} fontWeight={500}>
+                  {selectedData.title}
+                </Typography>
+              </div>
+              <div className="flex space-x-2">
+                <Typography variant="body1" fontSize={14}>
+                  Score
+                </Typography>
+                <Typography variant="body1" fontSize={14} fontWeight={500}>
+                  {selectedData.score}
+                </Typography>
+              </div>
+            </div>
           </div>
         )}
         <ClusterNodeList clusterNodes={filteredClusters} />
@@ -266,9 +239,9 @@ export default function SidePanel() {
           />
         </div>
       )}
-      {article && (
+      {selectedNode?.node && selectedData?.type === "article" && (
         <div className={clusterNodeClassNames} style={{ paddingLeft: 30 }}>
-          <ArticleComponent article={article} standAlone />
+          <ArticleComponent dataNode={selectedNode.node} standAlone />
         </div>
       )}
     </div>
