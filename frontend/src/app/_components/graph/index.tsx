@@ -612,7 +612,13 @@ export default function Graph() {
                             />
                           </IconButton>
                           <IconButton
-                            className="foresight-graph-btn"
+                            className={`foresight-graph-btn${
+                              expanding ||
+                              selectedNode?.node.getData("type") !==
+                                "hierarchicalcluster"
+                                ? " disabled"
+                                : ""
+                            }`}
                             title="Expand articles along path"
                             disabled={
                               expanding ||
