@@ -1,7 +1,10 @@
 from collections import defaultdict
-from datetime import datetime
 import configparser
+from datetime import datetime
 import json
+import numpy as np
+from queue import Queue
+from threading import Thread
 import sys
 
 
@@ -9,7 +12,7 @@ from umap import UMAP
 from hdbscan import HDBSCAN
 from sklearn.feature_extraction.text import CountVectorizer
 from bertopic.vectorizers import ClassTfidfTransformer
-from bertopic.representation import KeyBERTInspired
+from bertopic.representation import KeyBERTInspired #, MaximalMarginalRelevance
 from bertopic import BERTopic
 
 from sentence_transformers import SentenceTransformer, util
@@ -70,7 +73,7 @@ def create_tools(embedding_model, seed_phrases):
         vectorizer_model=vectorizer_model,          # Step 4 - Tokenize topics
         ctfidf_model=ctfidf_model,                  # Step 5 - Extract topic words
         representation_model=representation_model,  # Step 6 - (Optional) Fine-tune topic representations
-        top_n_words=15,
+        # calculate_probabilities=True,
         verbose=True
     )
     
@@ -86,14 +89,28 @@ def cluster_batch(batch, embedding_model, seed_phrases):
 def cluster_batches(batches, embedding_model, seed_phrases, print_topics=False):
     topic_model = None
     for batch in batches:
-        if not topic_model:
-            topic_model = cluster_batch(batch, embedding_model, seed_phrases)
-        else:
-            batch_model = cluster_batch(batch, embedding_model, seed_phrases)
-            topic_model = BERTopic.merge_models([topic_model, batch_model], min_similarity=0.9)
+        batch_model = cluster_batch(batch, embedding_model, seed_phrases)
+        topic_model = batch_model if not topic_model else BERTopic.merge_models([topic_model, batch_model], min_similarity=0.9) 
         if print_topics:
             print(topic_model.get_topic_info(), flush=True)
     return topic_model
+
+   
+def get_topic_info(topic_model):
+    topic_dict = dict()
+    topic_info = topic_model.get_topic_info()
+    headers, rows = topic_info.columns.tolist(), topic_info.values.tolist()
+    for row in rows:
+        row_dict = {header: value for header, value in zip(headers, row)}
+        topic_id = int(row_dict['Topic'])
+        if topic_id not in topic_dict:
+            topic_dict[topic_id] = {
+                'name': row_dict['Name'],
+                'representatives': [],
+                'keywords': row_dict['Representation'],
+                'documents': dict(),
+            }
+    return topic_dict
 
 
 @stat_runner
@@ -103,27 +120,21 @@ def predict_batch(topic_model, batch, topic_dict):
     for topic, prob, doc_id in zip(topics, probs, [d['id'] for d in documents]):
         topic_id = int(topic)
         if topic_id not in topic_dict:
-            topic_dict[topic_id] = {'docs': []}
-        topic_dict[topic_id]['docs'].append([doc_id, prob])
-    return len(texts), topic_dict
+            topic_id = -1
+        topic_dict[topic_id]['documents'][doc_id] = prob
+    return len(topic_dict), topic_dict
     
 
-def predict_batches(topic_model, batches):
-    topic_dict = dict()
+def predict_batches(topic_model, batches, topic_dict):
     for batch in batches:
         topic_dict = predict_batch(topic_model, batch, topic_dict)
-    return topic_dict
-
-
-def get_topic_info(topic_model, batches, topic_dict):
-    all_texts = [t for _, texts, _ in batches for t in texts]
-    document_info = topic_model.get_document_info(all_texts)
-    headers, rows = document_info.columns.tolist(), document_info.values.tolist()
-    for row in rows:
-        row_dict = {header: value for header, value in zip(headers, row)}
-        topic_id = int(row_dict['Topic'])
-        if topic_id in topic_dict:
-            topic_dict[topic_id].update({'name': row_dict['Name'], 'keywords': row_dict['Representation']})
+        
+    for topic_id in sorted(topic_dict.keys()):
+        sorted_doc_prob = sorted(topic_dict[topic_id]['documents'].items(), key=lambda item: item[1], reverse=True)
+        representatives = [[doc_id, prob] for doc_id, prob in sorted_doc_prob if prob == 1.0]
+        if len(representatives) < min(5, len(sorted_doc_prob)):
+            representatives.extend(sorted_doc_prob[len(representatives):min(5, len(sorted_doc_prob))])
+        topic_dict[topic_id]['representatives'] = representatives
     return topic_dict
 
 
@@ -133,11 +144,15 @@ def increase_count(count, character):
     return count
 
 
-def compute_similarity(documents, similarity_threshold, content_similarity_ratio):
+def compute_similarity_task(f_documents, sublist, similarity_threshold, content_similarity_ratio, queue):
+    start, s_document = sublist
+
+    similarity_list = []
     count = 0
-    similarity_dict = defaultdict(list)
-    for f, f_embeddings in enumerate(documents[:-1]):
-        for s, s_embeddings in enumerate(documents[f+1:]):
+    for f, f_embeddings in enumerate(f_documents):
+        for s, s_embeddings in enumerate(s_document):
+            if f == s + start:
+                continue
             total_f_length, total_s_length = len(f_embeddings), len(s_embeddings)
             cos_sim = util.cos_sim(f_embeddings, s_embeddings)
 
@@ -161,23 +176,89 @@ def compute_similarity(documents, similarity_threshold, content_similarity_ratio
             
             min_length = min(total_f_length, total_s_length)
             len_f_ids = len(f_ids)
-            if (len_f_ids == 1 and min_length == 1) or \
-                (2 <= min_length <=3 and len_f_ids >= content_similarity_ratio * min_length) or \
-                (len_f_ids >= 3):
-                if total_s_length < total_f_length:
-                    key_id, val_id = s+f+1, f
+            if len_f_ids >= content_similarity_ratio * min_length:
+                if total_s_length == total_f_length:
+                    if s+start < f:
+                        key_id, val_id = s+start, f
+                    else:
+                        key_id, val_id = f, s+start
+                elif total_s_length < total_f_length:
+                    key_id, val_id = s+start, f
                 else:
-                    key_id, val_id = f, s+f+1
-                similarity_dict[key_id].append([val_id, total_score/min_length])
+                    key_id, val_id = f, s+start
+                similarity_list.append([key_id, val_id, total_score/min_length])
                 count = increase_count(count, '.')
 
-    return similarity_dict
+    queue.put(similarity_list)
 
+
+def compute_similarity(input_documents, n_workers, similarity_threshold, content_similarity_ratio):
+    batch_size = len(input_documents) // n_workers
+
+    sub_lists = []
+    for i in range(0, n_workers-1):
+        start = i * batch_size
+        end = (i+1) * batch_size
+        sub_lists.append([start, input_documents[start: end]])
+
+    start = (n_workers - 1) * batch_size
+    end = len(input_documents)
+    sub_lists.append([start, input_documents[(n_workers - 1) * batch_size:]])
+    
+    half_documents = input_documents[:len(input_documents)//2+1]
+
+    output_queue = Queue()
+    workers = []
+    for i in range(0, n_workers):
+        workers.append(Thread(target=compute_similarity_task, args=(half_documents, sub_lists[i], similarity_threshold, content_similarity_ratio, output_queue,)))
+        
+    for i in range(0, n_workers):
+        workers[i].start()
+    
+    for i in range(0, n_workers):
+        workers[i].join()
+        
+    output_documents = []
+    while True:
+        document = output_queue.get()
+        if document is None:
+            break
+        
+        output_documents.append(document)
+        if len(output_documents) == n_workers:
+            break
+    return output_documents
+
+
+def compute_constellations(topic_dict, similarity_threshold, content_similarity_ratio):
+    topic_keywords, topic_ids = [], []
+    for topic_id in sorted(topic_dict.keys()):
+        if topic_id != -1 and 'name' in topic_dict[topic_id] and not topic_dict[topic_id]['name'].startswith('-1'):
+            topic_keywords.append(embedding_model.encode(topic_dict[topic_id]['keywords']))
+            topic_ids.append(topic_id)
+    
+    similarity_dict = defaultdict(dict)
+    n_workers = 4
+    similarity_lists = compute_similarity(topic_keywords, n_workers, similarity_threshold, content_similarity_ratio)
+    for similarity_list in similarity_lists:
+        for key_id, val_id, score in similarity_list:
+            topic_kid = topic_ids[key_id]
+            topic_sid = topic_ids[val_id]
+            similarity_dict[topic_kid][topic_sid] = score
+    
+    return similarity_dict
+    
 
 if __name__ == '__main__':
     start_time = datetime.now()
 
     config = load_config(sys.argv[1])
+
+    in_path, start_date, end_date = sys.argv[2], sys.argv[3], sys.argv[4]
+    if len(sys.argv) > 6:
+        similarity_threshold, content_similarity_ratio = float(sys.argv[5]), float(sys.argv[6])
+    else:
+        similarity_threshold, content_similarity_ratio = 0.8, 0.3
 
     model_name = 'sentence-transformers/all-MiniLM-L6-v2'
     embedding_model = SentenceTransformer(model_name)
@@ -186,34 +267,24 @@ if __name__ == '__main__':
     print(f"Read {len(seed_phrases)} seed phrases.")
 
     date_list = [f"{month}-{day:02}" for month in ['2019-12', '2020-01'] for day in range(1, 32)]
-    in_path, start_date, end_date = sys.argv[2], sys.argv[3], sys.argv[4]
     
     batches = load_batches(in_path, date_list, start_date, end_date, embedding_model)
     
     topic_model = cluster_batches(batches, embedding_model, seed_phrases, print_topics=True)
 
-    topic_dict = predict_batches(topic_model, batches)
+    topic_dict = get_topic_info(topic_model)
+    for topic_id in sorted(topic_dict.keys()):
+        print(f"[{topic_id}] --- [{len(topic_dict[topic_id]['documents'])}] --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']} --- {len(topic_dict[topic_id]['representatives'])}")
     
-    topic_dict = get_topic_info(topic_model, batches, topic_dict)
+    topic_dict = predict_batches(topic_model, batches, topic_dict)
     for topic_id in sorted(topic_dict.keys()):
-        if 'name' in topic_dict[topic_id]:
-            print(f"{topic_id} --- [{len(topic_dict[topic_id]['docs'])}] --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']}")
-        else:
-            print(f"{topic_id} --- [{len(topic_dict[topic_id]['docs'])}] --- {topic_model.topic_labels_[topic_id]}")
+        print(f"[{topic_id}] --- [{len(topic_dict[topic_id]['documents'])}] --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']} --- {topic_dict[topic_id]['representatives']}")
 
-    topic_keywords, topic_ids = [], []
-    for topic_id in sorted(topic_dict.keys()):
-        if topic_id != -1 and 'name' in topic_dict[topic_id] and not topic_dict[topic_id]['name'].startswith('-1'):
-            topic_keywords.append(embedding_model.encode(topic_dict[topic_id]['keywords']))
-            topic_ids.append(topic_id)
-            
-    similarity_dict = compute_similarity(topic_keywords, similarity_threshold=0.80, content_similarity_ratio=0.5)
-    for key_id, similarity_list in similarity_dict.items():
-        topic_kid = topic_ids[key_id]
-        print(f"{topic_kid} --- [{len(topic_dict[topic_kid]['docs'])}] --- {topic_dict[topic_kid]['name']} --- {topic_dict[topic_kid]['keywords']}")
-        for val_id, score in similarity_list:
-            topic_sid = topic_ids[val_id]
-            print(f"\t{score:0.2f} --- {topic_sid} --- [{len(topic_dict[topic_sid]['docs'])}] --- {topic_dict[topic_sid]['name']} --- {topic_dict[topic_sid]['keywords']}")
+    similarity_dict = compute_constellations(topic_dict, similarity_threshold, content_similarity_ratio)
+    for topic_kid, score_dict in similarity_dict.items():
+        print(f"{topic_kid} --- [{len(topic_dict[topic_kid]['documents'])}] --- {topic_dict[topic_kid]['name']}")   # --- {topic_dict[topic_kid]['keywords']}")
+        for topic_sid, score in score_dict.items():
+            print(f"\t{score:0.2f} --- {topic_sid} --- [{len(topic_dict[topic_sid]['documents'])}] --- {topic_dict[topic_sid]['name']}")    # --- {topic_dict[topic_sid]['keywords']}")
 
     end_time = datetime.now()
     seconds = (end_time - start_time).total_seconds()
