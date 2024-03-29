@@ -14,6 +14,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import ButtonGroup from "@mui/material/ButtonGroup";
+import Chip from "@mui/material/Chip";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import { useStore } from "~/app/_store";
@@ -78,6 +80,7 @@ function ThreatSelectorComponent() {
     <div className="relative" onClick={preventPropagation}>
       <Button
         sx={{ fontSize: 14 }}
+        className="whitespace-nowrap"
         variant="contained"
         endIcon={<FontAwesomeIcon icon={faAngleDown} />}
         onClick={handleOpenClick}
@@ -85,33 +88,39 @@ function ThreatSelectorComponent() {
         Filter View
       </Button>
       {open && (
-        <div className="absolute right-0 z-[402] flex w-[650px] flex-col  border border-black bg-white p-10 text-2xl">
-          <div className="flex justify-end space-x-5">
-            <Button
-              variant="contained"
-              onClick={handleGroupSelect}
-              sx={{ fontSize: 14 }}
-            >
-              {groupSelectText}
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleResetClick}
-              color="error"
-              sx={{ fontSize: 14 }}
-            >
-              Reset to default
-            </Button>
+        <div className="absolute right-0 z-[402] flex w-[600px] flex-col  border border-black bg-white pl-[4px] pr-[4px] text-2xl">
+          <div className="flex h-[52px] justify-between pb-[8px] pt-[8px]">
+            <Chip label={`${selected.length} Selected`} sx={{ fontSize: 14 }} />
+            <ButtonGroup className="space-x-[10px]">
+              <Button
+                variant="contained"
+                onClick={handleGroupSelect}
+                sx={{ fontSize: 14 }}
+              >
+                {groupSelectText}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleResetClick}
+                color="error"
+                sx={{ fontSize: 14 }}
+              >
+                Reset to default
+              </Button>
+            </ButtonGroup>
           </div>
-          <div className="m-5 max-h-[50vh] overflow-auto pl-5">
+          <div
+            className="overflow-auto pl-[19px] pr-[8px]"
+            style={{ maxHeight: "calc(100vh - 200px)" }}
+          >
             <FormGroup>
               {threats?.map((threat, idx) => (
                 <FormControlLabel
+                  className="h-[40px]"
                   key={`threat_${idx}`}
-                  label={<span style={{ fontSize: 14}}>{threat.text}</span>}
+                  label={<span style={{ fontSize: 16 }}>{threat.text}</span>}
                   control={
                     <Checkbox
-                    size="large"
                       style={{ padding: "0px 5px 0px 0px" }}
                       value={threat.text}
                       checked={selected.includes(threat.text)}

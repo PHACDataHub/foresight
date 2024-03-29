@@ -153,13 +153,6 @@ export function ClusterNode(
     [addQA, cluster, question, questionApi],
   );
 
-  // const handleAddToGraph = useCallback(async () => {
-  //   if (!cluster) return;
-  //   toggleExpandedCluster(cluster.id);
-  //   setLayout("force");
-  //   refresh();
-  // }, [cluster, refresh, setLayout, toggleExpandedCluster]);
-
   useEffect(() => {
     if (!ogma || !data || !cluster) return;
     const loadData = async () => {

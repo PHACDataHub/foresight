@@ -57,6 +57,19 @@ export default function DataLoader({
       },
     );
 
+  const { data: timeLineArticles } = api.post.articles.useQuery(
+    { cluster_id: clusterId ?? "" },
+    { enabled: typeof clusterId !== "undefined" },
+  );
+
+  useEffect(() => {
+    if (timeLineArticles) {
+      setTotalSize(timeLineArticles.nodes.length + timeLineArticles.edges.length);
+      setScale(createScale(timeLineArticles));
+      void ogma.setGraph(timeLineArticles);
+    }
+  }, [ogma, setScale, timeLineArticles]);
+
   // Update the article count when the data is available.
   useEffect(() => {
     if (typeof articleCount === "number") setArticleCount(articleCount);

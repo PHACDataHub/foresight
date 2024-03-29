@@ -205,7 +205,7 @@ export default function SidePanel() {
                   Clusters:
                 </Typography>
                 <Typography variant="body1" fontSize={14} fontWeight={500}>
-                  {selectedData.clusters.join(", ")}
+                  {selectedData.clusters.length}
                 </Typography>
               </div>
             </div>

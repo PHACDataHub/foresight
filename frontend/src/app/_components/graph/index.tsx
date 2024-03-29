@@ -35,6 +35,7 @@ import {
   faMap,
   faMinimize,
   faSitemap,
+  faSquarePlus,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -45,6 +46,7 @@ import FormGroup from "@mui/material/FormGroup";
 import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import InputLabel from "@mui/material/InputLabel";
 import Select, { type SelectChangeEvent } from "@mui/material/Select";
@@ -52,12 +54,19 @@ import MenuItem from "@mui/material/MenuItem";
 
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
-import { getNodeData } from "~/app/_utils/graph";
+import {
+  createScale,
+  findAlongPath,
+  getNodeData,
+  getRawNodeData,
+} from "~/app/_utils/graph";
 import SidePanel from "~/app/_components/SidePanel";
 import { env } from "~/env";
+import { api } from "~/trpc/react";
+import { type Article } from "~/server/api/routers/post";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader from "./DataLoader";
@@ -84,10 +93,13 @@ export default function Graph() {
   const panelRef = useRef<ImperativePanelGroupHandle>(null);
 
   const { height, width } = useResizeObserver({ ref, box: "border-box" });
-  const { day } = useParams();
+  const { day, locale } = useParams();
   const [dataLoading, setDataLoading] = useState(false);
 
+  const expandCluster = api.post.expandCluster.useMutation();
+
   const {
+    history,
     showInfoPanel,
     toggleTreeDirection,
     layout,
@@ -108,6 +120,8 @@ export default function Graph() {
     toggleRodMode,
     mapMode,
     setMapMode,
+    augmentScale,
+    ogma,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -119,6 +133,8 @@ export default function Graph() {
 
   const rodModeTracker = useRef<string>("");
   const rodModeTrackerTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const rod = (e: KeyboardEvent) => {
@@ -162,6 +178,100 @@ export default function Graph() {
     };
   }, []);
 
+  const handleExpandRelatedClusters = useCallback(() => {
+    if (!selectedNode?.node || !ogma) return;
+    const clusters = findAlongPath(
+      selectedNode.node,
+      "out",
+      (n) => n.getData("type") === "cluster",
+    );
+    if (clusters.size === 0) return;
+    setExpanding(true);
+    setLayout("force");
+    setExpandedClusters(clusters.map((c) => c.getData("id") as string));
+
+    const ops: Array<Promise<number[]>> = [];
+    clusters.forEach((c) => {
+      ops.push(
+        new Promise((resolve) => {
+          const d = getNodeData(c);
+          if (!d || d.type !== "cluster") return;
+          const articlePromise = expandCluster.mutateAsync({ id: d.id });
+          articlePromise
+            .then((articles) => {
+              augmentScale(
+                createScale({
+                  nodes: articles.nodes,
+                  edges: articles.edges,
+                }),
+              );
+              ogma
+                .addGraph({
+                  nodes: articles.nodes.map((n) => ({
+                    ...n,
+                    data: { ...n.data, cluster_id: d.id },
+                  })),
+                  edges: articles.edges,
+                })
+                .then(() => {
+                  resolve(
+                    articles.nodes
+                      .filter((n) => n?.data?.type === "article")
+                      .map((n) => getRawNodeData<Article>(n).id),
+                  );
+                })
+                .catch(() => {
+                  console.error("ERROR");
+                  setExpanding(false);
+                });
+            })
+            .catch((e) => {
+              console.error(e);
+              setExpanding(false);
+            });
+        }),
+      );
+    });
+    const waitForOps = async () => {
+      const co = await Promise.all(ops);
+      setExpanding(false);
+      ogma.events.once("idle", async () => {
+        await ogma.layouts.force({
+          gpu: true,
+          locate: false,
+        });
+        const nodes_to_locate = co.reduce(
+          (p, c) => p.concat(c),
+          [] as number[],
+        );
+        await ogma
+          .getNodes()
+          .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
+          .locate();
+      });
+    };
+    void waitForOps();
+  }, [
+    selectedNode?.node,
+    ogma,
+    expandCluster,
+    augmentScale,
+    setLayout,
+    setExpandedClusters,
+  ]);
+
+  const handleTimeSeriesClick = useCallback(() => {
+    if (!selectedNode?.node) return;
+    const d = getNodeData(selectedNode.node);
+    if (
+      typeof locale === "string" &&
+      typeof day === "string" &&
+      d?.type === "cluster"
+    ) {
+      router.push(`/${locale}/${day}/${history}/${d.id}`);
+    }
+  }, [day, history, locale, router, selectedNode?.node]);
+
   const handleDataLoading = useCallback((loading: boolean) => {
     setDataLoading(loading);
   }, []);
@@ -196,6 +306,7 @@ export default function Graph() {
 
   // Controls
   const [maximized, setMaximized] = useState(false);
+  const [expanding, setExpanding] = useState(false);
 
   const handleGeoBtnClick = useCallback(() => {
     setGeoMode(!geoMode);
@@ -355,22 +466,6 @@ export default function Graph() {
             <Ogma
               // key={`ogma-${day}-${history}`}
               ref={ogmaRef}
-              options={
-                {
-                  // width,
-                  // height,
-                  // detect: {
-                  //   edges: false,
-                  //   nodeTexts: false,
-                  //   edgeTexts: false,
-                  // },
-                  // interactions: {
-                  //   drag: {
-                  //     enabled: false,
-                  //   },
-                  // },
-                }
-              }
               onReady={(ogma) => {
                 setOgma(ogma);
                 ogma.events
@@ -488,6 +583,18 @@ export default function Graph() {
                             </MenuItem>
                           </Select>
                         </FormControl>
+
+                        <Button
+                          onClick={handleTimeSeriesClick}
+                          disabled={
+                            selectedNode?.node.getData("type") !== "cluster" ||
+                            true
+                          }
+                          variant="contained"
+                          sx={{ fontSize: 14, marginTop: 1 }}
+                        >
+                          Time Series
+                        </Button>
                       </FormGroup>
                     )}
                     {!geoMode && (
@@ -500,6 +607,22 @@ export default function Graph() {
                           >
                             <FontAwesomeIcon
                               icon={faArrowsRotate}
+                              color="inherit"
+                              fontSize={22}
+                            />
+                          </IconButton>
+                          <IconButton
+                            className="foresight-graph-btn"
+                            title="Expand articles along path"
+                            disabled={
+                              expanding ||
+                              selectedNode?.node.getData("type") !==
+                                "hierarchicalcluster"
+                            }
+                            onClick={handleExpandRelatedClusters}
+                          >
+                            <FontAwesomeIcon
+                              icon={faSquarePlus}
                               color="inherit"
                               fontSize={22}
                             />

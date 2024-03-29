@@ -318,7 +318,7 @@ export const postRouter = createTRPCRouter({
             WITH c, r, a
               OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
           RETURN c, r, a, r_sim
-        `,
+    `,
           { id: input.id },
         );
         return translateGraph(await OgmaLib.parse.neo4j(result));
@@ -373,11 +373,10 @@ export const postRouter = createTRPCRouter({
         const result = await session.run(
           `
           MATCH (a:Article)-[r:IN_CLUSTER]->(c:Cluster {id: $cluster_id})
-          WITH c, COLLECT(a) AS ac
-            OPTIONAL MATCH (a)-[r:SIMILAR_TO]-(oa)
-              WHERE a IN ac AND oa IN ac
+          WITH c, r, a
+            OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
           RETURN 
-            a, r, NOT oa
+            a, r_sim
         `,
           { cluster_id: input.cluster_id },
         );

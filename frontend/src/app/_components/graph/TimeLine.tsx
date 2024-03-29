@@ -51,12 +51,9 @@ export default function TimeLine({
   const { history } = useStore();
   const { day } = useParams();
 
-  console.log("TIMELINE TIMELINE TIMELINE");
-
   const timeline = useRef<TimelinePluginInterface | null>(null);
   useEffect(() => {
     ogma.events.once("idle", () => {
-      console.log(history);
       if (timeline.current === null && history && typeof day === "string") {
         let isSelecting = false;
         if (container.current) {
@@ -66,6 +63,8 @@ export default function TimeLine({
           const endDate = new Date(baseDate);
           baseDate.setDate(baseDate.getDate() - history + 1);
           container.current.innerHTML = "";
+          console.log(baseDate);
+          console.log(endDate);
           timeline.current = new TimelinePlugin(ogma, container.current, {
             minTime: baseDate.getTime(),
             maxTime: endDate.getTime(),
