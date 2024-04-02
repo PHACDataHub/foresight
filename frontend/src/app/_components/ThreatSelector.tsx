@@ -88,7 +88,7 @@ function ThreatSelectorComponent() {
         Filter View
       </Button>
       {open && (
-        <div className="absolute right-0 z-[402] flex w-[600px] flex-col  border border-black bg-white pl-[4px] pr-[4px] text-2xl">
+        <div className="absolute right-0 z-[1402] flex w-[600px] flex-col  border border-black bg-white pl-[4px] pr-[4px] text-2xl">
           <div className="flex h-[52px] justify-between pb-[8px] pt-[8px]">
             <Chip label={`${selected.length} Selected`} sx={{ fontSize: 14 }} />
             <ButtonGroup className="space-x-[10px]">
@@ -116,7 +116,7 @@ function ThreatSelectorComponent() {
             <FormGroup>
               {threats?.map((threat, idx) => (
                 <FormControlLabel
-                  className="h-[40px] pl-[9px]"
+                  className="pl-[9px] pb-[4px] pt-[4px]"
                   style={{ marginRight: 0}}
                   sx={{ ":hover": { backgroundColor: "#E8E8E8" }}}
                   key={`threat_${idx}`}
@@ -124,7 +124,7 @@ function ThreatSelectorComponent() {
                   control={
                     <Checkbox
                       style={{ padding: 0 }}
-                      sx={{ '& .MuiSvgIcon-root': { fontSize: 42 } }}
+                      sx={{ '& .MuiSvgIcon-root': { fontSize: 24 } }}
                       value={threat.text}
                       checked={selected.includes(threat.text)}
                       onChange={handleCheckClick}
