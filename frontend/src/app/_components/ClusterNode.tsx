@@ -26,18 +26,35 @@ import TextField from "@mui/material/TextField";
 import { Chip } from "@mui/material";
 import { type Article, type Cluster } from "~/server/api/routers/post";
 import { type ClusterNodeSections, useStore } from "~/app/_store";
-import { createScale, getNodeData, getRawNodeData } from "~/app/_utils/graph";
+import {
+  createScale,
+  getNodeData,
+  getRawNodeData,
+  isLocationValid,
+} from "~/app/_utils/graph";
 import { api } from "~/trpc/react";
 import ArticleComponent from "./graph/Article";
 import { HighlightSearchTerms } from "./HighlightTerms";
 import { NodeTitle } from "./NodeTitle";
 
-const Location = styled("div")(({ theme }) => {
+const Location = styled("div")<{
+  status?: "missing" | "invalid";
+}>(({ status, theme }) => {
+  const color = useMemo(() => {
+    if (!status) return theme.palette.primary.main;
+    if (status === "missing") return theme.palette.error.main;
+    if (status === "invalid") return theme.palette.warning.main;
+  }, [
+    status,
+    theme.palette.error.main,
+    theme.palette.primary.main,
+    theme.palette.warning.main,
+  ]);
   return {
     ...theme.typography.button,
     fontSize: 13,
-    color: theme.palette.primary.main,
-    border: `1px solid ${theme.palette.primary.main}`,
+    color,
+    border: `1px solid ${color}`,
     borderRadius: 100,
     whiteSpace: "pretty",
     padding: "4px 10px 4px 10px",
@@ -46,15 +63,24 @@ const Location = styled("div")(({ theme }) => {
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   if (!cluster?.locations) return;
+  const locations = cluster.locations.filter((l) => Boolean(l.location));
   return (
     <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap">
-      {cluster.locations
-        .filter((l) => Boolean(l.location))
-        .map((l, i) => (
-          <li key={`loc_${i}`} className="m-1 p-0">
-            <Location>{l.location}</Location>
-          </li>
-        ))}
+      {locations.map((l, i) => (
+        <li key={`loc_${i}`} className="m-1 p-0">
+          <Location
+            title={!isLocationValid(l) ? "Location invalid" : ""}
+            status={isLocationValid(l) ? undefined : "invalid"}
+          >
+            {l.location}
+          </Location>
+        </li>
+      ))}
+      {locations.length === 0 && (
+        <Location title="No location data is available" status="missing">
+          No Location
+        </Location>
+      )}
     </ul>
   );
 }
@@ -75,7 +101,7 @@ export function ClusterNode(
 
   const [question, setQuestion] = useState("");
 
-  const { qa, addQA, ogma, refresh, expandedClusters, augmentScale } =
+  const { qa, addQA, ogma, refresh, expandedClusters, augmentScale, geoMode } =
     useStore();
 
   const id = useMemo(() => {
@@ -204,6 +230,16 @@ export function ClusterNode(
     [],
   );
 
+  const showLocate = useMemo(
+    () =>
+      Boolean(
+        !geoMode ||
+          (cluster?.locations &&
+            cluster.locations.filter((l) => isLocationValid(l)).length > 0),
+      ),
+    [cluster, geoMode],
+  );
+
   if (!cluster) return;
 
   if (details)
@@ -240,7 +276,9 @@ export function ClusterNode(
           <>
             <div className="flex flex-1 flex-col pl-[30px] pr-[12px] pt-[10px]">
               <div className="flex flex-1 flex-col">
-                <NodeTitle dataNode={clusterNode} />
+                {showLocate && <NodeTitle dataNode={clusterNode} />}
+                {!showLocate && <NodeTitle title={cluster.title} />}
+
                 <ClusterLocations cluster={cluster} />
 
                 <div className="h-0 flex-auto overflow-auto">
@@ -337,9 +375,7 @@ export function ClusterNode(
                 <AccordionSummary
                   expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
                 >
-                  <Typography variant="h5">
-                    {article.title}
-                  </Typography>
+                  <Typography variant="h5">{article.title}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <ArticleComponent article={article} />
@@ -353,7 +389,8 @@ export function ClusterNode(
 
   return (
     <section className="flex flex-1 flex-col">
-      <NodeTitle dataNode={clusterNode} />
+      {showLocate && <NodeTitle dataNode={clusterNode} />}
+      {!showLocate && <NodeTitle title={cluster.title} />}
       <ClusterLocations cluster={cluster} />
       <Typography variant="body1" fontSize={16}>
         <HighlightSearchTerms text={cluster.summary ?? ""} />

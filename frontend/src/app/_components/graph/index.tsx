@@ -34,6 +34,7 @@ import {
   faGripVertical,
   faMap,
   faMinimize,
+  faSatellite,
   faSitemap,
   faSquarePlus,
   type IconDefinition,
@@ -339,6 +340,10 @@ export default function Graph() {
     },
     [setMapMode],
   );
+
+  const handleSatelliteClick = useCallback(() => {
+    setMapMode(mapMode === "roadmap" ? "hybrid" : "roadmap");
+  }, [mapMode, setMapMode]);
 
   const resizeOgma = useDebounceCallback(
     (ogma: OgmaLib, max: boolean, w: number, h: number) => {
@@ -664,6 +669,19 @@ export default function Graph() {
                           ))}
                         </ButtonGroup>
                       </>
+                    )}
+                    {geoMode && (
+                      <IconButton
+                        className={`foresight-graph-btn${mapMode === "hybrid" ? " active" : ""}`}
+                        onClick={handleSatelliteClick}
+                        title="Toggle between satellite and terrain view"
+                      >
+                        <FontAwesomeIcon
+                          icon={faSatellite}
+                          fontSize={22}
+                          color="inherit"
+                        />
+                      </IconButton>
                     )}
                     <IconButton
                       className="foresight-graph-btn"

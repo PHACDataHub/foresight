@@ -225,6 +225,12 @@ main.container {
   background-color: #fff !important;
 }
 
+.foresight-graph-btn.checkbox {
+  margin: 0;
+  padding: 0 5px 0 0;
+  width: unset !important;
+}
+
 .MuiButtonGroup-root .foresight-graph-btn {
   border-radius: 0 !important;
   border-right-width: 0 !important;

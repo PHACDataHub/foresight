@@ -110,18 +110,21 @@ function ThreatSelectorComponent() {
             </ButtonGroup>
           </div>
           <div
-            className="overflow-auto pl-[19px] pr-[8px]"
+            className="overflow-auto pl-[8px] pr-[8px]"
             style={{ maxHeight: "calc(100vh - 200px)" }}
           >
             <FormGroup>
               {threats?.map((threat, idx) => (
                 <FormControlLabel
-                  className="h-[40px]"
+                  className="h-[40px] pl-[9px]"
+                  style={{ marginRight: 0}}
+                  sx={{ ":hover": { backgroundColor: "#E8E8E8" }}}
                   key={`threat_${idx}`}
-                  label={<span style={{ fontSize: 16 }}>{threat.text}</span>}
+                  label={<span style={{ fontSize: 16, paddingLeft: 9 }}>{threat.text}</span>}
                   control={
                     <Checkbox
-                      style={{ padding: "0px 5px 0px 0px" }}
+                      style={{ padding: 0 }}
+                      sx={{ '& .MuiSvgIcon-root': { fontSize: 42 } }}
                       value={threat.text}
                       checked={selected.includes(threat.text)}
                       onChange={handleCheckClick}

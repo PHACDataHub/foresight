@@ -310,7 +310,7 @@ const LayoutService = forwardRef(
           for (const term of terms) {
             const t = term.toLowerCase();
             if (
-              data.summary?.toLowerCase().includes(t) ??
+              Boolean(data.summary?.toLowerCase().includes(t)) ||
               data.title.toLowerCase().includes(t)
             )
               return true;
@@ -326,7 +326,7 @@ const LayoutService = forwardRef(
           for (const term of terms) {
             const t = term.toLowerCase();
             if (
-              data.content?.toLowerCase().includes(t) ??
+              Boolean(data.content?.toLowerCase().includes(t)) ||
               data.title.toLowerCase().includes(t)
             )
               return true;

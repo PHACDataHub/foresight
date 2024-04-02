@@ -130,7 +130,7 @@ export const useStore = create<ForesightStore>((set) => ({
   ogma: null,
   setOgma: (ogma) => set({ ogma }),
   rodMode: false,
-  mapMode: "terrain",
+  mapMode: "roadmap",
   setMapMode: (mapMode) => set({ mapMode }),
   toggleRodMode: () => set((state) => ({ rodMode: !state.rodMode })),
   expandedClusters: [],

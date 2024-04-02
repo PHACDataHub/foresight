@@ -1,10 +1,6 @@
 "use client";
 
-import React, {
-  type ChangeEvent,
-  type SyntheticEvent,
-  useCallback,
-} from "react";
+import React, { type SyntheticEvent, useCallback } from "react";
 
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
@@ -22,14 +18,15 @@ export default function HighlightTerms() {
   const updateSearchAsYouType = useDebounceCallback(setSearchAsYouType, 300);
 
   const handleSearchInputChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      updateSearchAsYouType(e.target.value);
+    (event: React.SyntheticEvent, value: string) => {
+      updateSearchAsYouType(value);
     },
     [updateSearchAsYouType],
   );
 
   const handleSearchChange = useCallback(
-    (event: SyntheticEvent<Element, Event>, newValue: string[]) => {
+    (event: SyntheticEvent, newValue: string[]) => {
+      console.log("onchange!");
       updateSearchAsYouType("");
       setSearchTerms(newValue);
     },
@@ -45,6 +42,7 @@ export default function HighlightTerms() {
       options={[]}
       value={searchTerms}
       onChange={handleSearchChange}
+      onInputChange={handleSearchInputChange}
       multiple
       renderTags={(value, props) =>
         value.map((option, index) => (
@@ -61,7 +59,6 @@ export default function HighlightTerms() {
           variant="outlined"
           label="Highlight terms"
           placeholder="Search terms"
-          onChange={handleSearchInputChange}
           {...params}
           InputLabelProps={{ sx: { fontSize: 16 } }}
           InputProps={{

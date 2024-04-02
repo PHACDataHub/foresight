@@ -51,7 +51,7 @@ export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
   }, [dataNode, opts]);
 
   return (
-    <div className="flex items-start justify-between space-x-[24px] p-0">
+    <div className="flex items-start justify-between space-x-[24px] p-0 h-[40px]">
       <div className="flex-1">
         <Typography
           variant="h4"
