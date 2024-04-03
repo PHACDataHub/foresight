@@ -252,9 +252,10 @@ export const useStore = create<ForesightStore>((set) => ({
       const newValues: { question: string; answer?: string[] }[] = [
         { question, answer },
       ];
-      qa[clusterId] = newValues.concat(
-        (qa[clusterId] ?? []).filter((q) => q.question !== question),
-      );
+      qa[clusterId] = (qa[clusterId] ?? [])
+        .filter((q) => q.question !== question)
+        .concat(newValues);
+
       return { qa };
     }),
 }));

@@ -4,9 +4,8 @@ import { type Node as OgmaNode } from "@linkurious/ogma";
 
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
+import { Locate } from "lucide-react";
 import { getNodeData } from "~/app/_utils/graph";
 import { useStore } from "~/app/_store";
 import { type Cluster } from "~/server/api/routers/post";
@@ -51,7 +50,7 @@ export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
   }, [dataNode, opts]);
 
   return (
-    <div className="flex items-start justify-between space-x-[24px] p-0 h-[40px]">
+    <div className="flex items-center justify-between space-x-[24px] p-0">
       <div className="flex-1">
         <Typography
           variant="h4"
@@ -65,8 +64,12 @@ export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
       </div>
       {dataNode && (
         <div className="flex">
-          <IconButton className="foresight-graph-btn" onClick={handleLocate}>
-            <FontAwesomeIcon icon={faMagnifyingGlass} fontSize={22} />
+          <IconButton
+            className="foresight-graph-btn"
+            style={{ width: 32, height: 32 }}
+            onClick={handleLocate}
+          >
+            <Locate size={22} />
           </IconButton>
         </div>
       )}

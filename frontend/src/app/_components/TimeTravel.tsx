@@ -108,7 +108,7 @@ function TimeTravelComponent({
   );
 
   return (
-    <nav className="mb-3 mt-3 flex items-center space-x-10 whitespace-nowrap">
+    <nav className="mb-3 mt-3 whitespace-nowrap">
       <DatePicker
         selected={date}
         minDate={startDate}

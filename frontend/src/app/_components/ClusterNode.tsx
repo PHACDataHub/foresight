@@ -10,6 +10,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -24,6 +25,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
 import { Chip } from "@mui/material";
+import { Dot } from "lucide-react";
 import { type Article, type Cluster } from "~/server/api/routers/post";
 import { type ClusterNodeSections, useStore } from "~/app/_store";
 import {
@@ -41,19 +43,20 @@ const Location = styled("div")<{
   status?: "missing" | "invalid";
 }>(({ status, theme }) => {
   const color = useMemo(() => {
+    if (!status) return "#fff";
+    if (status === "missing") return "#808080";
+    if (status === "invalid") return theme.palette.error.main;
+  }, [status, theme.palette.error.main]);
+  const bg = useMemo(() => {
     if (!status) return theme.palette.primary.main;
-    if (status === "missing") return theme.palette.error.main;
-    if (status === "invalid") return theme.palette.warning.main;
-  }, [
-    status,
-    theme.palette.error.main,
-    theme.palette.primary.main,
-    theme.palette.warning.main,
-  ]);
+    return "#fff";
+  }, [status, theme.palette.primary.main]);
   return {
     ...theme.typography.button,
     fontSize: 13,
     color,
+    backgroundColor: bg,
+    textDecoration: status === "invalid" ? "line-through" : undefined,
     border: `1px solid ${color}`,
     borderRadius: 100,
     whiteSpace: "pretty",
@@ -69,7 +72,7 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
       {locations.map((l, i) => (
         <li key={`loc_${i}`} className="m-1 p-0">
           <Location
-            title={!isLocationValid(l) ? "Location invalid" : ""}
+            title={!isLocationValid(l) ? "Invalid or missing coordinates" : ""}
             status={isLocationValid(l) ? undefined : "invalid"}
           >
             {l.location}
@@ -100,6 +103,7 @@ export function ClusterNode(
   const details = "details" in props && props.details;
 
   const [question, setQuestion] = useState("");
+  const endOfQARef = useRef<HTMLSpanElement | null>(null);
 
   const { qa, addQA, ogma, refresh, expandedClusters, augmentScale, geoMode } =
     useStore();
@@ -162,6 +166,9 @@ export function ClusterNode(
         addQA({ clusterId: cluster.id, question });
         setQuestion("");
         try {
+          setTimeout(() => {
+            endOfQARef.current?.scrollIntoView();
+          }, 200);
           const answer = await questionApi.mutateAsync({
             cluster_id: cluster.id,
             question,
@@ -173,6 +180,10 @@ export function ClusterNode(
             question,
             answer: [(e as Error).message],
           });
+        } finally {
+          setTimeout(() => {
+            endOfQARef.current?.scrollIntoView();
+          }, 200);
         }
       }
     },
@@ -276,34 +287,70 @@ export function ClusterNode(
           <>
             <div className="flex flex-1 flex-col pl-[30px] pr-[12px] pt-[10px]">
               <div className="flex flex-1 flex-col">
-                {showLocate && <NodeTitle dataNode={clusterNode} />}
-                {!showLocate && <NodeTitle title={cluster.title} />}
+                <div className="h-0 flex-auto overflow-auto pr-[12px]">
+                  {showLocate && <NodeTitle dataNode={clusterNode} />}
+                  {!showLocate && <NodeTitle title={cluster.title} />}
 
-                <ClusterLocations cluster={cluster} />
+                  <ClusterLocations cluster={cluster} />
 
-                <div className="h-0 flex-auto overflow-auto">
                   <section>
-                    <Typography variant="body1" fontSize={16}>
+                    <Typography variant="body1" fontSize={14}>
                       <HighlightSearchTerms text={cluster.summary ?? ""} />
                     </Typography>
                   </section>
                   <section className="mt-[10px] border-t pt-[10px]">
-                    <Typography variant="h5" fontSize={18}>
+                    <Typography variant="h5" fontSize={16} fontWeight={500}>
                       Questions about this cluster
                     </Typography>
                     <ul className="mt-[10px]">
+                      {Object.entries(cluster.answers ?? []).map(
+                        ([question, answer], i) => (
+                          <li key={`${cluster.id}_question_${i}`}>
+                            <Typography
+                              className="flex items-center space-x-2"
+                              fontWeight={500}
+                              variant="body1"
+                              fontSize={14}
+                            >
+                              <Dot size={16} />
+                              <span>{question}</span>
+                            </Typography>
+
+                            <ul className="ml-10 pb-[8px]">
+                              <li className="flex items-start space-x-4">
+                                <FontAwesomeIcon
+                                  className="mt-[4px]"
+                                  icon={faMessage}
+                                  fontSize={10}
+                                />
+                                <Typography fontSize={14} variant="body1">
+                                  {answer}
+                                </Typography>
+                              </li>
+                            </ul>
+                          </li>
+                        ),
+                      )}
                       {qa[cluster.id]?.map(({ question, answer }, i) => (
                         <li key={`qes_${cluster.id}_${i}`}>
                           <Typography
+                            className="flex items-center space-x-2"
+                            fontWeight={500}
                             color="primary"
                             variant="body1"
-                            fontSize={16}
+                            fontSize={14}
                           >
-                            &gt; {question}
+                            <Dot size={16} />
+                            <span>{question}</span>
                           </Typography>
                           <ul className="ml-10">
-                            <li className="flex items-center space-x-4 whitespace-pre-wrap">
-                              <FontAwesomeIcon icon={faMessage} fontSize={10} />
+                            <li className="flex items-start space-x-4 whitespace-pre-wrap">
+                              <FontAwesomeIcon
+                                className="mt-[4px]"
+                                icon={faMessage}
+                                fontSize={10}
+                              />
+
                               {typeof answer === "undefined" && (
                                 <FontAwesomeIcon spin icon={faSpinner} />
                               )}
@@ -313,7 +360,7 @@ export function ClusterNode(
                                     variant="body1"
                                     color="secondary"
                                     className="pb-2"
-                                    fontSize={16}
+                                    fontSize={14}
                                     key={`cluster_${cluster.id}-a-${i}`}
                                   >
                                     {a}
@@ -324,29 +371,8 @@ export function ClusterNode(
                           </ul>
                         </li>
                       ))}
-
-                      {Object.entries(cluster.answers ?? []).map(
-                        ([question, answer], i) => (
-                          <li key={`${cluster.id}_question_${i}`}>
-                            <Typography variant="body1" fontSize={16}>
-                              &gt; {question}
-                            </Typography>
-
-                            <ul className="ml-10">
-                              <li className="flex items-center space-x-4">
-                                <FontAwesomeIcon
-                                  icon={faMessage}
-                                  fontSize={10}
-                                />
-                                <Typography fontSize={16} variant="body1">
-                                  {answer}
-                                </Typography>
-                              </li>
-                            </ul>
-                          </li>
-                        ),
-                      )}
                     </ul>
+                    <span ref={endOfQARef} />
                   </section>
                 </div>
               </div>
@@ -369,7 +395,7 @@ export function ClusterNode(
           </>
         )}
         {tab === 1 && (
-          <div className="h-0 flex-auto flex-col overflow-scroll pl-[30px] pr-[12px] pt-[12px]">
+          <div className="h-0 flex-auto flex-col space-y-[8px] overflow-scroll pl-[30px] pr-[12px] pt-[12px]">
             {articles.map((article) => (
               <Accordion key={article.id}>
                 <AccordionSummary

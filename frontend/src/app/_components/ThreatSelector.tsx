@@ -14,7 +14,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import ButtonGroup from "@mui/material/ButtonGroup";
 import Chip from "@mui/material/Chip";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
@@ -88,10 +87,10 @@ function ThreatSelectorComponent() {
         Filter View
       </Button>
       {open && (
-        <div className="absolute right-0 z-[1402] flex w-[600px] flex-col  border border-black bg-white pl-[4px] pr-[4px] text-2xl">
-          <div className="flex h-[52px] justify-between pb-[8px] pt-[8px]">
+        <div className="absolute right-0 z-[1402] flex w-[600px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
+          <div className="flex h-[52px] items-center justify-between pb-[20px] pt-[22px]">
             <Chip label={`${selected.length} Selected`} sx={{ fontSize: 14 }} />
-            <ButtonGroup className="space-x-[10px]">
+            <div className="space-x-[10px]">
               <Button
                 variant="contained"
                 onClick={handleGroupSelect}
@@ -107,24 +106,28 @@ function ThreatSelectorComponent() {
               >
                 Reset to default
               </Button>
-            </ButtonGroup>
+            </div>
           </div>
           <div
-            className="overflow-auto pl-[8px] pr-[8px]"
-            style={{ maxHeight: "calc(100vh - 200px)" }}
+            className="overflow-auto border-t-[2px] pl-[8px] pr-[8px] pt-[10px]"
+            style={{ maxHeight: "calc(100vh - 286px)" }}
           >
             <FormGroup>
               {threats?.map((threat, idx) => (
                 <FormControlLabel
-                  className="pl-[9px] pb-[4px] pt-[4px]"
-                  style={{ marginRight: 0}}
-                  sx={{ ":hover": { backgroundColor: "#E8E8E8" }}}
+                  className="pb-[4px] pl-[9px] pt-[4px]"
+                  style={{ marginRight: 0 }}
+                  sx={{ ":hover": { backgroundColor: "#E8E8E8" } }}
                   key={`threat_${idx}`}
-                  label={<span style={{ fontSize: 16, paddingLeft: 9 }}>{threat.text}</span>}
+                  label={
+                    <span style={{ fontSize: 16, paddingLeft: 9 }}>
+                      {threat.text}
+                    </span>
+                  }
                   control={
                     <Checkbox
                       style={{ padding: 0 }}
-                      sx={{ '& .MuiSvgIcon-root': { fontSize: 24 } }}
+                      sx={{ "& .MuiSvgIcon-root": { fontSize: 24 } }}
                       value={threat.text}
                       checked={selected.includes(threat.text)}
                       onChange={handleCheckClick}

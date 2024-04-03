@@ -18,18 +18,21 @@
 #wb-info {
   height: 84px !important;
   overflow: clip;
-
 }
 
 .gc-sub-footer>.container {
-  padding-left: 30px !important;
+  padding: 0 30px 0 30px !important;
 }
 
 .container {
-  width: calc(100vw - 30px) !important;
-  max-width: calc(100vw - 30px) !important;
+  width: calc(100vw) !important;
+  max-width: calc(100vw) !important;
   padding: 0 !important;
   margin: 0px !important;
+}
+
+#wb-lng {
+  margin-right: 30px;
 }
 
 main.container {

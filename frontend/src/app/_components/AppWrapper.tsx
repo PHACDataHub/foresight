@@ -22,11 +22,9 @@ export default function AppWrapper({
     <div className="flex h-full max-h-[100%] min-h-[100%] flex-col">
       <AppTemplate
         appName={[]}
-        // appName={[{ text: title, href: "/" }]}
         lngLinks={lngLinks}
         showShare={false}
         showFeedback={false}
-        // isApplication={true}
         showPostContent={false}
       >
         <div className="flex flex-1 flex-col">{children}</div>

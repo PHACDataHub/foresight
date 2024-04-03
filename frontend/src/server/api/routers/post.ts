@@ -265,12 +265,47 @@ export const postRouter = createTRPCRouter({
     }),
 
   nodesWithTerms: publicProcedure
-    .input(z.object({ terms: z.array(z.string()) }))
+    .input(
+      z.object({
+        terms: z.array(z.string()),
+        day: z.number().gte(1).lte(62),
+        history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
+        everything: z.boolean().optional(),
+        threats: z.array(z.string()),
+      }),
+    )
     .query(async ({ input }) => {
       const session = driver.session();
+      const baseDate = new Date("2019-12-01");
+      baseDate.setDate(baseDate.getDate() + input.day - 1);
+
+      let endDate = "";
+      let startDate = "";
+
+      if (input.history) {
+        if (input.history === 30 && input.everything) {
+          throw new Error("Unable to process everything for 30 days.");
+        }
+        endDate = baseDate.toLocaleDateString("en-CA", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        });
+        baseDate.setDate(baseDate.getDate() - input.history + 1);
+      }
+
+      startDate = baseDate.toLocaleDateString("en-CA", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      });
+
+      const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
+
       try {
         const result = await session.run(
           `
+        WITH $period + '-\\d+' AS id_pattern          
         UNWIND $terms AS term 
         MATCH (n:Cluster) 
           WHERE toLower(n.title) CONTAINS term OR toLower(n.summary) CONTAINS term 
@@ -281,7 +316,7 @@ export const postRouter = createTRPCRouter({
           WHERE toLower(n.title) CONTAINS term OR toLower(n.content) CONTAINS term 
         return n        
         `,
-          { terms: input.terms },
+          { terms: input.terms, period },
         );
         return result.records
           .map((record) => {
