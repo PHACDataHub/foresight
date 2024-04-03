@@ -23,23 +23,22 @@ import {
 import { NodeFilter, Ogma } from "@linkurious/ogma-react";
 import OgmaLib from "@linkurious/ogma";
 
-import {
-  faArrowsRotate,
-  faArrowsToDot,
-  faArrowsToEye,
-  faBroom,
-  faCircleNodes,
-  faExpand,
-  faGripLinesVertical,
-  faGripVertical,
-  faMap,
-  faMinimize,
-  faSatellite,
-  faSitemap,
-  faSquarePlus,
-  type IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
+import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  CircleDot,
+  Diameter,
+  FileSearch,
+  FileX2,
+  Grip,
+  Map,
+  Maximize2,
+  Minimize2,
+  RefreshCcw,
+  Satellite,
+  Waypoints,
+  Workflow,
+} from "lucide-react";
 
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
@@ -428,13 +427,21 @@ export default function Graph() {
     }
   }, [restoreLayout, showInfoPanel]);
 
-  const layouts: [string, IconDefinition, boolean][] = useMemo(() => {
+  const layouts: [string, JSX.Element, boolean][] = useMemo(() => {
     return [
-      ["force", faCircleNodes, true],
-      ["hierarchical", faSitemap, !everything],
-      ["grid", faGripVertical, true],
-      ["radial", faArrowsToDot, Boolean(selectedNode?.node)],
-      ["concentric", faArrowsToEye, Boolean(selectedNode?.node)],
+      ["force", <Workflow size={22} key="force" />, true],
+      ["hierarchical", <Waypoints size={22} key="waypoints" />, !everything],
+      ["grid", <Grip size={22} key="grid" />, true],
+      [
+        "radial",
+        <Diameter size={22} key="radial" />,
+        Boolean(selectedNode?.node),
+      ],
+      [
+        "concentric",
+        <CircleDot size={22} key="concentric" />,
+        Boolean(selectedNode?.node),
+      ],
     ];
   }, [everything, selectedNode]);
 
@@ -610,11 +617,7 @@ export default function Graph() {
                             title="Reset layout"
                             onClick={handleReset}
                           >
-                            <FontAwesomeIcon
-                              icon={faArrowsRotate}
-                              color="inherit"
-                              fontSize={22}
-                            />
+                            <RefreshCcw size={22} />
                           </IconButton>
                           <IconButton
                             className={`foresight-graph-btn${
@@ -632,22 +635,14 @@ export default function Graph() {
                             }
                             onClick={handleExpandRelatedClusters}
                           >
-                            <FontAwesomeIcon
-                              icon={faSquarePlus}
-                              color="inherit"
-                              fontSize={22}
-                            />
+                            <FileSearch size={22} />
                           </IconButton>
                           <IconButton
                             className="foresight-graph-btn"
                             onClick={handleCollapseAllClick}
                             title="Collapsed expanded articles"
                           >
-                            <FontAwesomeIcon
-                              fontSize={22}
-                              icon={faBroom}
-                              color="inherit"
-                            />
+                            <FileX2 size={22} />
                           </IconButton>
                         </ButtonGroup>
                         <ButtonGroup>
@@ -660,11 +655,7 @@ export default function Graph() {
                               onClick={handleLayoutClick}
                               title={`Layout nodes using the ${l} algorithm`}
                             >
-                              <FontAwesomeIcon
-                                fontSize={22}
-                                icon={icon}
-                                color="inherit"
-                              />
+                              {icon}
                             </IconButton>
                           ))}
                         </ButtonGroup>
@@ -676,11 +667,7 @@ export default function Graph() {
                         onClick={handleSatelliteClick}
                         title="Toggle between satellite and terrain view"
                       >
-                        <FontAwesomeIcon
-                          icon={faSatellite}
-                          fontSize={22}
-                          color="inherit"
-                        />
+                        <Satellite size={22} />
                       </IconButton>
                     )}
                     <IconButton
@@ -688,22 +675,15 @@ export default function Graph() {
                       onClick={handleGeoBtnClick}
                       title="View clusters on a map"
                     >
-                      <FontAwesomeIcon
-                        fontSize={22}
-                        icon={faMap}
-                        color="inherit"
-                      />
+                      <Map size={22} />
                     </IconButton>
                     <IconButton
                       className="foresight-graph-btn"
                       onClick={handleMaximizeClick}
                       title="Switch to Full Screen View"
                     >
-                      <FontAwesomeIcon
-                        fontSize={22}
-                        color="inherit"
-                        icon={maximized ? faMinimize : faExpand}
-                      />
+                      {!maximized && <Maximize2 size={22} />}
+                      {maximized && <Minimize2 size={22} />}
                     </IconButton>
                   </div>
                 </div>

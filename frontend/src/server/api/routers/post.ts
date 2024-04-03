@@ -264,6 +264,42 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
+  nodesWithTerms: publicProcedure
+    .input(z.object({ terms: z.array(z.string()) }))
+    .query(async ({ input }) => {
+      const session = driver.session();
+      try {
+        const result = await session.run(
+          `
+        UNWIND $terms AS term 
+        MATCH (n:Cluster) 
+          WHERE toLower(n.title) CONTAINS term OR toLower(n.summary) CONTAINS term 
+        return n
+        UNION
+        UNWIND $terms AS term 
+        MATCH (n:Article) 
+          WHERE toLower(n.title) CONTAINS term OR toLower(n.content) CONTAINS term 
+        return n        
+        `,
+          { terms: input.terms },
+        );
+        return result.records
+          .map((record) => {
+            const t = record.get("t") as {
+              properties: { text: string; score: number };
+            };
+            return { text: t.properties.text, score: t.properties.score ?? 0 };
+          })
+          .sort((a, b) => {
+            if (a.score > b.score) return -1;
+            if (a.score < b.score) return 1;
+            return 0;
+          });
+      } finally {
+        await session.close();
+      }
+    }),
+
   threats: publicProcedure.query(async () => {
     const session = driver.session();
     try {
@@ -481,6 +517,10 @@ export const postRouter = createTRPCRouter({
 
       const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
       try {
+        const ts = new Date();
+        console.log(
+          `[${ts.toLocaleTimeString()}] --- hierarchicalClusters QUERY START ---`,
+        );
         const result = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -496,11 +536,16 @@ export const postRouter = createTRPCRouter({
 `
               : ""
           }
-        RETURN hr, hr_r, c, r, t ${input.everything ? ", a, r2, r_sim" : ""}
+        RETURN hr, hr_r, c , r, t ${input.everything ? ", a, r2, r_sim" : ""}
         `,
           { period, threats: input.threats },
         );
-        return translateGraph(await OgmaLib.parse.neo4j(result), (n) => {
+        const te1 = new Date();
+        console.log(
+          `[${te1.toLocaleTimeString()}] --- Neo4J Query Completed in ${((te1.getTime() - ts.getTime()) / 1000).toFixed(2)} seconds. ---`,
+        );
+
+        const ret = translateGraph(await OgmaLib.parse.neo4j(result), (n) => {
           if (!input.everything) return n;
           if (n.data?.type === "cluster")
             return {
@@ -514,7 +559,7 @@ export const postRouter = createTRPCRouter({
                 summary: n.data.summary,
               },
             };
-          if (n.data?.type === "article") 
+          if (n.data?.type === "article")
             return {
               ...n,
               data: {
@@ -525,9 +570,15 @@ export const postRouter = createTRPCRouter({
                 title: n.data.title,
               },
             };
-          
+
           return n;
         });
+        const te2 = new Date();
+        console.log(
+          `[${te2.toLocaleTimeString()}] --- Graph Translation Completed in ${((te2.getTime() - te1.getTime()) / 1000).toFixed(2)} seconds. ---`,
+        );
+
+        return ret;
       } finally {
         await session.close();
       }
