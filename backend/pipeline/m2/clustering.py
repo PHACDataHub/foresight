@@ -175,7 +175,7 @@ def predict_batch(topic_model, batch, topic_dict):
         topic_id = int(topic)
         if topic_id not in topic_dict:
             topic_id = -1
-        topic_dict[topic_id]['documents'][doc_id] = [float(prob), text]
+        topic_dict[topic_id]['documents'][doc_id] = [float(1.0) if prob > 1.0 else float(prob), text]
     return len(topic_dict), topic_dict
     
 
@@ -463,7 +463,7 @@ def create_llm_chains(model_name_dict):
     return model_dict, chain_dict, output_parser #, json_parser
 
 
-def filter_texts(info, llm_model, max_repr_docs, max_nr_tokens):
+def filter_texts(info, llm_model, max_nr_tokens, max_repr_docs):
     nr_repr = len(info['representatives'])
     texts, min_nr_docs = [], min(max_repr_docs, nr_repr) if max_repr_docs > 0 else nr_repr
     for _, _, text in info['representatives'][:min_nr_docs]:
@@ -478,13 +478,13 @@ def filter_texts(info, llm_model, max_repr_docs, max_nr_tokens):
 
 
 @stat_runner
-def summarize_topics(summarizer_chain, llm_model, labeler_llm_chain, topic_dict, text_splitter, max_repr_docs=NR_REPR_DOCS, max_nr_tokens=MAX_NR_TOKENS):
+def summarize_topics(summarizer_chain, llm_model, labeler_llm_chain, topic_dict, text_splitter, max_nr_tokens=MAX_NR_TOKENS, max_repr_docs=NR_REPR_DOCS):
     for topic_id in sorted(topic_dict):
         info = topic_dict[topic_id]
         if int(topic_id) == -1:
             info['summary'] = 'Outliers'
         else:
-            filtered_texts = filter_texts(info, llm_model, max_repr_docs, max_nr_tokens)
+            filtered_texts = filter_texts(info, llm_model, max_nr_tokens, max_repr_docs)
             docs = text_splitter.create_documents(filtered_texts)
             output = summarizer_chain.invoke({"input_documents": docs})
             info['summary'] = output['output_text']
@@ -532,7 +532,7 @@ def classify_topics(classifier_llm_chain, qa_llm_chain, loc_llm_chain, threat_li
         if not info['qa']:
             continue
 
-        print(f"[CQA] --- {topic_id} --- {info['qa'].values()}")
+        print(f"[CQA] --- {topic_id} --- {list(info['qa'].values())}")
         # for question, answer in info['qa'].items():
         #     print(f"\t {question} --- {answer}")
         
@@ -611,8 +611,8 @@ if __name__ == '__main__':
     #     print(f"[{topic_id}] --- [{len(topic_dict[topic_id]['documents'])}] --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']} --- {len(topic_dict[topic_id]['representatives'])}")
     
     topic_dict = predict_batches(topic_model, batches, topic_dict)
-    # for topic_id in sorted(topic_dict.keys()):
-    #     print(f"[{topic_id}] --- [{len(topic_dict[topic_id]['documents'])}] --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']} --- {topic_dict[topic_id]['representatives']}")
+    for topic_id in sorted(topic_dict.keys()):
+        print(f"[{topic_id}] --- [{len(topic_dict[topic_id]['documents'])}] --- {len(topic_dict[topic_id]['representatives'])} --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']}")
 
     n_workers = min(2 ** (round(math.log2(len(topic_dict)))-2), 16)
     similarity_dict = compute_constellations(topic_dict, n_workers, similarity_threshold=0.59, content_similarity_ratio=1.0)
@@ -635,7 +635,9 @@ if __name__ == '__main__':
         llm_model_dict[llm_tool_dict['summarizer'][0]],
         llm_chain_dict['labeler'],
         topic_dict,
-        text_splitter)
+        text_splitter,
+        max_nr_tokens=200,
+        max_repr_docs=3)
 
     lbl_file_name = f"{in_path}/processed-{start_date}-{end_date}-lbl.jsonl"
     save_jsonl(topic_dict, lbl_file_name, single=True)
