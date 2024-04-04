@@ -179,12 +179,14 @@ export default function Graph() {
   }, []);
 
   const handleExpandRelatedClusters = useCallback(() => {
-    if (!selectedNode?.node || !ogma) return;
-    const clusters = findAlongPath(
-      selectedNode.node,
-      "out",
-      (n) => n.getData("type") === "cluster",
-    );
+    if (!ogma) return;
+    const clusters = selectedNode?.node
+      ? findAlongPath(
+          selectedNode.node,
+          "out",
+          (n) => n.getData("type") === "cluster",
+        )
+      : ogma.getNodes().filter((n) => getNodeData(n)?.type === "cluster");
     if (clusters.size === 0) return;
     setExpanding(true);
     setLayout("force");
@@ -620,18 +622,12 @@ export default function Graph() {
                             <RefreshCcw size={22} />
                           </IconButton>
                           <IconButton
-                            className={`foresight-graph-btn${
-                              expanding ||
-                              selectedNode?.node.getData("type") !==
-                                "hierarchicalcluster"
-                                ? " disabled"
-                                : ""
-                            }`}
-                            title="Expand articles along path"
-                            disabled={
-                              expanding ||
-                              selectedNode?.node.getData("type") !==
-                                "hierarchicalcluster"
+                            className="foresight-graph-btn"
+                            disabled={expanding}
+                            title={
+                              selectedNode?.node
+                                ? "Expand articles along path"
+                                : "Expand all articles"
                             }
                             onClick={handleExpandRelatedClusters}
                           >
