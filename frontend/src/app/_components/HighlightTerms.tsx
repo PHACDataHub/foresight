@@ -26,7 +26,6 @@ export default function HighlightTerms() {
 
   const handleSearchChange = useCallback(
     (event: SyntheticEvent, newValue: string[]) => {
-      console.log("onchange!");
       updateSearchAsYouType("");
       setSearchTerms(newValue);
     },

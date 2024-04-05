@@ -71,10 +71,18 @@ const Location = styled("div")<{
 });
 
 function ArticleList({ articles }: { articles: Article[] }) {
+  const { searchMatches } = useStore();
   return (
     <>
       {articles.map((article) => (
-        <Accordion key={article.id}>
+        <Accordion
+          key={article.id}
+          sx={
+            searchMatches.includes(`${article.id}`)
+              ? { backgroundColor: "rgba(255,255,0,0.2)" }
+              : undefined
+          }
+        >
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faAngleDown} />}>
             <Typography variant="h5">
               <HighlightSearchTerms text={article.title} />
@@ -152,6 +160,7 @@ export function ClusterNode(
     augmentScale,
     geoMode,
     feature_GroupArticleBy,
+    searchMatches,
   } = useStore();
 
   const id = useMemo(() => {
@@ -281,8 +290,14 @@ export function ClusterNode(
         return i === arr.findIndex((b) => b.id === n.id);
       })
       .map((n) => getRawNodeData<Article>(n))
-      .sort((a, b) => d3.descending(a.gphin_score, b.gphin_score));
-  }, [data, details]);
+      .sort(
+        (a, b) =>
+          d3.descending(
+            searchMatches.includes(`${a.id}`) ? 1 : 0,
+            searchMatches.includes(`${b.id}`) ? 1 : 0,
+          ) || d3.descending(a.gphin_score, b.gphin_score),
+      );
+  }, [data, details, searchMatches]);
 
   const handleTabChange = useCallback(
     (evt: React.SyntheticEvent, newTab: number) => {
@@ -494,11 +509,7 @@ export function ClusterNode(
             <div className="flex flex-col space-y-[12px]">
               <div className="flex flex-col items-center">
                 <Typography variant="body1" fontSize={14}>
-                  GPHIN
-                </Typography>
-
-                <Typography variant="body1" fontSize={14}>
-                  <b>Published</b> ({trashed_published.published}){" "}
+                  GPHIN: <b>Published</b> ({trashed_published.published}){" "}
                   <b>Trashed</b> ({trashed_published.trashed})
                 </Typography>
               </div>

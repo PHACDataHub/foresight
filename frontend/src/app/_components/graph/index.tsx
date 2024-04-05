@@ -124,6 +124,8 @@ export default function Graph() {
     ogma,
     setFeature_GroupArticleBy,
     feature_GroupArticleBy,
+    setFeature_DeepSearch,
+    feature_DeepSearch,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -182,13 +184,14 @@ export default function Graph() {
 
   const handleExpandRelatedClusters = useCallback(() => {
     if (!ogma) return;
-    const clusters = selectedNode?.node
-      ? findAlongPath(
-          selectedNode.node,
-          "out",
-          (n) => n.getData("type") === "cluster",
-        )
-      : ogma.getNodes().filter((n) => getNodeData(n)?.type === "cluster");
+    const clusters =
+      selectedNode?.node.getData("type") === "hierarchicalcluster"
+        ? findAlongPath(
+            selectedNode.node,
+            "out",
+            (n) => n.getData("type") === "cluster",
+          )
+        : ogma.getNodes().filter((n) => getNodeData(n)?.type === "cluster");
     if (clusters.size === 0) return;
     setExpanding(true);
     setLayout("force");
@@ -287,6 +290,10 @@ export default function Graph() {
   const handleGroupByFeatureClick = useCallback(() => {
     setFeature_GroupArticleBy(!feature_GroupArticleBy);
   }, [feature_GroupArticleBy, setFeature_GroupArticleBy]);
+
+  const handleDeepSearchFeatureClick = useCallback(() => {
+    setFeature_DeepSearch(!feature_DeepSearch);
+  }, [feature_DeepSearch, setFeature_DeepSearch]);
 
   const handleReset = useCallback(() => {
     setFocus(null);
@@ -587,6 +594,20 @@ export default function Graph() {
                             </span>
                           }
                         />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              size="large"
+                              checked={feature_DeepSearch}
+                              onChange={handleDeepSearchFeatureClick}
+                            />
+                          }
+                          label={
+                            <span style={{ fontSize: 14 }}>
+                              Feature Flag: Deep Search
+                            </span>
+                          }
+                        />
 
                         <FormControl variant="standard">
                           <InputLabel sx={{ fontSize: 14 }}>
@@ -645,7 +666,8 @@ export default function Graph() {
                             className="foresight-graph-btn"
                             disabled={expanding}
                             title={
-                              selectedNode?.node
+                              selectedNode?.node.getData("type") ===
+                              "hierarchicalcluster"
                                 ? "Expand articles along path"
                                 : "Expand all articles"
                             }
