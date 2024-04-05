@@ -2,13 +2,12 @@ from collections import defaultdict
 import configparser
 import csv
 from datetime import datetime
-from geopy.geocoders import Nominatim
+import googlemaps
 import json
 import math
 from queue import Queue
-from threading import Thread
-import random
 import sys
+from threading import Thread
 
 
 from umap import UMAP
@@ -32,6 +31,9 @@ from langchain_community.llms import Ollama
 NR_CHARS_PER_TOKEN = 5
 NR_REPR_DOCS = 5
 MAX_NR_TOKENS = 1000
+
+
+GOOGLE_API_KEY = 'AIzaSyA7GlfdX0CppK0IXiOFXkE7UCu_r-x0USo'
 
 
 def truncate_text(text, max_length):
@@ -90,6 +92,34 @@ def stat_runner(func):
             print(f"{func.__name__} --- {seconds} secs --- {total} items --- {seconds/total:0.2f} secs per item.", flush=True)
         return result 
     return wrap 
+
+class GeoLocator():
+    
+    def __init__(self):
+        self.location_dict = dict()
+        self.geocoder = googlemaps.Client(key=GOOGLE_API_KEY)
+        self.call_counter = 0
+        
+        
+    def geocode(self, text):
+        if text in self.location_dict:
+            # print(f"[GEOCODE] [C] --- [{self.call_counter}] --- {text}", flush=True)
+            return self.location_dict[text]
+        
+        self.location_dict[text] = None
+        self.call_counter += 1
+        # print(f"[GEOCODE] [I] --- [{self.call_counter}] --- {text}", flush=True)
+
+        r = self.geocoder.geocode(text, language='en')
+        if r and len(r)> 0:
+            self.location_dict[text] = {
+                'name': r[0]['formatted_address'],
+                'lat': r[0]['geometry']['location']['lat'],
+                'lng': r[0]['geometry']['location']['lng'],
+                'place_id': r[0]['place_id'],
+                'types': r[0]['types'],
+            }
+        return self.location_dict[text]
 
 
 @stat_runner
@@ -500,8 +530,6 @@ def summarize_topics(summarizer_chain, llm_model, labeler_llm_chain, topic_dict,
 
 @stat_runner
 def classify_topics(classifier_llm_chain, qa_llm_chain, loc_llm_chain, threat_list, disease_threats, question_list, filter_question, geolocator, locate_question, country_dict, output_parser, topic_dict):
-    cache_location_dict = dict()
-    
     for topic_id in sorted(topic_dict):
         if int(topic_id) == -1:
             topic_dict[topic_id]['threats'] = 'Outliers'
@@ -549,14 +577,9 @@ def classify_topics(classifier_llm_chain, qa_llm_chain, loc_llm_chain, threat_li
             if len(answer) < 3:
                 continue
             
-            if answer in cache_location_dict:
-                location_dict[answer] = cache_location_dict[answer]
-                continue
-            
-            location = geolocator.geocode(answer, language='en')
+            location = geolocator.geocode(answer)
             if location:
-                cache_location_dict[answer] = {'name': location.raw['name'], 'display_name': location.raw['display_name'], 'lat': location.latitude, 'lng': location.longitude}
-                location_dict[answer] = cache_location_dict[answer]
+                location_dict[answer] = location
                 
         country_set = set([c for answer in answers for c in extract_country(answer, country_dict)])
         info['loc'] = {'countries': list(country_set), 'locations': location_dict}
@@ -579,6 +602,8 @@ if __name__ == '__main__':
     in_path, start_date, end_date, country_code_file = sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 
     country_dict = load_country_codes(country_code_file)
+    
+    geolocator = GeoLocator()
 
     model_name = 'sentence-transformers/all-MiniLM-L6-v2'
     embedding_model = SentenceTransformer(model_name)
@@ -600,8 +625,6 @@ if __name__ == '__main__':
     }
 
     llm_model_dict, llm_chain_dict, output_parser = create_llm_chains(llm_tool_dict)
-    
-    geolocator = Nominatim(user_agent=f"foresight-phac-ca-{random.random()}")
     
     batches = load_batches(in_path, date_list, start_date, end_date, embedding_model)
     
@@ -636,9 +659,7 @@ if __name__ == '__main__':
         llm_model_dict[llm_tool_dict['summarizer'][0]],
         llm_chain_dict['labeler'],
         topic_dict,
-        text_splitter,
-        max_nr_tokens=200,
-        max_repr_docs=3)
+        text_splitter)
 
     lbl_file_name = f"{in_path}/processed-{start_date}-{end_date}-lbl.jsonl"
     save_jsonl(topic_dict, lbl_file_name, single=True)
