@@ -141,10 +141,18 @@ export function ClusterNode(
   const [question, setQuestion] = useState("");
   const endOfQARef = useRef<HTMLSpanElement | null>(null);
   const [groupArticlesBy, setGroupArticlesBy] = useState<GroupByOptions>("");
-  const [tab, setTab] = useState(1);
+  const [tab, setTab] = useState(0);
 
-  const { qa, addQA, ogma, refresh, expandedClusters, augmentScale, geoMode } =
-    useStore();
+  const {
+    qa,
+    addQA,
+    ogma,
+    refresh,
+    expandedClusters,
+    augmentScale,
+    geoMode,
+    feature_GroupArticleBy,
+  } = useStore();
 
   const id = useMemo(() => {
     if (!clusterNode) return null;
@@ -293,8 +301,21 @@ export function ClusterNode(
     [cluster, geoMode],
   );
 
+  const trashed_published = useMemo(() => {
+    return articles.reduce(
+      (p, c) => ({
+        trashed: p.trashed + (c.gphin_state === "TRASHED" ? 1 : 0),
+        published: p.published + (c.gphin_state === "PUBLISHED" ? 1 : 0),
+      }),
+      {
+        trashed: 0,
+        published: 0,
+      },
+    );
+  }, [articles]);
+
   const groupedArticles = useMemo(() => {
-    if (groupArticlesBy !== "") {
+    if (groupArticlesBy !== "" && feature_GroupArticleBy) {
       return d3.group(
         d3.sort(articles, (a, b) => {
           if (groupArticlesBy === "gphin_score")
@@ -323,7 +344,7 @@ export function ClusterNode(
       );
     }
     return null;
-  }, [articles, groupArticlesBy]);
+  }, [articles, feature_GroupArticleBy, groupArticlesBy]);
 
   if (!cluster) return;
 
@@ -470,38 +491,56 @@ export function ClusterNode(
         )}
         {tab === 1 && (
           <div className="h-0 flex-auto flex-col space-y-[8px] overflow-scroll pl-[30px] pr-[12px] pt-[12px]">
-            <div className="flex space-x-1">
-              <FormControl sx={{ minWidth: 120 }} fullWidth>
-                <InputLabel id="group_articles_by_select" sx={{ fontSize: 14 }}>
-                  Group articles by ...
-                </InputLabel>
-                <Select
-                  sx={{ fontSize: 14 }}
-                  labelId="group_articles_by_select"
-                  value={groupArticlesBy}
-                  label="Group articles by"
-                  onChange={handleGroupArticleByChange}
-                >
-                  <MenuItem sx={{ fontSize: 14 }} value="">
-                    <em>No Grouping</em>
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: 14 }} value="pub_name">
-                    Publication
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: 14 }} value="pub_time">
-                    Pub Time
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: 14 }} value="pub_date">
-                    Pub Date
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: 14 }} value="gphin_state">
-                    GPHIN State
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: 14 }} value="gphin_score">
-                    GPHIN Score
-                  </MenuItem>
-                </Select>
-              </FormControl>
+            <div className="flex flex-col space-y-[12px]">
+              <div className="flex flex-col items-center">
+                <Typography variant="body1" fontSize={14}>
+                  GPHIN
+                </Typography>
+
+                <Typography variant="body1" fontSize={14}>
+                  <b>Published</b> ({trashed_published.published}){" "}
+                  <b>Trashed</b> ({trashed_published.trashed})
+                </Typography>
+              </div>
+
+              {feature_GroupArticleBy && (
+                <div>
+                  <FormControl sx={{ minWidth: 120 }} fullWidth>
+                    <InputLabel
+                      id="group_articles_by_select"
+                      sx={{ fontSize: 14 }}
+                    >
+                      Group articles by ...
+                    </InputLabel>
+                    <Select
+                      sx={{ fontSize: 14 }}
+                      labelId="group_articles_by_select"
+                      value={groupArticlesBy}
+                      label="Group articles by"
+                      onChange={handleGroupArticleByChange}
+                    >
+                      <MenuItem sx={{ fontSize: 14 }} value="">
+                        <em>No Grouping</em>
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="pub_name">
+                        Publication
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="pub_time">
+                        Pub Time
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="pub_date">
+                        Pub Date
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="gphin_state">
+                        GPHIN State
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="gphin_score">
+                        GPHIN Score
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+              )}
             </div>
             {groupedArticles === null && <ArticleList articles={articles} />}
             {groupedArticles &&

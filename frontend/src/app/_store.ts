@@ -30,7 +30,9 @@ export type SelectedNode = {
 };
 
 export interface ForesightStore {
-  // Confirmed things
+  // Feature Flags
+  feature_GroupArticleBy: boolean;
+  setFeature_GroupArticleBy: (feature_GroupArticleBy: boolean) => void;
 
   ogma: OgmaLib | null;
   setOgma: (ogma: OgmaLib | null) => void;
@@ -127,6 +129,10 @@ export interface ForesightStore {
 }
 
 export const useStore = create<ForesightStore>((set) => ({
+  feature_GroupArticleBy: false,
+  setFeature_GroupArticleBy: (feature_GroupArticleBy) =>
+    set({ feature_GroupArticleBy }),
+
   ogma: null,
   setOgma: (ogma) => set({ ogma }),
   rodMode: false,
