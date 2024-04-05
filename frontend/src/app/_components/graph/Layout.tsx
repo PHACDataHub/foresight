@@ -70,6 +70,7 @@ const LayoutService = forwardRef(
       setFocus,
       toggleExpandedCluster,
     } = useStore();
+    const terms = useSearchTerms();
 
     const selectedPath = useMemo(() => {
       if (!selectedNode) return null;
@@ -296,12 +297,6 @@ const LayoutService = forwardRef(
       updateLayout,
     ]);
 
-    useImperativeHandle(ref, () => ({
-      refresh: updateLayout,
-    }));
-
-    const terms = useSearchTerms();
-
     const isHaloed = useCallback(
       (n: OgmaNode | null) => {
         if (!n) return false;
@@ -336,6 +331,26 @@ const LayoutService = forwardRef(
       },
       [terms],
     );
+
+    useEffect(() => {
+      if (!ogma.styles.getClass("termHighlight"))
+        ogma.styles.createClass({
+          name: "termHighlight",
+          nodeAttributes: {
+            halo: {
+              color: "yellow",
+              strokeColor: "#ccc",
+              width: 10,
+            },
+          },
+        });
+      void ogma.getNodes().removeClass("termHighlight");
+      void ogma.getNodes().filter((n) => isHaloed(n)).addClass("termHighlight");
+    }, [isHaloed, ogma]);
+
+    useImperativeHandle(ref, () => ({
+      refresh: updateLayout,
+    }));
 
     return (
       <>
@@ -464,14 +479,14 @@ const LayoutService = forwardRef(
                 return 10;
               }
             },
-            halo: (n) => {
-              if (isHaloed(n))
-                return {
-                  color: "yellow",
-                  strokeColor: "#ccc",
-                  width: 10,
-                };
-            },
+            // halo: (n) => {
+            //   if (isHaloed(n))
+            //     return {
+            //       color: "yellow",
+            //       strokeColor: "#ccc",
+            //       width: 10,
+            //     };
+            // },
           }}
         />
       </>

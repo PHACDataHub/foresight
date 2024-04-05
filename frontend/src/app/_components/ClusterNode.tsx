@@ -1,5 +1,6 @@
 import { type Node as OgmaNode } from "@linkurious/ogma";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as d3 from "d3";
 import {
   faAngleDown,
   faMessage,
@@ -24,7 +25,12 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
-import { Chip } from "@mui/material";
+import Chip from "@mui/material/Chip";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+
 import { Dot } from "lucide-react";
 import { type Article, type Cluster } from "~/server/api/routers/post";
 import { type ClusterNodeSections, useStore } from "~/app/_store";
@@ -64,6 +70,25 @@ const Location = styled("div")<{
   };
 });
 
+function ArticleList({ articles }: { articles: Article[] }) {
+  return (
+    <>
+      {articles.map((article) => (
+        <Accordion key={article.id}>
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faAngleDown} />}>
+            <Typography variant="h5">
+              <HighlightSearchTerms text={article.title} />
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ArticleComponent article={article} />
+          </AccordionDetails>
+        </Accordion>
+      ))}
+    </>
+  );
+}
+
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   if (!cluster?.locations) return;
   const locations = cluster.locations.filter((l) => Boolean(l.location));
@@ -88,6 +113,17 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
   );
 }
 
+const groupByOptions = [
+  "",
+  "gphin_state",
+  "gphin_score",
+  "pub_name",
+  "pub_time",
+  "pub_date",
+] as const;
+
+type GroupByOptions = (typeof groupByOptions)[number];
+
 export function ClusterNode(
   props:
     | {
@@ -104,9 +140,19 @@ export function ClusterNode(
 
   const [question, setQuestion] = useState("");
   const endOfQARef = useRef<HTMLSpanElement | null>(null);
+  const [groupArticlesBy, setGroupArticlesBy] = useState<GroupByOptions>("");
+  const [tab, setTab] = useState(0);
 
-  const { qa, addQA, ogma, refresh, expandedClusters, augmentScale, geoMode } =
-    useStore();
+  const {
+    qa,
+    addQA,
+    ogma,
+    refresh,
+    expandedClusters,
+    augmentScale,
+    geoMode,
+    feature_GroupArticleBy,
+  } = useStore();
 
   const id = useMemo(() => {
     if (!clusterNode) return null;
@@ -151,6 +197,14 @@ export function ClusterNode(
       }, 2000);
     }
   }, [cluster, data?.nodes, expandedClusters, ogma, refresh]);
+
+  const handleGroupArticleByChange = useCallback(
+    (evt: SelectChangeEvent<string>) => {
+      const value = evt.target.value as GroupByOptions;
+      if (groupByOptions.includes(value)) setGroupArticlesBy(value);
+    },
+    [],
+  );
 
   const handleQuestionChange = useCallback(
     (evt: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,13 +280,9 @@ export function ClusterNode(
       .filter((n, i, arr) => {
         return i === arr.findIndex((b) => b.id === n.id);
       })
-      .map((n) => {
-        const data = getRawNodeData<Article>(n);
-        return data;
-      });
+      .map((n) => getRawNodeData<Article>(n))
+      .sort((a, b) => d3.descending(a.gphin_score, b.gphin_score));
   }, [data, details]);
-
-  const [tab, setTab] = useState(0);
 
   const handleTabChange = useCallback(
     (evt: React.SyntheticEvent, newTab: number) => {
@@ -263,6 +313,38 @@ export function ClusterNode(
       },
     );
   }, [articles]);
+
+  const groupedArticles = useMemo(() => {
+    if (groupArticlesBy !== "" && feature_GroupArticleBy) {
+      return d3.group(
+        d3.sort(articles, (a, b) => {
+          if (groupArticlesBy === "gphin_score")
+            return d3.descending(a.gphin_score, b.gphin_score);
+          if (groupArticlesBy === "pub_time")
+            return (
+              d3.ascending(a.pub_time?.getTime(), b.pub_time?.getTime()) ||
+              d3.descending(a.gphin_score, b.gphin_score)
+            );
+          if (groupArticlesBy === "pub_date")
+            return (
+              d3.ascending(a.pub_date?.getTime(), b.pub_date?.getTime()) ||
+              d3.descending(a.gphin_score, b.gphin_score)
+            );
+          if (groupArticlesBy === "pub_name")
+            return (
+              d3.ascending(a.pub_name, b.pub_name) ||
+              d3.descending(a.gphin_score, b.gphin_score)
+            );
+          return (
+            d3.ascending(a.gphin_state, b.gphin_state) ||
+            d3.descending(a.gphin_score, b.gphin_score)
+          );
+        }),
+        (a) => a[groupArticlesBy],
+      );
+    }
+    return null;
+  }, [articles, feature_GroupArticleBy, groupArticlesBy]);
 
   if (!cluster) return;
 
@@ -409,26 +491,96 @@ export function ClusterNode(
         )}
         {tab === 1 && (
           <div className="h-0 flex-auto flex-col space-y-[8px] overflow-scroll pl-[30px] pr-[12px] pt-[12px]">
-            <div className="flex space-x-1">
-              <Typography variant="body1" fontSize={14}>
-                GPHIN Published versus trashed:
-              </Typography>
-              <Typography variant="body1" fontSize={14} fontWeight={500}>
-                {trashed_published.published} / {trashed_published.trashed}
-              </Typography>
+            <div className="flex flex-col space-y-[12px]">
+              <div className="flex flex-col items-center">
+                <Typography variant="body1" fontSize={14}>
+                  GPHIN
+                </Typography>
+
+                <Typography variant="body1" fontSize={14}>
+                  <b>Published</b> ({trashed_published.published}){" "}
+                  <b>Trashed</b> ({trashed_published.trashed})
+                </Typography>
+              </div>
+
+              {feature_GroupArticleBy && (
+                <div>
+                  <FormControl sx={{ minWidth: 120 }} fullWidth>
+                    <InputLabel
+                      id="group_articles_by_select"
+                      sx={{ fontSize: 14 }}
+                    >
+                      Group articles by ...
+                    </InputLabel>
+                    <Select
+                      sx={{ fontSize: 14 }}
+                      labelId="group_articles_by_select"
+                      value={groupArticlesBy}
+                      label="Group articles by"
+                      onChange={handleGroupArticleByChange}
+                    >
+                      <MenuItem sx={{ fontSize: 14 }} value="">
+                        <em>No Grouping</em>
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="pub_name">
+                        Publication
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="pub_time">
+                        Pub Time
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="pub_date">
+                        Pub Date
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="gphin_state">
+                        GPHIN State
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 14 }} value="gphin_score">
+                        GPHIN Score
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+              )}
             </div>
-            {articles.map((article) => (
-              <Accordion key={article.id}>
-                <AccordionSummary
-                  expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
-                >
-                  <Typography variant="h5">{article.title}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ArticleComponent article={article} />
-                </AccordionDetails>
-              </Accordion>
-            ))}
+            {groupedArticles === null && <ArticleList articles={articles} />}
+            {groupedArticles &&
+              d3.map(groupedArticles, ([group, a], idx) => {
+                const title =
+                  typeof group === "string" || typeof group === "number"
+                    ? `${group}`
+                    : groupArticlesBy === "pub_date"
+                      ? group?.toLocaleDateString()
+                      : group?.toLocaleTimeString();
+
+                return (
+                  <section key={`group_${idx}`}>
+                    <Typography
+                      variant="h5"
+                      className="flex items-center space-x-2"
+                      sx={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        marginBottom: 2,
+                        borderBottom: "1px solid #1976d2",
+                        paddingBottom: "2px",
+                      }}
+                    >
+                      <span>{title}</span>
+                      <Chip
+                        sx={{ fontSize: 14 }}
+                        label={
+                          isFetching ? (
+                            <FontAwesomeIcon icon={faSpinner} spin />
+                          ) : (
+                            a.length
+                          )
+                        }
+                      />
+                    </Typography>
+                    <ArticleList articles={a} />
+                  </section>
+                );
+              })}
           </div>
         )}
       </>

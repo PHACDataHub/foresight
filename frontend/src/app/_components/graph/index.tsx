@@ -122,6 +122,8 @@ export default function Graph() {
     setMapMode,
     augmentScale,
     ogma,
+    setFeature_GroupArticleBy,
+    feature_GroupArticleBy,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -281,6 +283,10 @@ export default function Graph() {
   const handleEverythingChange = useCallback(() => {
     setEverything(!everything);
   }, [everything, setEverything]);
+
+  const handleGroupByFeatureClick = useCallback(() => {
+    setFeature_GroupArticleBy(!feature_GroupArticleBy);
+  }, [feature_GroupArticleBy, setFeature_GroupArticleBy]);
 
   const handleReset = useCallback(() => {
     setFocus(null);
@@ -565,6 +571,20 @@ export default function Graph() {
                           }
                           label={
                             <span style={{ fontSize: 14 }}>Fetch All</span>
+                          }
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              size="large"
+                              checked={feature_GroupArticleBy}
+                              onChange={handleGroupByFeatureClick}
+                            />
+                          }
+                          label={
+                            <span style={{ fontSize: 14 }}>
+                              Feature Flag: Group Articles by...
+                            </span>
                           }
                         />
 

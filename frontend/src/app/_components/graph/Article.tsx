@@ -2,6 +2,7 @@ import { Typography } from "@mui/material";
 
 import { type Article } from "~/server/api/routers/post";
 import { NodeTitle } from "~/app/_components/NodeTitle";
+import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 
 export default function ArticleComponent({
   article,
@@ -79,7 +80,7 @@ export default function ArticleComponent({
             mt={1}
             className="whitespace-pre-wrap"
           >
-            {content}
+            <HighlightSearchTerms text={content} />
           </Typography>
         ))}
       </div>
