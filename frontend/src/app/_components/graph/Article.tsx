@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 
 import { type Article } from "~/server/api/routers/post";
 import { NodeTitle } from "~/app/_components/NodeTitle";
-import { HighlightSearchTerms } from "../HighlightTerms";
+import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 
 export default function ArticleComponent({
   article,
