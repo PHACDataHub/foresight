@@ -9,6 +9,7 @@ import {
   type Threat,
 } from "~/server/api/routers/post";
 import { createScale, getNodeData } from "~/app/_utils/graph";
+import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 import ProgressBar from "./ProgressBar";
 
 export type ForesightData = Cluster | Threat;
@@ -33,8 +34,11 @@ export default function DataLoader({
     clusterId,
     setArticleCount,
     threats,
+    setSearchMatches,
+    feature_DeepSearch,
   } = useStore();
-
+  const terms = useSearchTerms();
+  
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
@@ -57,6 +61,19 @@ export default function DataLoader({
       },
     );
 
+  // Fetch which nodes should be highlighted
+  const { data: highlightedNodeIds } = api.post.nodesWithTerms.useQuery(
+    { day, history, everything, threats, terms },
+    {
+      refetchOnWindowFocus: false,
+      enabled: feature_DeepSearch,
+    },
+  );
+
+  useEffect(() => {
+    if (highlightedNodeIds) setSearchMatches(highlightedNodeIds);
+  }, [highlightedNodeIds, setSearchMatches]);
+
   const { data: timeLineArticles } = api.post.articles.useQuery(
     { cluster_id: clusterId ?? "" },
     { enabled: typeof clusterId !== "undefined" },
@@ -64,7 +81,9 @@ export default function DataLoader({
 
   useEffect(() => {
     if (timeLineArticles) {
-      setTotalSize(timeLineArticles.nodes.length + timeLineArticles.edges.length);
+      setTotalSize(
+        timeLineArticles.nodes.length + timeLineArticles.edges.length,
+      );
       setScale(createScale(timeLineArticles));
       void ogma.setGraph(timeLineArticles);
     }

@@ -69,6 +69,8 @@ const LayoutService = forwardRef(
       refreshObserver,
       setFocus,
       toggleExpandedCluster,
+      searchMatches,
+      feature_DeepSearch,
     } = useStore();
     const terms = useSearchTerms();
 
@@ -300,6 +302,11 @@ const LayoutService = forwardRef(
     const isHaloed = useCallback(
       (n: OgmaNode | null) => {
         if (!n) return false;
+        if (feature_DeepSearch) {
+          const id = `${n.getData("id") as string}`;
+          return searchMatches.includes(id);
+        }
+
         const data = getNodeData(n);
         if (data?.type === "cluster") {
           for (const term of terms) {
@@ -329,7 +336,7 @@ const LayoutService = forwardRef(
         }
         return false;
       },
-      [terms],
+      [feature_DeepSearch, searchMatches, terms],
     );
 
     useEffect(() => {
@@ -345,8 +352,11 @@ const LayoutService = forwardRef(
           },
         });
       void ogma.getNodes().removeClass("termHighlight");
-      void ogma.getNodes().filter((n) => isHaloed(n)).addClass("termHighlight");
-    }, [isHaloed, ogma]);
+      void ogma
+        .getNodes()
+        .filter((n) => isHaloed(n))
+        .addClass("termHighlight");
+    }, [isHaloed, ogma, refreshObserver]);
 
     useImperativeHandle(ref, () => ({
       refresh: updateLayout,

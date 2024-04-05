@@ -305,31 +305,34 @@ export const postRouter = createTRPCRouter({
       try {
         const result = await session.run(
           `
-        WITH $period + '-\\d+' AS id_pattern          
+        WITH $period + '-\\d+' AS id_pattern
         UNWIND $terms AS term 
-        MATCH (n:Cluster) 
-          WHERE toLower(n.title) CONTAINS term OR toLower(n.summary) CONTAINS term 
-        return n
+        MATCH (c:Cluster)-[:DETECTED_THREAT]->(t:Threat)
+          WHERE 
+            (c.id =~ id_pattern AND t.text IN $threats) AND (
+              (toLower(c.title) CONTAINS term OR toLower(c.summary) CONTAINS term)
+              OR EXISTS {
+                MATCH (c)<-[:IN_CLUSTER]-(a:Article)
+                  WHERE toLower(a.title) CONTAINS term OR toLower(a.content) CONTAINS term 
+              }
+            )
+        return c.id as id
         UNION
+        WITH $period + '-\\d+' AS id_pattern
         UNWIND $terms AS term 
-        MATCH (n:Article) 
-          WHERE toLower(n.title) CONTAINS term OR toLower(n.content) CONTAINS term 
-        return n        
+        MATCH (a:Article)-[:IN_CLUSTER]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
+          WHERE
+            c.id =~ id_pattern AND t.text IN $threats AND (
+              toLower(a.title) CONTAINS term OR toLower(a.content) CONTAINS term 
+            )
+        return a.id as id
         `,
-          { terms: input.terms, period },
+          { terms: input.terms, period, threats: input.threats },
         );
-        return result.records
-          .map((record) => {
-            const t = record.get("t") as {
-              properties: { text: string; score: number };
-            };
-            return { text: t.properties.text, score: t.properties.score ?? 0 };
-          })
-          .sort((a, b) => {
-            if (a.score > b.score) return -1;
-            if (a.score < b.score) return 1;
-            return 0;
-          });
+        return result.records.map((record) => {
+          const id = record.get("id") as string;
+          return `${id}`;
+        });
       } finally {
         await session.close();
       }
