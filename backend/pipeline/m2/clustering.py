@@ -631,8 +631,8 @@ if __name__ == '__main__':
     topic_model = cluster_batches(batches, embedding_model, seed_phrases, print_topics=True)
 
     topic_dict = get_topic_info(topic_model)
-    # for topic_id in sorted(topic_dict.keys()):
-    #     print(f"[{topic_id}] --- [{len(topic_dict[topic_id]['documents'])}] --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']} --- {len(topic_dict[topic_id]['representatives'])}")
+    for topic_id in sorted(topic_dict.keys()):
+        print(f"[{topic_id}] --- [{len(topic_dict[topic_id]['documents'])}] --- {len(topic_dict[topic_id]['representatives'])} --- {topic_dict[topic_id]['name']} --- {topic_dict[topic_id]['keywords']}")
     
     topic_dict = predict_batches(topic_model, batches, topic_dict)
     for topic_id in sorted(topic_dict.keys()):
