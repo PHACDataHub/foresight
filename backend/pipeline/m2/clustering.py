@@ -7,6 +7,7 @@ import json
 import math
 from queue import Queue
 from threading import Thread
+import random
 import sys
 
 
@@ -600,7 +601,7 @@ if __name__ == '__main__':
 
     llm_model_dict, llm_chain_dict, output_parser = create_llm_chains(llm_tool_dict)
     
-    geolocator = Nominatim(user_agent="foresight-phac-ca")
+    geolocator = Nominatim(user_agent=f"foresight-phac-ca-{random.random()}")
     
     batches = load_batches(in_path, date_list, start_date, end_date, embedding_model)
     
@@ -616,10 +617,10 @@ if __name__ == '__main__':
 
     n_workers = min(2 ** (round(math.log2(len(topic_dict)))-2), 16)
     similarity_dict = compute_constellations(topic_dict, n_workers, similarity_threshold=0.59, content_similarity_ratio=1.0)
-    # for topic_kid, score_dict in similarity_dict.items():
-    #     print(f"{topic_kid} --- [{len(topic_dict[topic_kid]['documents'])}] --- {topic_dict[topic_kid]['name']}")   # --- {topic_dict[topic_kid]['keywords']}")
-    #     for topic_sid, score in score_dict.items():
-    #         print(f"\t{score:0.2f} --- {topic_sid} --- [{len(topic_dict[topic_sid]['documents'])}] --- {topic_dict[topic_sid]['name']}")    # --- {topic_dict[topic_sid]['keywords']}")
+    for topic_kid, score_dict in similarity_dict.items():
+        print(f"{topic_kid} --- [{len(topic_dict[topic_kid]['documents'])}] --- {topic_dict[topic_kid]['name']}")   # --- {topic_dict[topic_kid]['keywords']}")
+        for topic_sid, score in score_dict.items():
+            print(f"\t{score:0.2f} --- {topic_sid} --- [{len(topic_dict[topic_sid]['documents'])}] --- {topic_dict[topic_sid]['name']}")    # --- {topic_dict[topic_sid]['keywords']}")
 
     sim_file_name = f"{in_path}/processed-{start_date}-{end_date}-sim.jsonl"
     save_jsonl(similarity_dict, sim_file_name, single=True)
