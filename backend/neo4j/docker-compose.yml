@@ -110,7 +110,10 @@ services:
       - $PWD/deployment/neo4j/data:/data
       - $PWD/deployment/neo4j/logs:/logs
       - $PWD/deployment/neo4j/plugins:/plugins
-      - /etc/letsencrypt/live/neo4j.backend.foresight-serum.phac-aspc.alpha.canada.ca:/ssl
+      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/cert1.pem:/ssl/cert.pem
+      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/privkey1.pem:/ssl/privkey.pem
+      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/chain1.pem:/ssl/chain.pem
+      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/fullchain1.pem:/ssl/fullchain.pem
     restart: always
 
   ####################
@@ -130,9 +133,9 @@ services:
       - ssoEnabled=false
       - ssoDiscoveryUrl=
       - standalone=true
-      - standaloneProtocol=neo4j
-      - standaloneHost=${EXTERNAL_IP}
-      - standalonePort=7687
+      - standaloneProtocol=bolt
+      - standaloneHost=neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca
+      - standalonePort=7688
       - standaloneUsername=${NEO4J_USERNAME}
       - standaloneDatabase=neo4j
       - standaloneDashboardName=${NEODASH_DASHBOARD}
