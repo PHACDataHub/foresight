@@ -3,6 +3,7 @@ import { Typography } from "@mui/material";
 import { type Article } from "~/server/api/routers/post";
 import { NodeTitle } from "~/app/_components/NodeTitle";
 import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
+import { getNodeColor } from "~/app/_utils/graph";
 
 export default function ArticleComponent({
   article,
@@ -63,6 +64,19 @@ export default function ArticleComponent({
               </div>
             </div>
           </div>
+          {article.outlier && (
+            <div className="flex space-x-1">
+              <Typography
+                variant="body1"
+                fontSize={14}
+                fontWeight={500}
+                className="border p-2 text-white"
+                style={{ backgroundColor: getNodeColor(article) }}
+              >
+                Outlier
+              </Typography>
+            </div>
+          )}
         </div>
 
         {standAlone && (

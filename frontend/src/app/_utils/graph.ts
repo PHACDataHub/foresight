@@ -23,7 +23,7 @@ export const nodeColours: Record<
   cluster: "#FFAA29",
   threat: "#DA484A",
   article: "#92A771",
-  article_outlier: "#BACF99",
+  article_outlier: "#00CF99",
   other: "#D6DAE5",
 };
 

@@ -124,8 +124,6 @@ export default function Graph() {
     ogma,
     setFeature_GroupArticleBy,
     feature_GroupArticleBy,
-    setFeature_DeepSearch,
-    feature_DeepSearch,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -255,16 +253,18 @@ export default function Graph() {
           .getNodes()
           .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
           .locate();
+        refresh();
       });
     };
     void waitForOps();
   }, [
-    selectedNode?.node,
     ogma,
-    expandCluster,
-    augmentScale,
+    selectedNode,
     setLayout,
     setExpandedClusters,
+    refresh,
+    expandCluster,
+    augmentScale,
   ]);
 
   const handleTimeSeriesClick = useCallback(() => {
@@ -290,10 +290,6 @@ export default function Graph() {
   const handleGroupByFeatureClick = useCallback(() => {
     setFeature_GroupArticleBy(!feature_GroupArticleBy);
   }, [feature_GroupArticleBy, setFeature_GroupArticleBy]);
-
-  const handleDeepSearchFeatureClick = useCallback(() => {
-    setFeature_DeepSearch(!feature_DeepSearch);
-  }, [feature_DeepSearch, setFeature_DeepSearch]);
 
   const handleReset = useCallback(() => {
     setFocus(null);
@@ -594,21 +590,6 @@ export default function Graph() {
                             </span>
                           }
                         />
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              size="large"
-                              checked={feature_DeepSearch}
-                              onChange={handleDeepSearchFeatureClick}
-                            />
-                          }
-                          label={
-                            <span style={{ fontSize: 14 }}>
-                              Feature Flag: Deep Search
-                            </span>
-                          }
-                        />
-
                         <FormControl variant="standard">
                           <InputLabel sx={{ fontSize: 14 }}>
                             Map Mode

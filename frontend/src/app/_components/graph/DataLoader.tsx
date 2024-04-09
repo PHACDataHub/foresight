@@ -35,10 +35,9 @@ export default function DataLoader({
     setArticleCount,
     threats,
     setSearchMatches,
-    feature_DeepSearch,
   } = useStore();
   const terms = useSearchTerms();
-  
+
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTick = useRef<number>(0);
 
@@ -66,7 +65,6 @@ export default function DataLoader({
     { day, history, everything, threats, terms },
     {
       refetchOnWindowFocus: false,
-      enabled: feature_DeepSearch,
     },
   );
 

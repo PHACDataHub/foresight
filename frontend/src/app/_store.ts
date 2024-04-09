@@ -33,8 +33,6 @@ export interface ForesightStore {
   // Feature Flags
   feature_GroupArticleBy: boolean;
   setFeature_GroupArticleBy: (feature_GroupArticleBy: boolean) => void;
-  feature_DeepSearch: boolean;
-  setFeature_DeepSearch: (feature_DeepSearch: boolean) => void;
 
   ogma: OgmaLib | null;
   setOgma: (ogma: OgmaLib | null) => void;
@@ -136,9 +134,6 @@ export const useStore = create<ForesightStore>((set) => ({
   feature_GroupArticleBy: false,
   setFeature_GroupArticleBy: (feature_GroupArticleBy) =>
     set({ feature_GroupArticleBy }),
-  feature_DeepSearch: false,
-  setFeature_DeepSearch: (feature_DeepSearch) => set({ feature_DeepSearch }),
-
   ogma: null,
   setOgma: (ogma) => set({ ogma }),
   rodMode: false,
@@ -182,7 +177,7 @@ export const useStore = create<ForesightStore>((set) => ({
   articleCount: 0,
   setArticleCount: (articleCount: number) => set({ articleCount }),
 
-  showInfoPanel: false,
+  showInfoPanel: true,
   setShowInfoPanel: (showInfoPanel) => set({ showInfoPanel }),
   panelWasToggled: false,
   setPanelWasToggled: (panelWasToggled) => set({ panelWasToggled }),

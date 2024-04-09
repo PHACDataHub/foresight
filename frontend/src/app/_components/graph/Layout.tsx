@@ -21,7 +21,6 @@ import {
   useRef,
 } from "react";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
-import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 import { useStore } from "~/app/_store";
 import {
   findAlongPath,
@@ -70,9 +69,7 @@ const LayoutService = forwardRef(
       setFocus,
       toggleExpandedCluster,
       searchMatches,
-      feature_DeepSearch,
     } = useStore();
-    const terms = useSearchTerms();
 
     const selectedPath = useMemo(() => {
       if (!selectedNode) return null;
@@ -302,41 +299,10 @@ const LayoutService = forwardRef(
     const isHaloed = useCallback(
       (n: OgmaNode | null) => {
         if (!n) return false;
-        if (feature_DeepSearch) {
-          const id = `${n.getData("id") as string}`;
-          return searchMatches.includes(id);
-        }
-
-        const data = getNodeData(n);
-        if (data?.type === "cluster") {
-          for (const term of terms) {
-            const t = term.toLowerCase();
-            if (
-              Boolean(data.summary?.toLowerCase().includes(t)) ||
-              data.title.toLowerCase().includes(t)
-            )
-              return true;
-          }
-        } else if (data?.type === "hierarchicalcluster") {
-          const clusters = findAlongPath(
-            n,
-            "out",
-            (node) => getNodeData(node)?.type === "cluster",
-          ).filter((node) => isHaloed(node));
-          if (clusters.size > 1) return true;
-        } else if (data?.type === "article") {
-          for (const term of terms) {
-            const t = term.toLowerCase();
-            if (
-              Boolean(data.content?.toLowerCase().includes(t)) ||
-              data.title.toLowerCase().includes(t)
-            )
-              return true;
-          }
-        }
-        return false;
+        const id = `${n.getData("id") as string}`;
+        return searchMatches.includes(id);
       },
-      [feature_DeepSearch, searchMatches, terms],
+      [searchMatches],
     );
 
     useEffect(() => {
