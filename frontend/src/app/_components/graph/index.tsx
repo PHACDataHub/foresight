@@ -115,6 +115,8 @@ export default function Graph() {
     setExpandedClusters,
     everything,
     setEverything,
+    oldQuery,
+    setOldQuery,
     selectedNode,
     rodMode,
     toggleRodMode,
@@ -286,6 +288,10 @@ export default function Graph() {
   const handleEverythingChange = useCallback(() => {
     setEverything(!everything);
   }, [everything, setEverything]);
+
+  const handleOldQueryChange = useCallback(() => {
+    setOldQuery(!oldQuery);
+  }, [oldQuery, setOldQuery]);
 
   const handleGroupByFeatureClick = useCallback(() => {
     setFeature_GroupArticleBy(!feature_GroupArticleBy);
@@ -574,6 +580,18 @@ export default function Graph() {
                           }
                           label={
                             <span style={{ fontSize: 14 }}>Fetch All</span>
+                          }
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              size="large"
+                              checked={oldQuery}
+                              onChange={handleOldQueryChange}
+                            />
+                          }
+                          label={
+                            <span style={{ fontSize: 14 }}>Original Query Mode</span>
                           }
                         />
                         <FormControlLabel

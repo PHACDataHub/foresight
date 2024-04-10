@@ -27,6 +27,7 @@ export default function DataLoader({
 
   const {
     everything,
+    oldQuery,
     setClusters,
     clearSelections,
     setScale,
@@ -43,7 +44,7 @@ export default function DataLoader({
 
   // Fetch the main graph data based on day, history and threats selected.
   const { isFetching, data: rawGraph } = api.post.hierarchicalClusters.useQuery(
-    { day, history, everything, threats },
+    { day, history, everything, threats, oldQuery },
     {
       refetchOnWindowFocus: false,
       enabled: typeof clusterId === "undefined",

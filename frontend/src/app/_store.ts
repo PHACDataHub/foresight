@@ -72,6 +72,8 @@ export interface ForesightStore {
   setPanelWasToggled: (panelWasToggled: boolean) => void;
   everything: boolean;
   setEverything: (everything: boolean) => void;
+  oldQuery: boolean;
+  setOldQuery: (everything: boolean) => void;
   refreshObserver: number;
   refresh: () => void;
   scale: Record<
@@ -183,6 +185,8 @@ export const useStore = create<ForesightStore>((set) => ({
   setPanelWasToggled: (panelWasToggled) => set({ panelWasToggled }),
   everything: false,
   setEverything: (everything) => set({ everything }),
+  oldQuery: false,
+  setOldQuery: (oldQuery) => set({ oldQuery }),
   refreshObserver: 0,
   refresh: () =>
     set((state) => ({ refreshObserver: state.refreshObserver + 1 })),

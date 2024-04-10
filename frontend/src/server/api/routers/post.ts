@@ -258,13 +258,15 @@ export type AllDataTypeProperties =
 
 const convertNeo4jTypes = (obj: Neo4JTransferRecord) => {
   return Object.fromEntries(
-    Object.entries(obj).map(([key, value]) => {
-      if (neo4j.isInt(value)) return [key, value.toNumber()];
-      if (neo4j.isDate(value) || neo4j.isDateTime(value))
-        return [key, value.toStandardDate()];
-      
-      return [key, value];
-    }),
+    Object.entries(obj)
+      .filter(([key]) => !key.startsWith("_") && key !== "nodeid")
+      .map(([key, value]) => {
+        if (neo4j.isInt(value)) return [key, value.toNumber()];
+        if (neo4j.isDate(value) || neo4j.isDateTime(value))
+          return [key, value.toStandardDate()];
+
+        return [key, value];
+      }),
   );
 };
 
@@ -644,6 +646,7 @@ export const postRouter = createTRPCRouter({
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
         everything: z.boolean().optional(),
         threats: z.array(z.string()),
+        oldQuery: z.boolean().optional(),
       }),
     )
     .query(async ({ input }) => {
@@ -675,9 +678,10 @@ export const postRouter = createTRPCRouter({
       const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
 
       try {
-        const t = funcTimer("hierarchicalClusters NEW Query");
-        const threats = await session.run(
-          `
+        if (!input.oldQuery) {
+          const t = funcTimer("hierarchicalClusters NEW Query");
+          const threats = await session.run(
+            `
           WITH $period + '-\\d+' AS id_pattern
           MATCH (threat:Threat WHERE threat.text IN $threats)<-[r:DETECTED_THREAT]-(c:Cluster WHERE c.id =~ id_pattern)
           with threat, collect(r) as rels
@@ -689,11 +693,11 @@ export const postRouter = createTRPCRouter({
             score: threat.score
           }
           `,
-          { period, threats: input.threats },
-        );
+            { period, threats: input.threats },
+          );
 
-        const result2 = await session.run(
-          `
+          const result2 = await session.run(
+            `
           WITH $period + '-\\d+' AS id_pattern
           MATCH (hr:HierarchicalCluster)-[r:CONTAINS*..]->(c:Cluster)
           WHERE
@@ -704,11 +708,11 @@ export const postRouter = createTRPCRouter({
           WITH hr, collect(r) as rels, collect(c) as clusters
           RETURN hr {
             nodeid: id(hr),
+            type: "hierarchicalcluster",
+            .clusters,
             .id,
             .name,
-            .clusters,
             _rels: rels,
-            type: "hierarchicalcluster",
             _clusters: [(hr)-[:CONTAINS]->(cluster:Cluster WHERE cluster IN clusters) | cluster {
               nodeid: id(cluster),
               type: "cluster",
@@ -743,135 +747,133 @@ export const postRouter = createTRPCRouter({
             }]
           }
         `,
+            { period, threats: input.threats },
+          );
+          t.measure("Neo4J query completed");
+          t.payload([threats.records, result2.records], true);
+
+          const rawGraph: { nodes: RawNode[]; edges: RawEdge[] } = {
+            nodes: [],
+            edges: [],
+          };
+
+          const edge_index: Record<string, boolean> = {};
+          const addEdge = (edge: Relationship) => {
+            const id = edge.identity.toString();
+
+            if (edge_index[id]) return;
+            edge_index[id] = true;
+
+            rawGraph.edges.push({
+              id,
+              data: {
+                neo4jType: edge.type,
+              },
+              source: edge.start.toString(),
+              target: edge.end.toString(),
+            });
+          };
+
+          const addEdges = (
+            edge?: Relationship | Relationship[] | Relationship[][],
+          ) => {
+            if (!edge) return;
+            if (!Array.isArray(edge)) return addEdge(edge);
+            edge.forEach((e) => {
+              if (!Array.isArray(e)) return addEdge(e);
+              e.forEach((ed) => addEdge(ed));
+            });
+          };
+
+          const parseData = (obj: Neo4JTransferRecord) => {
+            const id = `${obj.nodeid.toNumber()}`;
+            rawGraph.nodes.push({
+              id,
+              data: convertNeo4jTypes(obj),
+            });
+            addEdges(obj._rels);
+
+            if (obj.type === "hierarchicalcluster") {
+              obj._clusters.forEach((cluster) => {
+                parseData(cluster);
+              });
+            } else if (obj.type === "cluster") {
+              if (input.everything)
+                obj._articles.forEach((articles) => parseData(articles));
+            } else if (obj.type === "article") {
+              addEdges(obj._similar);
+            }
+          };
+          result2.records.forEach((record) => {
+            const data = record.get("hr") as Neo4JTransferRecord;
+            parseData(data);
+          });
+          threats.records.forEach((record) => {
+            const data = record.get("threat") as Neo4JTransferRecord;
+            parseData(data);
+          });
+          t.measure("Graph translation complete.");
+          t.payload([rawGraph]);
+          t.end();
+          return rawGraph;
+        }
+
+        const t = funcTimer("hierarchicalClusters OLD Query");
+
+        const result = await session.run(
+          `
+                WITH $period + '-\\d+' AS id_pattern
+                  MATCH (hr:HierarchicalCluster)-[hr_r:CONTAINS*..]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
+                    WHERE c.id =~ id_pattern AND t.text IN $threats
+
+                  ${
+                    input.everything && false
+                      ? `WITH hr, hr_r, c, r, t
+                    OPTIONAL MATCH (c)<-[r2:IN_CLUSTER]-(a:Article)
+                  WITH hr, hr_r, c, r, t, r2, a
+                    OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
+        `
+                      : ""
+                  }
+                RETURN hr, hr_r, c , r, t ${input.everything && false ? ", a, r2, r_sim" : ""}
+                `,
           { period, threats: input.threats },
         );
+
         t.measure("Neo4J query completed");
-        t.payload([threats.records, result2.records], true);
+        t.payload([result.records], true);
 
-        const rawGraph: { nodes: RawNode[]; edges: RawEdge[] } = {
-          nodes: [],
-          edges: [],
-        };
+        const ret = translateGraph(await OgmaLib.parse.neo4j(result), (n) => {
+          if (!input.everything) return n;
+          if (n.data?.type === "cluster")
+            return {
+              ...n,
+              data: {
+                type: "cluster",
+                id: n.data.id,
+                locations: n.data.locations,
+                nr_articles: n.data.nr_articles,
+                title: n.data.title,
+                summary: n.data.summary,
+              },
+            };
+          if (n.data?.type === "article")
+            return {
+              ...n,
+              data: {
+                type: "article",
+                id: n.data.id,
+                outlier: n.data.outlier,
+                prob_size: n.data.prob_size,
+                title: n.data.title,
+              },
+            };
 
-        const edge_index: Record<string, boolean> = {};
-        const addEdge = (edge: Relationship) => {
-          const id = edge.identity.toString();
-
-          if (edge_index[id]) return;
-          edge_index[id] = true;
-
-          rawGraph.edges.push({
-            id,
-            data: {
-              neo4jType: edge.type,
-            },
-            source: edge.start.toString(),
-            target: edge.end.toString(),
-          });
-        };
-
-        const addEdges = (
-          edge?: Relationship | Relationship[] | Relationship[][],
-        ) => {
-          if (!edge) return;
-          if (!Array.isArray(edge)) return addEdge(edge);
-          edge.forEach((e) => {
-            if (!Array.isArray(e)) return addEdge(e);
-            e.forEach((ed) => addEdge(ed));
-          });
-        };
-
-        const parseData = (obj: Neo4JTransferRecord) => {
-          const id = `${obj.nodeid.toNumber()}`;
-          rawGraph.nodes.push({
-            id,
-            data: convertNeo4jTypes(obj),
-          });
-          addEdges(obj._rels);
-
-          if (obj.type === "hierarchicalcluster") {
-            obj._clusters.forEach((cluster) => {
-              parseData(cluster);
-            });
-          } else if (obj.type === "cluster") {
-            if (input.everything)
-              obj._articles.forEach((articles) => parseData(articles));
-          } else if (obj.type === "article") {
-            addEdges(obj._similar);
-          }
-        };
-        result2.records.forEach((record) => {
-          const data = record.get("hr") as Neo4JTransferRecord;
-          parseData(data);
-        });
-        threats.records.forEach((record) => {
-          const data = record.get("threat") as Neo4JTransferRecord;
-          parseData(data);
+          return n;
         });
         t.measure("Graph translation complete.");
-        t.payload([rawGraph]);
         t.end();
-        return rawGraph;
-
-        //         const t = funcTimer("hierarchicalClusters OLD Query");
-
-        //         const result = await session.run(
-        //           `
-        //         WITH $period + '-\\d+' AS id_pattern
-        //           MATCH (hr:HierarchicalCluster)-[hr_r:CONTAINS*..]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
-        //             WHERE c.id =~ id_pattern AND t.text IN $threats
-
-        //           ${
-        //             input.everything && false
-        //               ? `WITH hr, hr_r, c, r, t
-        //             OPTIONAL MATCH (c)<-[r2:IN_CLUSTER]-(a:Article)
-        //           WITH hr, hr_r, c, r, t, r2, a
-        //             OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
-        // `
-        //               : ""
-        //           }
-        //         RETURN hr, hr_r, c , r, t ${input.everything && false ? ", a, r2, r_sim" : ""}
-        //         `,
-        //           { period, threats: input.threats },
-        //         );
-
-        //         t.measure("Neo4J query completed");
-        //         t.payload([result.records], true);
-
-        //         const ret = translateGraph(
-        //           await OgmaLib.parse.neo4j(result),
-        //           // (n) => {
-        //           //   if (!input.everything) return n;
-        //           //   if (n.data?.type === "cluster")
-        //           //     return {
-        //           //       ...n,
-        //           //       data: {
-        //           //         type: "cluster",
-        //           //         id: n.data.id,
-        //           //         locations: n.data.locations,
-        //           //         nr_articles: n.data.nr_articles,
-        //           //         title: n.data.title,
-        //           //         summary: n.data.summary,
-        //           //       },
-        //           //     };
-        //           //   if (n.data?.type === "article")
-        //           //     return {
-        //           //       ...n,
-        //           //       data: {
-        //           //         type: "article",
-        //           //         id: n.data.id,
-        //           //         outlier: n.data.outlier,
-        //           //         prob_size: n.data.prob_size,
-        //           //         title: n.data.title,
-        //           //       },
-        //           //     };
-
-        //           //   return n;
-        //           // }
-        //         );
-        //         t.measure("Graph translation complete.");
-        //         t.end();
-        //         return ret;
+        return ret;
       } finally {
         await session.close();
       }
