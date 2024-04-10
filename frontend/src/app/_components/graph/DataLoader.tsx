@@ -69,7 +69,9 @@ export default function DataLoader({
   );
 
   useEffect(() => {
-    if (highlightedNodeIds) setSearchMatches(highlightedNodeIds);
+    if (highlightedNodeIds) {
+      setSearchMatches(highlightedNodeIds);
+    }
   }, [highlightedNodeIds, setSearchMatches]);
 
   const { data: timeLineArticles } = api.post.articles.useQuery(

@@ -99,7 +99,9 @@ function ArticleList({ articles }: { articles: Article[] }) {
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
   if (!cluster?.locations) return;
-  const locations = cluster.locations.filter((l) => Boolean(l.location));
+  const locations = cluster.locations.filter(
+    (l) => Boolean(l.location) && typeof l.location === "string",
+  );
   return (
     <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap">
       {locations.map((l, i) => (

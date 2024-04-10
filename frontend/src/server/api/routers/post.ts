@@ -177,7 +177,7 @@ const translateGraph = (
           const source = n.data?.neo4jProperties as ClusterRecord;
           const data: Cluster = {
             type: "cluster",
-            answers: JSON.parse(source.answers) as Record<string, string>,
+            answers: {}, //JSON.parse(source.answers) as Record<string, string>,
             countries: source.countries,
             id: source.id,
             keywords: source.keywords,
