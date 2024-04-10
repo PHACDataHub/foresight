@@ -305,24 +305,24 @@ const LayoutService = forwardRef(
       [searchMatches],
     );
 
-    useEffect(() => {
-      if (!ogma.styles.getClass("termHighlight"))
-        ogma.styles.createClass({
-          name: "termHighlight",
-          nodeAttributes: {
-            halo: {
-              color: "yellow",
-              strokeColor: "#ccc",
-              width: 10,
-            },
-          },
-        });
-      void ogma.getNodes().removeClass("termHighlight");
-      void ogma
-        .getNodes()
-        .filter((n) => isHaloed(n))
-        .addClass("termHighlight");
-    }, [isHaloed, ogma, refreshObserver]);
+    // useEffect(() => {
+    //   if (!ogma.styles.getClass("termHighlight"))
+    //     ogma.styles.createClass({
+    //       name: "termHighlight",
+    //       nodeAttributes: {
+    //         halo: {
+    //           color: "yellow",
+    //           strokeColor: "#ccc",
+    //           width: 10,
+    //         },
+    //       },
+    //     });
+    //   void ogma.getNodes().removeClass("termHighlight");
+    //   void ogma
+    //     .getNodes()
+    //     .filter((n) => isHaloed(n))
+    //     .addClass("termHighlight");
+    // }, [isHaloed, ogma, refreshObserver]);
 
     useImperativeHandle(ref, () => ({
       refresh: updateLayout,
@@ -455,14 +455,14 @@ const LayoutService = forwardRef(
                 return 10;
               }
             },
-            // halo: (n) => {
-            //   if (isHaloed(n))
-            //     return {
-            //       color: "yellow",
-            //       strokeColor: "#ccc",
-            //       width: 10,
-            //     };
-            // },
+            halo: (n) => {
+              if (isHaloed(n))
+                return {
+                  color: "yellow",
+                  strokeColor: "#ccc",
+                  width: 10,
+                };
+            },
           }}
         />
       </>

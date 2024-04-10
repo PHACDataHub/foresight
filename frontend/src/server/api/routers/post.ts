@@ -1,10 +1,12 @@
 import neo4j, {
   type Integer as Neo4jInteger,
   type QueryResult,
+  type Relationship,
 } from "neo4j-driver";
 import OgmaLib, {
   type Neo4JEdgeData,
   type Neo4JNodeData,
+  type RawEdge,
   type RawGraph,
   type RawNode,
 } from "@linkurious/ogma";
@@ -13,6 +15,74 @@ import { z } from "zod";
 import { env } from "~/env";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+
+const funcTimer = (msg: string) => {
+  const width = 80;
+  const start = new Date();
+  let marked = start;
+  const prefix = `[${start.toLocaleTimeString()}]`;
+  const label = `${prefix} ${msg}`;
+  console.log(`${label} ${"#".repeat(width - label.length - 1)}`);
+
+  return {
+    measure: (title: string, mark?: boolean) => {
+      const end = new Date();
+      const elapsed = (end.getTime() - marked.getTime()).toLocaleString(
+        "en-CA",
+        {
+          notation: "compact",
+          style: "unit",
+          unit: "millisecond",
+          unitDisplay: "narrow",
+        },
+      );
+      const prefix = `[${end.toLocaleTimeString()}] ${elapsed}`;
+      const label = `${prefix} ${title}`;
+      console.log(`${label}${" ".repeat(width - label.length - 1)}#`);
+      if (mark) marked = new Date();
+    },
+    msg: (title: string, mark?: boolean) => {
+      const end = new Date();
+      const prefix = `[${end.toLocaleTimeString()}]`;
+      const label = `${prefix} ${title}`;
+      console.log(`${label}${" ".repeat(width - label.length - 1)}#`);
+      if (mark) marked = new Date();
+    },
+    payload: (data: unknown[], mark?: boolean) => {
+      const end = new Date();
+      const prefix = `[${end.toLocaleTimeString()}]`;
+      const payload = (JSON.stringify(data).length - 4).toLocaleString(
+        "en-CA",
+        {
+          notation: "compact",
+          style: "unit",
+          unit: "byte",
+          unitDisplay: "narrow",
+        },
+      );
+      const label = `${prefix} PAYLOAD: ${payload}`;
+      console.log(`${label}${" ".repeat(width - label.length - 1)}#`);
+      if (mark) marked = new Date();
+    },
+    mark: () => {
+      marked = new Date();
+    },
+    end: () => {
+      const end = new Date();
+      const elapsed = (end.getTime() - start.getTime()).toLocaleString(
+        "en-CA",
+        {
+          notation: "compact",
+          style: "unit",
+          unit: "millisecond",
+          unitDisplay: "narrow",
+        },
+      );
+      const label = `[${end.toLocaleTimeString()}] Total time: ${elapsed}`;
+      console.log(`${label} ${"#".repeat(width - label.length - 1)}`);
+    },
+  };
+};
 
 export type Neo4JNumber = { low: number; high: number };
 export type Neo4JDate = {
@@ -26,6 +96,43 @@ export interface Neo4JRecord<T1, T2, T3> {
   length: number;
   _fieldLookup: Record<string, number>;
   _fields: [T1, T2, T3];
+}
+
+export type Neo4JTransferRecord =
+  | (Neo4JTransferRecordInterface & {
+      type: Exclude<
+        AllDataTypeProperties,
+        "hierarchicalcluster" | "cluster" | "article"
+      >;
+    })
+  | (Neo4JTransferRecordInterface & {
+      type: "hierarchicalcluster";
+      _clusters: Neo4JTransferRecord[];
+    })
+  | (Neo4JTransferRecordInterface & {
+      type: "cluster";
+      _articles: Neo4JTransferRecord[];
+    })
+  | (Neo4JTransferRecordInterface & {
+      type: "article";
+      _similar: Relationship[];
+    });
+
+export interface Neo4JTransferRecordInterface
+  extends Record<
+    string,
+    | string
+    | Date
+    | null
+    | number
+    | Neo4jInteger
+    | Neo4JTransferRecord[]
+    | Relationship[][]
+    | Relationship
+    | undefined
+  > {
+  nodeid: Neo4jInteger;
+  _rels?: Relationship[][] | Relationship;
 }
 
 export interface HierarchicalCluster {
@@ -148,6 +255,18 @@ export type AllDataTypeProperties =
   | "cluster"
   | "hierarchicalcluster"
   | "article";
+
+const convertNeo4jTypes = (obj: Neo4JTransferRecord) => {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => {
+      if (neo4j.isInt(value)) return [key, value.toNumber()];
+      if (neo4j.isDate(value) || neo4j.isDateTime(value))
+        return [key, value.toStandardDate()];
+      
+      return [key, value];
+    }),
+  );
+};
 
 const translateGraph = (
   graph: RawGraph<
@@ -554,69 +673,205 @@ export const postRouter = createTRPCRouter({
       });
 
       const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
-      try {
-        const ts = new Date();
-        console.log(
-          `[${ts.toLocaleTimeString()}] --- hierarchicalClusters QUERY START ---`,
-        );
-        const result = await session.run(
-          `
-        WITH $period + '-\\d+' AS id_pattern
-          MATCH (hr:HierarchicalCluster)-[hr_r:CONTAINS*..]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
-            WHERE c.id =~ id_pattern AND t.text IN $threats
 
-          ${
-            input.everything
-              ? `WITH hr, hr_r, c, r, t
-            OPTIONAL MATCH (c)<-[r2:IN_CLUSTER]-(a:Article)
-          WITH hr, hr_r, c, r, t, r2, a
-            OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
-`
-              : ""
+      try {
+        const t = funcTimer("hierarchicalClusters NEW Query");
+        const threats = await session.run(
+          `
+          WITH $period + '-\\d+' AS id_pattern
+          MATCH (threat:Threat WHERE threat.text IN $threats)<-[r:DETECTED_THREAT]-(c:Cluster WHERE c.id =~ id_pattern)
+          with threat, collect(r) as rels
+          return threat {
+            nodeid: id(threat),
+            type: "threat",
+            _rels: rels,
+            title: threat.text,
+            score: threat.score
           }
-        RETURN hr, hr_r, c , r, t ${input.everything ? ", a, r2, r_sim" : ""}
+          `,
+          { period, threats: input.threats },
+        );
+
+        const result2 = await session.run(
+          `
+          WITH $period + '-\\d+' AS id_pattern
+          MATCH (hr:HierarchicalCluster)-[r:CONTAINS*..]->(c:Cluster)
+          WHERE
+            c.id =~ id_pattern AND
+            EXISTS {
+              (c)-[:DETECTED_THREAT]->(t:Threat WHERE t.text IN $threats)
+            }
+          WITH hr, collect(r) as rels, collect(c) as clusters
+          RETURN hr {
+            nodeid: id(hr),
+            .id,
+            .name,
+            .clusters,
+            _rels: rels,
+            type: "hierarchicalcluster",
+            _clusters: [(hr)-[:CONTAINS]->(cluster:Cluster WHERE cluster IN clusters) | cluster {
+              nodeid: id(cluster),
+              type: "cluster",
+              answers: {},
+              countries: cluster.countries,
+              id: cluster.id,
+              keywords: cluster.keywords,
+              labels: cluster.labels,
+              locations: apoc.convert.fromJsonList(cluster.locations),
+              name: cluster.name,
+              nr_articles: cluster.nr_articles,
+              state_date: cluster.start_date,
+              representative_docs: cluster.representative_docs,
+              summary: cluster.summary,
+              title: cluster.title,
+              topic_id: cluster.topic_id${
+                input.everything
+                  ? `,
+              _articles: [(cluster)<-[r:IN_CLUSTER]-(article:Article) | article {
+                nodeid: id(article),
+                type: "article",
+                _rels: r,
+                _similar: [(article)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(cluster) | r_sim],
+                .id,
+                outlier: article:Outlier,
+                .prob_size,
+                .title
+              }]
+              `
+                  : ""
+              }
+            }]
+          }
         `,
           { period, threats: input.threats },
         );
-        const te1 = new Date();
-        console.log(
-          `[${te1.toLocaleTimeString()}] --- Neo4J Query Completed in ${((te1.getTime() - ts.getTime()) / 1000).toFixed(2)} seconds. ---`,
-        );
+        t.measure("Neo4J query completed");
+        t.payload([threats.records, result2.records], true);
 
-        const ret = translateGraph(await OgmaLib.parse.neo4j(result), (n) => {
-          if (!input.everything) return n;
-          if (n.data?.type === "cluster")
-            return {
-              ...n,
-              data: {
-                type: "cluster",
-                id: n.data.id,
-                locations: n.data.locations,
-                nr_articles: n.data.nr_articles,
-                title: n.data.title,
-                summary: n.data.summary,
-              },
-            };
-          if (n.data?.type === "article")
-            return {
-              ...n,
-              data: {
-                type: "article",
-                id: n.data.id,
-                outlier: n.data.outlier,
-                prob_size: n.data.prob_size,
-                title: n.data.title,
-              },
-            };
+        const rawGraph: { nodes: RawNode[]; edges: RawEdge[] } = {
+          nodes: [],
+          edges: [],
+        };
 
-          return n;
+        const edge_index: Record<string, boolean> = {};
+        const addEdge = (edge: Relationship) => {
+          const id = edge.identity.toString();
+
+          if (edge_index[id]) return;
+          edge_index[id] = true;
+
+          rawGraph.edges.push({
+            id,
+            data: {
+              neo4jType: edge.type,
+            },
+            source: edge.start.toString(),
+            target: edge.end.toString(),
+          });
+        };
+
+        const addEdges = (
+          edge?: Relationship | Relationship[] | Relationship[][],
+        ) => {
+          if (!edge) return;
+          if (!Array.isArray(edge)) return addEdge(edge);
+          edge.forEach((e) => {
+            if (!Array.isArray(e)) return addEdge(e);
+            e.forEach((ed) => addEdge(ed));
+          });
+        };
+
+        const parseData = (obj: Neo4JTransferRecord) => {
+          const id = `${obj.nodeid.toNumber()}`;
+          rawGraph.nodes.push({
+            id,
+            data: convertNeo4jTypes(obj),
+          });
+          addEdges(obj._rels);
+
+          if (obj.type === "hierarchicalcluster") {
+            obj._clusters.forEach((cluster) => {
+              parseData(cluster);
+            });
+          } else if (obj.type === "cluster") {
+            if (input.everything)
+              obj._articles.forEach((articles) => parseData(articles));
+          } else if (obj.type === "article") {
+            addEdges(obj._similar);
+          }
+        };
+        result2.records.forEach((record) => {
+          const data = record.get("hr") as Neo4JTransferRecord;
+          parseData(data);
         });
-        const te2 = new Date();
-        console.log(
-          `[${te2.toLocaleTimeString()}] --- Graph Translation Completed in ${((te2.getTime() - te1.getTime()) / 1000).toFixed(2)} seconds. ---`,
-        );
+        threats.records.forEach((record) => {
+          const data = record.get("threat") as Neo4JTransferRecord;
+          parseData(data);
+        });
+        t.measure("Graph translation complete.");
+        t.payload([rawGraph]);
+        t.end();
+        return rawGraph;
 
-        return ret;
+        //         const t = funcTimer("hierarchicalClusters OLD Query");
+
+        //         const result = await session.run(
+        //           `
+        //         WITH $period + '-\\d+' AS id_pattern
+        //           MATCH (hr:HierarchicalCluster)-[hr_r:CONTAINS*..]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
+        //             WHERE c.id =~ id_pattern AND t.text IN $threats
+
+        //           ${
+        //             input.everything && false
+        //               ? `WITH hr, hr_r, c, r, t
+        //             OPTIONAL MATCH (c)<-[r2:IN_CLUSTER]-(a:Article)
+        //           WITH hr, hr_r, c, r, t, r2, a
+        //             OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
+        // `
+        //               : ""
+        //           }
+        //         RETURN hr, hr_r, c , r, t ${input.everything && false ? ", a, r2, r_sim" : ""}
+        //         `,
+        //           { period, threats: input.threats },
+        //         );
+
+        //         t.measure("Neo4J query completed");
+        //         t.payload([result.records], true);
+
+        //         const ret = translateGraph(
+        //           await OgmaLib.parse.neo4j(result),
+        //           // (n) => {
+        //           //   if (!input.everything) return n;
+        //           //   if (n.data?.type === "cluster")
+        //           //     return {
+        //           //       ...n,
+        //           //       data: {
+        //           //         type: "cluster",
+        //           //         id: n.data.id,
+        //           //         locations: n.data.locations,
+        //           //         nr_articles: n.data.nr_articles,
+        //           //         title: n.data.title,
+        //           //         summary: n.data.summary,
+        //           //       },
+        //           //     };
+        //           //   if (n.data?.type === "article")
+        //           //     return {
+        //           //       ...n,
+        //           //       data: {
+        //           //         type: "article",
+        //           //         id: n.data.id,
+        //           //         outlier: n.data.outlier,
+        //           //         prob_size: n.data.prob_size,
+        //           //         title: n.data.title,
+        //           //       },
+        //           //     };
+
+        //           //   return n;
+        //           // }
+        //         );
+        //         t.measure("Graph translation complete.");
+        //         t.end();
+        //         return ret;
       } finally {
         await session.close();
       }
