@@ -41,7 +41,6 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "github:fortawesome/react-fontawesome",
     "@googlemaps/js-api-loader": "^1.16.6",
-    "@linkurious/ogma": "https://get.linkurio.us/api/get/npm/ogma/5.0.4/?secret=lk-dls-c6212e2b03b09522c8ac2357791eef0a2f5fa97f",
     "@linkurious/ogma-react": "^5.0.3",
     "@linkurious/ogma-timeline-plugin": "^0.2.6",
     "@mui/material": "^5.15.14",
