@@ -5,7 +5,7 @@ import { type Node as OgmaNode } from "@linkurious/ogma";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 
-import { FolderOpen, Locate } from "lucide-react";
+import { FolderClosed, FolderOpen, Locate } from "lucide-react";
 import { getNodeData } from "~/app/_utils/graph";
 import { useStore } from "~/app/_store";
 import { type Cluster } from "~/server/api/routers/post";
@@ -18,9 +18,13 @@ export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
 
   const handleOpen = useCallback(() => {
     if (!dataNode) return;
+    if (selectedNode?.node === dataNode) {
+      setSelectedNode(null);
+      return;
+    }
     setSelectedNode({ node: dataNode, expand: ["summary", "qa"] });
     dataNode.setSelected(true);
-  }, [dataNode, setSelectedNode]);
+  }, [dataNode, selectedNode?.node, setSelectedNode]);
 
   const handleLocate = useCallback(async () => {
     if (!dataNode) return;
@@ -70,15 +74,22 @@ export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
       </div>
       {dataNode && (
         <div className="flex space-x-2">
-          {selectedNode?.node !== dataNode && (
-            <IconButton
-              className="foresight-graph-btn"
-              style={{ width: 32, height: 32 }}
-              onClick={handleOpen}
-            >
+          <IconButton
+            className="foresight-graph-btn"
+            style={{ width: 32, height: 32 }}
+            onClick={handleOpen}
+            title={
+              selectedNode?.node !== dataNode
+                ? "Select this cluster"
+                : "Clear selection"
+            }
+          >
+            {selectedNode?.node !== dataNode ? (
               <FolderOpen size={22} />
-            </IconButton>
-          )}
+            ) : (
+              <FolderClosed size={22} />
+            )}
+          </IconButton>
 
           <IconButton
             className="foresight-graph-btn"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type SyntheticEvent, useCallback } from "react";
+import React, { type SyntheticEvent, useCallback, useEffect } from "react";
 
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
@@ -32,6 +32,11 @@ export default function HighlightTerms() {
     [setSearchTerms, updateSearchAsYouType],
   );
 
+  useEffect(() => {
+    // Ensure nothing is highlighted when the component is reloaded
+    updateSearchAsYouType("");
+  }, [updateSearchAsYouType]);
+
   return (
     <Autocomplete
       className="min-w-[300px] max-w-[500px]"
@@ -57,7 +62,7 @@ export default function HighlightTerms() {
         <TextField
           variant="outlined"
           label="Highlight terms"
-          placeholder="Search terms"
+          placeholder="Enter terms to highlight"
           {...params}
           InputLabelProps={{ sx: { fontSize: 16 } }}
           InputProps={{

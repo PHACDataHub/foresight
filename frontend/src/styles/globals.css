@@ -45,11 +45,6 @@ main.container {
   display: none;
 }
 
-.react-datepicker-popper {
-  z-index: 402 !important;
-}
-
-
 .toolTip {
   max-width: 600px;
   font-size: 14px;
@@ -61,30 +56,43 @@ main.container {
 
 }
 
+.react-datepicker-popper {
+  z-index: 402 !important;
+}
+
+.timeTravelCalendar {
+  font-size: 0.6em !important;
+  font-family: Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+
 .react-datepicker__day--outside-month.special_day {
   border: 0;
 }
 
 .special_day {
-  font-weight: bold;
-  border: 2px dashed red;
+  border: 2px dashed #ccc;
 }
 
 .cluster_3_day {
   border-radius: 0.3rem;
-  background-color: #3dcc4a;
-  color: #fff !important;
+  font-weight: 500;
+  text-decoration: underline dotted;
+  /* background-color: #3dcc4a; */
+  /* color: #fff !important; */
 }
 
 .cluster_6_day {
   border-radius: 0.3rem;
-  background-color: #cc3dff;
-  color: #fff !important;
+  font-weight: 900;
+  text-decoration: underline double;
+  /* background-color: #cc3dff;
+  color: #fff !important; */
 }
 
 .cluster_30_day {
   border-radius: 0.3rem;
-  background-color: #ffcc3d;
+  text-decoration: underline dashed;
   /* color: #fff !important; */
 }
 
@@ -359,10 +367,6 @@ main.container {
   stroke-dasharray: 440;
   stroke-dashoffset: 440;
   stroke: #ea5565;
-}
-
-.timeTravelCalendar {
-  font-size: 0.6em !important;
 }
 
 .hoverogma {

@@ -316,6 +316,7 @@ export type Article = {
   pub_name?: string;
   pub_time?: Date;
   title: string;
+  data__incomplete__?: boolean;
 };
 
 export interface ArticleRecord
@@ -578,6 +579,60 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+    getArticle: publicProcedure
+    .input(
+      z.object({
+        article_id: z.number()
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      try {
+        const t = funcTimer("getArticle NEW Query");
+        const result2 = await session.run(
+          `
+        MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article { id: $article_id })
+        RETURN article {
+          nodeid: id(article),
+          type: "article",
+          cluster_id: c.id,
+          _rels: r,
+          _similar: [(article)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c) | r_sim],
+          .id,
+          outlier: article:Outlier,
+          .prob_size,
+          .title,
+          .content,
+          .factiva_file_name,
+          .factiva_folder,
+          .gphin_score,
+          .gphin_state,
+          .probability,
+          .pub_date,
+          .pub_name,
+          .pub_time
+        }
+      `,
+          { article_id: input.article_id },
+        );
+        t.measure("Neo4J query completed");
+        t.payload([result2.records], true);
+
+        const rawGraph = createGraph();
+        result2.records.forEach((record) => {
+          const data = record.get("article") as Neo4JTransferRecord;
+          parseData(data, rawGraph, false);
+        });
+        t.measure("Graph translation complete.");
+        t.payload([rawGraph]);
+        t.end();
+        return rawGraph.get();
+      } finally {
+        await session.close();
+      }
+    }),
+    
+
   getArticles: publicProcedure
     .input(
       z.object({
@@ -610,15 +665,17 @@ export const postRouter = createTRPCRouter({
           outlier: article:Outlier,
           .prob_size,
           .title,
-          .content,
-          .factiva_file_name,
-          .factiva_folder,
-          .gphin_score,
-          .gphin_state,
-          .probability,
-          .pub_date,
-          .pub_name,
-          .pub_time
+          data__incomplete__: true
+          // ,
+          // .content,
+          // .factiva_file_name,
+          // .factiva_folder,
+          // .gphin_score,
+          // .gphin_state,
+          // .probability,
+          // .pub_date,
+          // .pub_name,
+          // .pub_time
         }
       `,
           { period, threats: input.threats },

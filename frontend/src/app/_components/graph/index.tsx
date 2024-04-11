@@ -98,6 +98,7 @@ export default function Graph() {
 
   const expandCluster = api.post.expandCluster.useMutation();
   const getArticles = api.post.getArticles.useMutation();
+  const [cachedExpansion, setCachedExpansion] = useState(false);
 
   const {
     history,
@@ -263,18 +264,16 @@ export default function Graph() {
     } else {
       const get_articles = async () => {
         if (typeof day !== "string") return;
-        const articles = await getArticles.mutateAsync({
-          day: parseInt(day),
-          history,
-          threats,
-        });
-        augmentScale(
-          createScale(articles),
-        );
-        await ogma.addGraph({
-          nodes: articles.nodes,
-          edges: articles.edges,
-        });
+        if (!cachedExpansion) {
+          const articles = await getArticles.mutateAsync({
+            day: parseInt(day),
+            history,
+            threats,
+          });
+          setCachedExpansion(true);
+          augmentScale(createScale(articles));
+          await ogma.addGraph(articles);
+        }
 
         setExpanding(false);
         ogma.events.once("idle", async () => {
@@ -297,7 +296,7 @@ export default function Graph() {
     }
   }, [
     ogma,
-    selectedNode,
+    selectedNode?.node,
     setLayout,
     setExpandedClusters,
     oldQuery,
@@ -305,6 +304,7 @@ export default function Graph() {
     augmentScale,
     refresh,
     day,
+    cachedExpansion,
     getArticles,
     history,
     threats,
