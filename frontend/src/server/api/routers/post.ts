@@ -363,7 +363,8 @@ const convertNeo4jTypes = (obj: Neo4JTransferRecord) => {
         if (neo4j.isInt(value)) return [key, value.toNumber()];
         if (neo4j.isDate(value) || neo4j.isDateTime(value))
           return [key, value.toStandardDate()];
-
+        if (key === "pub_time" && typeof value === "string")
+          return [key, new Date(value)];
         return [key, value];
       }),
   );
@@ -608,7 +609,16 @@ export const postRouter = createTRPCRouter({
           .id,
           outlier: article:Outlier,
           .prob_size,
-          .title
+          .title,
+          .content,
+          .factiva_file_name,
+          .factiva_folder,
+          .gphin_score,
+          .gphin_state,
+          .probability,
+          .pub_date,
+          .pub_name,
+          .pub_time
         }
       `,
           { period, threats: input.threats },
