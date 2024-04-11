@@ -45,6 +45,7 @@ main.container {
   display: none;
 }
 
+
 .toolTip {
   max-width: 600px;
   font-size: 14px;
@@ -65,34 +66,30 @@ main.container {
   font-family: Roboto, Helvetica, Arial, sans-serif !important;
 }
 
-
 .react-datepicker__day--outside-month.special_day {
   border: 0;
 }
 
 .special_day {
-  border: 2px dashed #ccc;
+  font-weight: bold;
+  border: 2px dashed red;
 }
 
 .cluster_3_day {
   border-radius: 0.3rem;
-  font-weight: 500;
-  text-decoration: underline dotted;
-  /* background-color: #3dcc4a; */
-  /* color: #fff !important; */
+  background-color: #3dcc4a;
+  color: #fff !important;
 }
 
 .cluster_6_day {
   border-radius: 0.3rem;
-  font-weight: 900;
-  text-decoration: underline double;
-  /* background-color: #cc3dff;
-  color: #fff !important; */
+  background-color: #cc3dff;
+  color: #fff !important;
 }
 
 .cluster_30_day {
   border-radius: 0.3rem;
-  text-decoration: underline dashed;
+  background-color: #ffcc3d;
   /* color: #fff !important; */
 }
 

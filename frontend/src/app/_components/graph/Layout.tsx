@@ -118,7 +118,7 @@ const LayoutService = forwardRef(
             locate: true,
             gpu: true,
             // gravity: 0.1,
-            charge: 20,
+            // charge: 20,
             duration: hover ? 0 : undefined,
           });
           if (hover) {
