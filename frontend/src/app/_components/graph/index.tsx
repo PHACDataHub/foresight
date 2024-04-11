@@ -274,9 +274,10 @@ export default function Graph() {
             history,
             threats,
           });
-          setCachedExpansion(true);
+          // setCachedExpansion(true);
           augmentScale(createScale(articles));
-          await ogma.addGraph(articles);
+          const batchSize = articles.nodes.length < 1e5 ? 5e3 : 1e4;
+          await ogma.addGraph(articles, { batchSize });
         }
 
         setExpanding(false);

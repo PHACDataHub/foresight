@@ -23,10 +23,10 @@ export default function ArticleComponent({
   const [loading, setLoading] = useState(false);
 
   const fetchArticle = useCallback(
-    async (article_id: number) => {
+    async (article_id: number, cluster_id: string) => {
       if (!ogma) return;
       setLoading(true);
-      const a = await getArticle.mutateAsync({ article_id });
+      const a = await getArticle.mutateAsync({ article_id, cluster_id });
       setLoading(false);
       const articleData = a.nodes.at(0);
       if (articleData?.id) {
@@ -44,7 +44,7 @@ export default function ArticleComponent({
   useEffect(() => {
     setArticle(articleNode);
     if (articleNode.data__incomplete__) {
-      void fetchArticle(articleNode.id);
+      void fetchArticle(articleNode.id, articleNode.cluster_id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleNode]);

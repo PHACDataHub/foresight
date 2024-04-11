@@ -317,6 +317,7 @@ export type Article = {
   pub_time?: Date;
   title: string;
   data__incomplete__?: boolean;
+  cluster_id: string;
 };
 
 export interface ArticleRecord
@@ -461,6 +462,7 @@ const translateGraph = (
             pub_name: source.pub_name,
             pub_time: new Date(source.pub_time),
             title: source.title,
+            cluster_id: "",
           };
           return { ...n, data };
         } else {
@@ -579,10 +581,11 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-    getArticle: publicProcedure
+  getArticle: publicProcedure
     .input(
       z.object({
-        article_id: z.number()
+        article_id: z.number(),
+        cluster_id: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -591,13 +594,11 @@ export const postRouter = createTRPCRouter({
         const t = funcTimer("getArticle NEW Query");
         const result2 = await session.run(
           `
-        MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article { id: $article_id })
+        MATCH (article:Article { id: $article_id })
         RETURN article {
           nodeid: id(article),
           type: "article",
-          cluster_id: c.id,
-          _rels: r,
-          _similar: [(article)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c) | r_sim],
+          cluster_id: $cluster_id,
           .id,
           outlier: article:Outlier,
           .prob_size,
@@ -613,7 +614,7 @@ export const postRouter = createTRPCRouter({
           .pub_time
         }
       `,
-          { article_id: input.article_id },
+          { article_id: input.article_id, cluster_id: input.cluster_id },
         );
         t.measure("Neo4J query completed");
         t.payload([result2.records], true);
@@ -631,7 +632,6 @@ export const postRouter = createTRPCRouter({
         await session.close();
       }
     }),
-    
 
   getArticles: publicProcedure
     .input(
@@ -964,6 +964,7 @@ export const postRouter = createTRPCRouter({
                 outlier: n.data.outlier,
                 prob_size: n.data.prob_size,
                 title: n.data.title,
+                cluster_id: "",
               },
             };
 
