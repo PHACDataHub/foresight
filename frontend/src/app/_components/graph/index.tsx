@@ -143,6 +143,10 @@ export default function Graph() {
   const router = useRouter();
 
   useEffect(() => {
+    setCachedExpansion(false);
+  }, [threats]);
+
+  useEffect(() => {
     const rod = (e: KeyboardEvent) => {
       if (rodModeTrackerTimer.current)
         clearTimeout(rodModeTrackerTimer.current);
