@@ -16,6 +16,105 @@ import { env } from "~/env";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
+interface RawGraphInterface {
+  nodes: RawNode[];
+  edges: RawEdge[];
+  edge_index: Record<string, boolean>;
+  get: () => { nodes: RawNode<AllDataTypes>[]; edges: RawEdge[] };
+}
+
+const getPeriod = ({ day, history }: { day: number; history?: number }) => {
+  const baseDate = new Date("2019-12-01");
+  baseDate.setDate(baseDate.getDate() + day - 1);
+
+  let endDate = "";
+  let startDate = "";
+
+  if (history) {
+    endDate = baseDate.toLocaleDateString("en-CA", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    });
+    baseDate.setDate(baseDate.getDate() - history + 1);
+  }
+  startDate = baseDate.toLocaleDateString("en-CA", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+
+  return `${startDate}${history ? `-${endDate}` : ""}`;
+};
+
+const createGraph = () => {
+  const nodes: RawNode[] = [];
+  const edges: RawEdge[] = [];
+  const rawGraph: RawGraphInterface = {
+    nodes,
+    edges,
+    edge_index: {},
+    get: () => ({
+      nodes,
+      edges,
+    }),
+  };
+  return rawGraph;
+};
+const addEdge = (edge: Relationship, rawGraph: RawGraphInterface) => {
+  const id = edge.identity.toString();
+
+  if (rawGraph.edge_index[id]) return;
+  rawGraph.edge_index[id] = true;
+
+  rawGraph.edges.push({
+    id,
+    data: {
+      neo4jType: edge.type,
+    },
+    source: edge.start.toString(),
+    target: edge.end.toString(),
+  });
+};
+
+const addEdges = (
+  edge: Relationship | Relationship[] | Relationship[][] | undefined,
+  rawGraph: RawGraphInterface,
+) => {
+  if (!edge) return;
+  if (!Array.isArray(edge)) return addEdge(edge, rawGraph);
+  edge.forEach((e) => {
+    if (!Array.isArray(e)) return addEdge(e, rawGraph);
+    e.forEach((ed) => addEdge(ed, rawGraph));
+  });
+};
+
+const parseData = (
+  obj: Neo4JTransferRecord,
+  rawGraph: RawGraphInterface,
+  include_articles: boolean | undefined,
+) => {
+  const id = `${obj.nodeid.toNumber()}`;
+  rawGraph.nodes.push({
+    id,
+    data: convertNeo4jTypes(obj),
+  });
+  addEdges(obj._rels, rawGraph);
+
+  if (obj.type === "hierarchicalcluster") {
+    obj._clusters.forEach((cluster) => {
+      parseData(cluster, rawGraph, include_articles);
+    });
+  } else if (obj.type === "cluster") {
+    if (include_articles)
+      obj._articles.forEach((articles) =>
+        parseData(articles, rawGraph, include_articles),
+      );
+  } else if (obj.type === "article") {
+    addEdges(obj._similar, rawGraph);
+  }
+};
+
 const funcTimer = (msg: string) => {
   const width = 80;
   const start = new Date();
@@ -397,31 +496,7 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const session = driver.session();
-      const baseDate = new Date("2019-12-01");
-      baseDate.setDate(baseDate.getDate() + input.day - 1);
-
-      let endDate = "";
-      let startDate = "";
-
-      if (input.history) {
-        if (input.history === 30 && input.everything) {
-          throw new Error("Unable to process everything for 30 days.");
-        }
-        endDate = baseDate.toLocaleDateString("en-CA", {
-          year: "numeric",
-          month: "numeric",
-          day: "numeric",
-        });
-        baseDate.setDate(baseDate.getDate() - input.history + 1);
-      }
-
-      startDate = baseDate.toLocaleDateString("en-CA", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      });
-
-      const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
+      const period = getPeriod({ day: input.day, history: input.history });
 
       try {
         const result = await session.run(
@@ -497,6 +572,59 @@ export const postRouter = createTRPCRouter({
           { id: input.id },
         );
         return translateGraph(await OgmaLib.parse.neo4j(result));
+      } finally {
+        await session.close();
+      }
+    }),
+
+  getArticles: publicProcedure
+    .input(
+      z.object({
+        day: z.number().gte(1).lte(62),
+        history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
+        threats: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      const period = getPeriod({ day: input.day, history: input.history });
+      try {
+        const t = funcTimer("getArticles NEW Query");
+        const result2 = await session.run(
+          `
+        WITH $period + '-\\d+' AS id_pattern
+        MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article)
+        WHERE
+          c.id =~ id_pattern AND
+          EXISTS {
+            (c)-[:DETECTED_THREAT]->(t:Threat WHERE t.text IN $threats)
+          }
+        RETURN article {
+          nodeid: id(article),
+          type: "article",
+          cluster_id: c.id,
+          _rels: r,
+          _similar: [(article)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c) | r_sim],
+          .id,
+          outlier: article:Outlier,
+          .prob_size,
+          .title
+        }
+      `,
+          { period, threats: input.threats },
+        );
+        t.measure("Neo4J query completed");
+        t.payload([result2.records], true);
+
+        const rawGraph = createGraph();
+        result2.records.forEach((record) => {
+          const data = record.get("article") as Neo4JTransferRecord;
+          parseData(data, rawGraph, false);
+        });
+        t.measure("Graph translation complete.");
+        t.payload([rawGraph]);
+        t.end();
+        return rawGraph.get();
       } finally {
         await session.close();
       }
@@ -593,31 +721,8 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const session = driver.session();
-      const baseDate = new Date("2019-12-01");
-      baseDate.setDate(baseDate.getDate() + input.day - 1);
+      const period = getPeriod({ day: input.day, history: input.history });
 
-      let endDate = "";
-      let startDate = "";
-
-      if (input.history) {
-        if (input.history === 30 && input.everything) {
-          throw new Error("Unable to process everything for 30 days.");
-        }
-        endDate = baseDate.toLocaleDateString("en-CA", {
-          year: "numeric",
-          month: "numeric",
-          day: "numeric",
-        });
-        baseDate.setDate(baseDate.getDate() - input.history + 1);
-      }
-
-      startDate = baseDate.toLocaleDateString("en-CA", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      });
-
-      const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
       try {
         const counter = await session.run(
           `
@@ -651,31 +756,7 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const session = driver.session();
-      const baseDate = new Date("2019-12-01");
-      baseDate.setDate(baseDate.getDate() + input.day - 1);
-
-      let endDate = "";
-      let startDate = "";
-
-      if (input.history) {
-        if (input.history === 30 && input.everything) {
-          throw new Error("Unable to process everything for 30 days.");
-        }
-        endDate = baseDate.toLocaleDateString("en-CA", {
-          year: "numeric",
-          month: "numeric",
-          day: "numeric",
-        });
-        baseDate.setDate(baseDate.getDate() - input.history + 1);
-      }
-
-      startDate = baseDate.toLocaleDateString("en-CA", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      });
-
-      const period = `${startDate}${input.history ? `-${endDate}` : ""}`;
+      const period = getPeriod({ day: input.day, history: input.history });
 
       try {
         if (!input.oldQuery) {
@@ -752,70 +833,20 @@ export const postRouter = createTRPCRouter({
           t.measure("Neo4J query completed");
           t.payload([threats.records, result2.records], true);
 
-          const rawGraph: { nodes: RawNode[]; edges: RawEdge[] } = {
-            nodes: [],
-            edges: [],
-          };
+          const rawGraph = createGraph();
 
-          const edge_index: Record<string, boolean> = {};
-          const addEdge = (edge: Relationship) => {
-            const id = edge.identity.toString();
-
-            if (edge_index[id]) return;
-            edge_index[id] = true;
-
-            rawGraph.edges.push({
-              id,
-              data: {
-                neo4jType: edge.type,
-              },
-              source: edge.start.toString(),
-              target: edge.end.toString(),
-            });
-          };
-
-          const addEdges = (
-            edge?: Relationship | Relationship[] | Relationship[][],
-          ) => {
-            if (!edge) return;
-            if (!Array.isArray(edge)) return addEdge(edge);
-            edge.forEach((e) => {
-              if (!Array.isArray(e)) return addEdge(e);
-              e.forEach((ed) => addEdge(ed));
-            });
-          };
-
-          const parseData = (obj: Neo4JTransferRecord) => {
-            const id = `${obj.nodeid.toNumber()}`;
-            rawGraph.nodes.push({
-              id,
-              data: convertNeo4jTypes(obj),
-            });
-            addEdges(obj._rels);
-
-            if (obj.type === "hierarchicalcluster") {
-              obj._clusters.forEach((cluster) => {
-                parseData(cluster);
-              });
-            } else if (obj.type === "cluster") {
-              if (input.everything)
-                obj._articles.forEach((articles) => parseData(articles));
-            } else if (obj.type === "article") {
-              addEdges(obj._similar);
-            }
-          };
           result2.records.forEach((record) => {
             const data = record.get("hr") as Neo4JTransferRecord;
-            parseData(data);
+            parseData(data, rawGraph, input.everything);
           });
           threats.records.forEach((record) => {
             const data = record.get("threat") as Neo4JTransferRecord;
-            parseData(data);
+            parseData(data, rawGraph, input.everything);
           });
           t.measure("Graph translation complete.");
           t.payload([rawGraph]);
           t.end();
-          return rawGraph;
+          return rawGraph.get();
         }
 
         const t = funcTimer("hierarchicalClusters OLD Query");

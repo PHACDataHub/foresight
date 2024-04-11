@@ -97,6 +97,7 @@ export default function Graph() {
   const [dataLoading, setDataLoading] = useState(false);
 
   const expandCluster = api.post.expandCluster.useMutation();
+  const getArticles = api.post.getArticles.useMutation();
 
   const {
     history,
@@ -196,77 +197,117 @@ export default function Graph() {
     setExpanding(true);
     setLayout("force");
     setExpandedClusters(clusters.map((c) => c.getData("id") as string));
-
-    const ops: Array<Promise<number[]>> = [];
-    clusters.forEach((c) => {
-      ops.push(
-        new Promise((resolve) => {
-          const d = getNodeData(c);
-          if (!d || d.type !== "cluster") return;
-          const articlePromise = expandCluster.mutateAsync({ id: d.id });
-          articlePromise
-            .then((articles) => {
-              augmentScale(
-                createScale({
-                  nodes: articles.nodes,
-                  edges: articles.edges,
-                }),
-              );
-              ogma
-                .addGraph({
-                  nodes: articles.nodes.map((n) => ({
-                    ...n,
-                    data: { ...n.data, cluster_id: d.id },
-                  })),
-                  edges: articles.edges,
-                })
-                .then(() => {
-                  resolve(
-                    articles.nodes
-                      .filter((n) => n?.data?.type === "article")
-                      .map((n) => getRawNodeData<Article>(n).id),
-                  );
-                })
-                .catch(() => {
-                  console.error("ERROR");
-                  setExpanding(false);
-                });
-            })
-            .catch((e) => {
-              console.error(e);
-              setExpanding(false);
-            });
-        }),
-      );
-    });
-    const waitForOps = async () => {
-      const co = await Promise.all(ops);
-      setExpanding(false);
-      ogma.events.once("idle", async () => {
-        await ogma.layouts.force({
-          gpu: true,
-          locate: false,
-        });
-        const nodes_to_locate = co.reduce(
-          (p, c) => p.concat(c),
-          [] as number[],
+    if (oldQuery) {
+      const ops: Array<Promise<number[]>> = [];
+      clusters.forEach((c) => {
+        ops.push(
+          new Promise((resolve) => {
+            const d = getNodeData(c);
+            if (!d || d.type !== "cluster") return;
+            const articlePromise = expandCluster.mutateAsync({ id: d.id });
+            articlePromise
+              .then((articles) => {
+                augmentScale(
+                  createScale({
+                    nodes: articles.nodes,
+                    edges: articles.edges,
+                  }),
+                );
+                ogma
+                  .addGraph({
+                    nodes: articles.nodes.map((n) => ({
+                      ...n,
+                      data: { ...n.data, cluster_id: d.id },
+                    })),
+                    edges: articles.edges,
+                  })
+                  .then(() => {
+                    resolve(
+                      articles.nodes
+                        .filter((n) => n?.data?.type === "article")
+                        .map((n) => getRawNodeData<Article>(n).id),
+                    );
+                  })
+                  .catch(() => {
+                    console.error("ERROR");
+                    setExpanding(false);
+                  });
+              })
+              .catch((e) => {
+                console.error(e);
+                setExpanding(false);
+              });
+          }),
         );
-        await ogma
-          .getNodes()
-          .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
-          .locate();
-        refresh();
       });
-    };
-    void waitForOps();
+      const waitForOps = async () => {
+        const co = await Promise.all(ops);
+        setExpanding(false);
+        ogma.events.once("idle", async () => {
+          await ogma.layouts.force({
+            gpu: true,
+            locate: false,
+          });
+          const nodes_to_locate = co.reduce(
+            (p, c) => p.concat(c),
+            [] as number[],
+          );
+          await ogma
+            .getNodes()
+            .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
+            .locate();
+          refresh();
+        });
+      };
+      void waitForOps();
+    } else {
+      const get_articles = async () => {
+        if (typeof day !== "string") return;
+        const articles = await getArticles.mutateAsync({
+          day: parseInt(day),
+          history,
+          threats,
+        });
+        augmentScale(
+          createScale(articles),
+        );
+        await ogma.addGraph({
+          nodes: articles.nodes,
+          edges: articles.edges,
+        });
+
+        setExpanding(false);
+        ogma.events.once("idle", async () => {
+          await ogma.layouts.force({
+            gpu: true,
+            locate: true,
+          });
+          // const nodes_to_locate = co.reduce(
+          //   (p, c) => p.concat(c),
+          //   [] as number[],
+          // );
+          // await ogma
+          //   .getNodes()
+          //   .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
+          //   .locate();
+          // refresh();
+        });
+      };
+      void get_articles();
+    }
   }, [
     ogma,
     selectedNode,
     setLayout,
     setExpandedClusters,
-    refresh,
+    oldQuery,
     expandCluster,
     augmentScale,
+    refresh,
+    day,
+    getArticles,
+    history,
+    threats,
   ]);
 
   const handleTimeSeriesClick = useCallback(() => {
@@ -591,7 +632,9 @@ export default function Graph() {
                             />
                           }
                           label={
-                            <span style={{ fontSize: 14 }}>Original Query Mode</span>
+                            <span style={{ fontSize: 14 }}>
+                              Original Query Mode
+                            </span>
                           }
                         />
                         <FormControlLabel

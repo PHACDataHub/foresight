@@ -1,8 +1,7 @@
 import {
-  type Neo4JEdgeData,
   type NodeList,
   type Node as OgmaNode,
-  type RawGraph,
+  type RawEdge,
   type RawNode,
 } from "@linkurious/ogma";
 import * as d3 from "d3";
@@ -107,9 +106,10 @@ export function isLocationValid(l: ClusterLocation) {
   return true;
 }
 
-export function createScale(
-  g: RawGraph<AllDataTypes, Neo4JEdgeData<Record<string, unknown>>>,
-) {
+export function createScale(g: {
+  nodes: RawNode<AllDataTypes>[];
+  edges: RawEdge[];
+}) {
   const ret: Record<
     "cluster" | "hierarchicalcluster" | "threat" | "article" | "global",
     { min?: number; max?: number }
