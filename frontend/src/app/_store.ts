@@ -29,10 +29,21 @@ export type SelectedNode = {
   activeTab: ClusterNodeSection;
 };
 
+export type LayoutModes =
+  | "force"
+  | "hierarchical"
+  | "grid"
+  | "concentric"
+  | "radial";
+
 export interface ForesightStore {
   // Feature Flags
   feature_GroupArticleBy: boolean;
   setFeature_GroupArticleBy: (feature_GroupArticleBy: boolean) => void;
+
+  layoutBusy: LayoutModes[];
+  setLayoutBusy: (layout: LayoutModes) => void;
+  setLayoutNotBusy: (layout: LayoutModes) => void;
 
   ogma: OgmaLib | null;
   setOgma: (ogma: OgmaLib | null) => void;
@@ -120,10 +131,8 @@ export interface ForesightStore {
   treeDirection: "BT" | "TB" | "LR" | "RL";
   setTreeDirection: (treeDirection: "BT" | "TB" | "LR" | "RL") => void;
   toggleTreeDirection: () => void;
-  layout: "force" | "hierarchical" | "grid" | "concentric" | "radial";
-  setLayout: (
-    layout: "force" | "hierarchical" | "grid" | "concentric" | "radial",
-  ) => void;
+  layout: LayoutModes;
+  setLayout: (layout: LayoutModes) => void;
   geoMode: boolean;
   setGeoMode: (geoMode: boolean) => void;
   threats: string[];
@@ -131,6 +140,16 @@ export interface ForesightStore {
 }
 
 export const useStore = create<ForesightStore>((set) => ({
+  layoutBusy: [],
+  setLayoutBusy: (layout) =>
+    set({
+      layoutBusy: [layout],
+    }),
+  setLayoutNotBusy: (layout) =>
+    set((state) => ({
+      layoutBusy: state.layoutBusy.filter((s) => s !== layout),
+    })),
+
   feature_GroupArticleBy: false,
   setFeature_GroupArticleBy: (feature_GroupArticleBy) =>
     set({ feature_GroupArticleBy }),

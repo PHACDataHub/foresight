@@ -35,6 +35,7 @@ export default function DataLoader({
     setArticleCount,
     threats,
     setSearchMatches,
+    setLayout,
   } = useStore();
   const terms = useSearchTerms();
 
@@ -132,6 +133,7 @@ export default function DataLoader({
       setTotalSize(rawGraph.nodes.length + rawGraph.edges.length);
       setScale(createScale(rawGraph));
       await ogma.setGraph(rawGraph);
+      setLayout("force");
       setClusters(
         ogma
           .getNodes()
@@ -155,7 +157,7 @@ export default function DataLoader({
     };
     if (onLoading) onLoading(true);
     setTimeout(() => void parse(), 0);
-  }, [ogma, onLoading, rawGraph, setClusters, setScale]);
+  }, [ogma, onLoading, rawGraph, setClusters, setScale, setLayout]);
 
   if (isFetching)
     return (

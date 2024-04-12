@@ -53,6 +53,8 @@ const LayoutService = forwardRef(
       refreshObserver,
       setFocus,
       toggleExpandedCluster,
+      setLayoutBusy,
+      setLayoutNotBusy,
     } = useStore();
 
     const selectedPath = useMemo(() => {
@@ -77,9 +79,13 @@ const LayoutService = forwardRef(
     }, [openNode, ogma, setSelectedNode, setOpenNode]);
 
     const layoutGraph = useCallback(async () => {
+      setLayoutBusy(layout);
       if (!geoMode && !focus) {
         if (layout === "grid" && !hover) {
-          await ogma.layouts.grid({ locate: true });
+          await ogma.layouts.grid({
+            locate: true,
+            onSync: () => setLayoutNotBusy("grid"),
+          });
         } else if ((hover ?? layout === "force") || everything) {
           await ogma.layouts.force({
             locate: true,
@@ -87,6 +93,7 @@ const LayoutService = forwardRef(
             // gravity: 0.1,
             // charge: 20,
             duration: hover ? 0 : undefined,
+            onSync: () => setLayoutNotBusy("force"),
           });
           if (hover) {
             await ogma.view.locateGraph({ padding: 75 });
@@ -95,28 +102,35 @@ const LayoutService = forwardRef(
           await ogma.layouts.radial({
             centralNode: selectedNode.node,
             locate: true,
+            onSync: () => {
+              console.log("sync!");
+              setLayoutNotBusy("radial");
+            },
           });
         } else if (selectedNode?.node && layout === "concentric") {
           await ogma.layouts.concentric({
             centralNode: selectedNode.node,
             locate: true,
+            onSync: () => setLayoutNotBusy("concentric"),
           });
         } else if (layout === "hierarchical" && !hover) {
           await ogma.layouts.hierarchical({
             locate: true,
             direction: treeDirection,
+            onSync: () => setLayoutNotBusy("hierarchical"),
           });
         }
       }
     }, [
-      everything,
+      setLayoutBusy,
+      layout,
       geoMode,
       focus,
+      setLayoutNotBusy,
       hover,
-      layout,
+      everything,
       selectedNode,
-      ogma.layouts,
-      ogma.view,
+      ogma,
       treeDirection,
     ]);
 

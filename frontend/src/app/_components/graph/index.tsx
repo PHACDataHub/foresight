@@ -59,12 +59,8 @@ import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
 import { useParams, useRouter } from "next/navigation";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
-import { useStore } from "~/app/_store";
-import {
-  createScale,
-  findAlongPath,
-  getNodeData,
-} from "~/app/_utils/graph";
+import { type LayoutModes, useStore } from "~/app/_store";
+import { createScale, findAlongPath, getNodeData } from "~/app/_utils/graph";
 import SidePanel from "~/app/_components/SidePanel";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
@@ -128,6 +124,9 @@ export default function Graph() {
     ogma,
     setFeature_GroupArticleBy,
     feature_GroupArticleBy,
+    layoutBusy,
+    setLayoutBusy,
+    setLayoutNotBusy,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -219,19 +218,12 @@ export default function Graph() {
 
       setExpanding(false);
       ogma.events.once("idle", async () => {
+        setLayoutBusy("force");
         await ogma.layouts.force({
           gpu: true,
           locate: true,
+          onSync: () => setLayoutNotBusy("force"),
         });
-        // const nodes_to_locate = co.reduce(
-        //   (p, c) => p.concat(c),
-        //   [] as number[],
-        // );
-        // await ogma
-        //   .getNodes()
-        //   .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
-        //   .locate();
-        // refresh();
       });
     };
     void get_articles();
@@ -240,12 +232,14 @@ export default function Graph() {
     selectedNode,
     setLayout,
     setExpandedClusters,
-    augmentScale,
     day,
     cachedExpansion,
     getArticles,
     history,
     threats,
+    augmentScale,
+    setLayoutBusy,
+    setLayoutNotBusy,
   ]);
 
   const handleTimeSeriesClick = useCallback(() => {
@@ -419,23 +413,23 @@ export default function Graph() {
     }
   }, [restoreLayout, showInfoPanel]);
 
-  const layouts: [string, JSX.Element, boolean][] = useMemo(() => {
+  const layouts: [LayoutModes, JSX.Element, boolean][] = useMemo(() => {
     return [
-      ["force", <Workflow size={22} key="force" />, true],
-      ["hierarchical", <Waypoints size={22} key="waypoints" />, !everything],
-      ["grid", <Grip size={22} key="grid" />, true],
+      ["force", <Workflow size={22} key="force" />, layoutBusy.length === 0],
+      ["hierarchical", <Waypoints size={22} key="waypoints" />, layoutBusy.length === 0 && !everything],
+      ["grid", <Grip size={22} key="grid" />, layoutBusy.length === 0],
       [
         "radial",
         <Diameter size={22} key="radial" />,
-        Boolean(selectedNode?.node),
+        layoutBusy.length === 0 && Boolean(selectedNode?.node),
       ],
       [
         "concentric",
         <CircleDot size={22} key="concentric" />,
-        Boolean(selectedNode?.node),
+        layoutBusy.length === 0 && Boolean(selectedNode?.node),
       ],
     ];
-  }, [everything, selectedNode]);
+  }, [everything, selectedNode, layoutBusy]);
 
   if (typeof day !== "string") return "Day error";
 
@@ -660,7 +654,11 @@ export default function Graph() {
                               onClick={handleLayoutClick}
                               title={`Layout nodes using the ${l} algorithm`}
                             >
-                              {icon}
+                              {layoutBusy.includes(l) ? (
+                                <FontAwesomeIcon icon={faSpinner} spin />
+                              ) : (
+                                icon
+                              )}
                             </IconButton>
                           ))}
                         </ButtonGroup>
