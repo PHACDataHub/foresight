@@ -5,16 +5,19 @@ import { type Node as OgmaNode } from "@linkurious/ogma";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 
-import { FolderClosed, FolderOpen, Locate } from "lucide-react";
+import { Locate, Newspaper, Undo2 } from "lucide-react";
 import { getNodeData } from "~/app/_utils/graph";
 import { useStore } from "~/app/_store";
 import { type Cluster } from "~/server/api/routers/post";
 import { HighlightSearchTerms } from "./HighlightTerms";
 
-export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
+export function NodeTitle(
+  opts: { dataNode: OgmaNode; showLocate?: boolean } | { title: string },
+) {
   const { ogma, setSelectedNode, selectedNode } = useStore();
 
   const dataNode = "dataNode" in opts ? opts.dataNode : null;
+  const showLocate = "showLocate" in opts ? opts.showLocate : false;
 
   const handleOpen = useCallback(() => {
     if (!dataNode) return;
@@ -22,7 +25,7 @@ export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
       setSelectedNode(null);
       return;
     }
-    setSelectedNode({ node: dataNode, expand: ["summary", "qa"] });
+    setSelectedNode({ node: dataNode, activeTab: "articles" });
     dataNode.setSelected(true);
   }, [dataNode, selectedNode?.node, setSelectedNode]);
 
@@ -80,24 +83,25 @@ export function NodeTitle(opts: { dataNode: OgmaNode } | { title: string }) {
             onClick={handleOpen}
             title={
               selectedNode?.node !== dataNode
-                ? "Select this cluster"
+                ? "Articles in this cluster"
                 : "Clear selection"
             }
           >
             {selectedNode?.node !== dataNode ? (
-              <FolderOpen size={22} />
+              <Newspaper size={22} />
             ) : (
-              <FolderClosed size={22} />
+              <Undo2 size={22} />
             )}
           </IconButton>
-
-          <IconButton
-            className="foresight-graph-btn"
-            style={{ width: 32, height: 32 }}
-            onClick={handleLocate}
-          >
-            <Locate size={22} />
-          </IconButton>
+          {showLocate && (
+            <IconButton
+              className="foresight-graph-btn"
+              style={{ width: 32, height: 32 }}
+              onClick={handleLocate}
+            >
+              <Locate size={22} />
+            </IconButton>
+          )}
         </div>
       )}
     </div>

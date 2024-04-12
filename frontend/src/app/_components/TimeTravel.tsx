@@ -16,6 +16,8 @@ import Button from "@mui/material/Button";
 import "react-datepicker/dist/react-datepicker.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { IconButton } from "@mui/material";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type TimeTravelProps = {
   date?: Date;
@@ -74,6 +76,46 @@ function TimeTravelComponent({
     [locale, onChange, router, startDate],
   );
 
+  const handlePrevDayClick = useCallback(
+    (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+      const newDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate() - 1,
+        8,
+      );
+      if (onChange) {
+        onChange(newDate, evt);
+      }
+      if (!evt.defaultPrevented && typeof locale === "string") {
+        const d = (newDate.getTime() - startDate.getTime()) / 86400000;
+        router.push(`/${locale}/${d + 1}`);
+      }
+      evt.preventDefault();
+    },
+    [date, locale, onChange, router, startDate],
+  );
+
+  const handleNextDayClick = useCallback(
+    (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+      const newDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate() + 1,
+        8,
+      );
+      if (onChange) {
+        onChange(newDate, evt);
+      }
+      if (!evt.defaultPrevented && typeof locale === "string") {
+        const d = (newDate.getTime() - startDate.getTime()) / 86400000;
+        router.push(`/${locale}/${d + 1}`);
+      }
+      evt.preventDefault();
+    },
+    [date, locale, onChange, router, startDate],
+  );
+
   const showPreviousMonths = useMemo(
     () => date.getMonth() === endDate.getMonth(),
     [date, endDate],
@@ -107,8 +149,57 @@ function TimeTravelComponent({
     [],
   );
 
+  const hasPrev = useMemo(() => {
+    const d = date.getDate();
+    const m = date.getMonth();
+    const y = date.getFullYear();
+    return !(d === 1 && m === 11 && y === 2019);
+  }, [date]);
+  const hasNext = useMemo(() => {
+    const d = date.getDate();
+    const m = date.getMonth();
+    const y = date.getFullYear();
+    return !(d === 31 && m === 0 && y === 2020);
+  }, [date]);
+
+  // const nextDay = useMemo(() => {
+  //   if (typeof locale !== "string") return "#";
+  //   const newDate = new Date(
+  //     date.getFullYear(),
+  //     date.getMonth(),
+  //     date.getDate() + 1,
+  //     8,
+  //   );
+  //   const d = (newDate.getTime() - startDate.getTime()) / 86400000;
+  //   return `/${locale}/${d + 1}`;
+  // }, [date, locale, startDate]);
+
+  // const prevDay = useMemo(() => {
+  //   if (typeof locale !== "string") return "#";
+  //   const newDate = new Date(
+  //     date.getFullYear(),
+  //     date.getMonth(),
+  //     date.getDate() - 1,
+  //     8,
+  //   );
+  //   const d = (newDate.getTime() - startDate.getTime()) / 86400000;
+  //   return `/${locale}/${d + 1}`;
+  // }, [date, locale, startDate]);
+
   return (
-    <nav className="mb-3 mt-3 whitespace-nowrap">
+    <nav className="mb-3 mt-3 flex space-x-2 whitespace-nowrap">
+      <IconButton
+        // href={prevDay}
+        href=""
+        disabled={!hasPrev}
+        onClick={handlePrevDayClick}
+        color="primary"
+        sx={{ padding: 0 }}
+        title="Previous Day"
+      >
+        <ChevronLeft size={30} />
+      </IconButton>
+
       <DatePicker
         selected={date}
         minDate={startDate}
@@ -134,6 +225,18 @@ function TimeTravelComponent({
         }
         calendarClassName="timeTravelCalendar"
       />
+      <IconButton
+        // href={nextDay}
+        href=""
+        onClick={handleNextDayClick}
+        disabled={!hasNext}
+        size="small"
+        color="primary"
+        sx={{ padding: 0 }}
+        title="Next Day"
+      >
+        <ChevronRight size={30} />
+      </IconButton>
     </nav>
   );
 }

@@ -232,7 +232,7 @@ export default function SidePanel() {
         <div className={clusterNodeClassNames}>
           <ClusterNode
             clusterNode={selectedNode.node}
-            expand={selectedNode.expand}
+            activeTab={selectedNode.activeTab}
             details
           />
         </div>

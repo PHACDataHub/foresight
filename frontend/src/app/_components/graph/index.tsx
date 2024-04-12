@@ -23,7 +23,10 @@ import {
 import { NodeFilter, Ogma } from "@linkurious/ogma-react";
 import OgmaLib from "@linkurious/ogma";
 
-import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
+import {
+  faGripLinesVertical,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   CircleDot,
@@ -61,17 +64,17 @@ import {
   createScale,
   findAlongPath,
   getNodeData,
-  getRawNodeData,
 } from "~/app/_utils/graph";
 import SidePanel from "~/app/_components/SidePanel";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
-import { type Article } from "~/server/api/routers/post";
 import LayoutService, { type LayoutServiceRef } from "./Layout";
 
 import DataLoader from "./DataLoader";
 import TimeLine from "./TimeLine";
 import LocationTransforms from "./LocationTransforms";
+import Styles from "./Styles";
+import Interactions from "./Interactions";
 
 OgmaLib.libraries.leaflet = L;
 
@@ -96,7 +99,6 @@ export default function Graph() {
   const { day, locale } = useParams();
   const [dataLoading, setDataLoading] = useState(false);
 
-  const expandCluster = api.post.expandCluster.useMutation();
   const getArticles = api.post.getArticles.useMutation();
   const [cachedExpansion, setCachedExpansion] = useState(false);
 
@@ -117,8 +119,6 @@ export default function Graph() {
     setExpandedClusters,
     everything,
     setEverything,
-    oldQuery,
-    setOldQuery,
     selectedNode,
     rodMode,
     toggleRodMode,
@@ -202,112 +202,45 @@ export default function Graph() {
     setExpanding(true);
     setLayout("force");
     setExpandedClusters(clusters.map((c) => c.getData("id") as string));
-    if (oldQuery) {
-      const ops: Array<Promise<number[]>> = [];
-      clusters.forEach((c) => {
-        ops.push(
-          new Promise((resolve) => {
-            const d = getNodeData(c);
-            if (!d || d.type !== "cluster") return;
-            const articlePromise = expandCluster.mutateAsync({ id: d.id });
-            articlePromise
-              .then((articles) => {
-                augmentScale(
-                  createScale({
-                    nodes: articles.nodes,
-                    edges: articles.edges,
-                  }),
-                );
-                ogma
-                  .addGraph({
-                    nodes: articles.nodes.map((n) => ({
-                      ...n,
-                      data: { ...n.data, cluster_id: d.id },
-                    })),
-                    edges: articles.edges,
-                  })
-                  .then(() => {
-                    resolve(
-                      articles.nodes
-                        .filter((n) => n?.data?.type === "article")
-                        .map((n) => getRawNodeData<Article>(n).id),
-                    );
-                  })
-                  .catch(() => {
-                    console.error("ERROR");
-                    setExpanding(false);
-                  });
-              })
-              .catch((e) => {
-                console.error(e);
-                setExpanding(false);
-              });
-          }),
-        );
-      });
-      const waitForOps = async () => {
-        const co = await Promise.all(ops);
-        setExpanding(false);
-        ogma.events.once("idle", async () => {
-          await ogma.layouts.force({
-            gpu: true,
-            locate: false,
-          });
-          const nodes_to_locate = co.reduce(
-            (p, c) => p.concat(c),
-            [] as number[],
-          );
-          await ogma
-            .getNodes()
-            .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
-            .locate();
-          refresh();
-        });
-      };
-      void waitForOps();
-    } else {
-      const get_articles = async () => {
-        if (typeof day !== "string") return;
-        if (!cachedExpansion) {
-          const articles = await getArticles.mutateAsync({
-            day: parseInt(day),
-            history,
-            threats,
-          });
-          // setCachedExpansion(true);
-          augmentScale(createScale(articles));
-          const batchSize = articles.nodes.length < 1e5 ? 5e3 : 1e4;
-          await ogma.addGraph(articles, { batchSize });
-        }
 
-        setExpanding(false);
-        ogma.events.once("idle", async () => {
-          await ogma.layouts.force({
-            gpu: true,
-            locate: true,
-          });
-          // const nodes_to_locate = co.reduce(
-          //   (p, c) => p.concat(c),
-          //   [] as number[],
-          // );
-          // await ogma
-          //   .getNodes()
-          //   .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
-          //   .locate();
-          // refresh();
+    const get_articles = async () => {
+      if (typeof day !== "string") return;
+      if (!cachedExpansion) {
+        const articles = await getArticles.mutateAsync({
+          day: parseInt(day),
+          history,
+          threats,
         });
-      };
-      void get_articles();
-    }
+        // setCachedExpansion(true);
+        augmentScale(createScale(articles));
+        const batchSize = articles.nodes.length < 1e5 ? 5e3 : 1e4;
+        await ogma.addGraph(articles, { batchSize });
+      }
+
+      setExpanding(false);
+      ogma.events.once("idle", async () => {
+        await ogma.layouts.force({
+          gpu: true,
+          locate: true,
+        });
+        // const nodes_to_locate = co.reduce(
+        //   (p, c) => p.concat(c),
+        //   [] as number[],
+        // );
+        // await ogma
+        //   .getNodes()
+        //   .filter((n) => nodes_to_locate.includes(n.getData("id") as number))
+        //   .locate();
+        // refresh();
+      });
+    };
+    void get_articles();
   }, [
     ogma,
-    selectedNode?.node,
+    selectedNode,
     setLayout,
     setExpandedClusters,
-    oldQuery,
-    expandCluster,
     augmentScale,
-    refresh,
     day,
     cachedExpansion,
     getArticles,
@@ -334,10 +267,6 @@ export default function Graph() {
   const handleEverythingChange = useCallback(() => {
     setEverything(!everything);
   }, [everything, setEverything]);
-
-  const handleOldQueryChange = useCallback(() => {
-    setOldQuery(!oldQuery);
-  }, [oldQuery, setOldQuery]);
 
   const handleGroupByFeatureClick = useCallback(() => {
     setFeature_GroupArticleBy(!feature_GroupArticleBy);
@@ -598,6 +527,8 @@ export default function Graph() {
                   return true;
                 }}
               />
+              <Styles fullScreen={maximized} />
+              <Interactions />
               <LayoutService
                 ref={layoutService}
                 threats={threats}
@@ -626,20 +557,6 @@ export default function Graph() {
                           }
                           label={
                             <span style={{ fontSize: 14 }}>Fetch All</span>
-                          }
-                        />
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              size="large"
-                              checked={oldQuery}
-                              onChange={handleOldQueryChange}
-                            />
-                          }
-                          label={
-                            <span style={{ fontSize: 14 }}>
-                              Original Query Mode
-                            </span>
                           }
                         />
                         <FormControlLabel
@@ -710,7 +627,7 @@ export default function Graph() {
                             <RefreshCcw size={22} />
                           </IconButton>
                           <IconButton
-                            className="foresight-graph-btn"
+                            className={`foresight-graph-btn${expanding ? " disabled" : ""}`}
                             disabled={expanding}
                             title={
                               selectedNode?.node.getData("type") ===
@@ -720,7 +637,10 @@ export default function Graph() {
                             }
                             onClick={handleExpandRelatedClusters}
                           >
-                            <FileSearch size={22} />
+                            {expanding && (
+                              <FontAwesomeIcon icon={faSpinner} spin />
+                            )}
+                            {!expanding && <FileSearch size={22} />}
                           </IconButton>
                           <IconButton
                             className="foresight-graph-btn"
@@ -783,6 +703,7 @@ export default function Graph() {
                   backgroundColor: "rgba(250,250,250,0.75)",
                 }}
               >
+                <Styles />
                 <LayoutService
                   threats={threats}
                   dataLoaded={dataLoading}

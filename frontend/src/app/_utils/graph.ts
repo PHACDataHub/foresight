@@ -108,7 +108,7 @@ export function isLocationValid(l: ClusterLocation) {
 
 export function createScale(g: {
   nodes: RawNode<AllDataTypes>[];
-  edges: RawEdge[];
+  edges?: RawEdge[];
 }) {
   const ret: Record<
     "cluster" | "hierarchicalcluster" | "threat" | "article" | "global",

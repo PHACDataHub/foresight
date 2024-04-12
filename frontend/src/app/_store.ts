@@ -23,10 +23,10 @@ const defaultThreats = [
   "Anomalous disease clusters",
 ];
 
-export type ClusterNodeSections = "summary" | "qa" | "articles";
+export type ClusterNodeSection = "summary" | "articles";
 export type SelectedNode = {
   node: OgmaNode;
-  expand: ClusterNodeSections[];
+  activeTab: ClusterNodeSection;
 };
 
 export interface ForesightStore {
@@ -72,8 +72,6 @@ export interface ForesightStore {
   setPanelWasToggled: (panelWasToggled: boolean) => void;
   everything: boolean;
   setEverything: (everything: boolean) => void;
-  oldQuery: boolean;
-  setOldQuery: (everything: boolean) => void;
   refreshObserver: number;
   refresh: () => void;
   scale: Record<
@@ -185,8 +183,6 @@ export const useStore = create<ForesightStore>((set) => ({
   setPanelWasToggled: (panelWasToggled) => set({ panelWasToggled }),
   everything: false,
   setEverything: (everything) => set({ everything }),
-  oldQuery: false,
-  setOldQuery: (oldQuery) => set({ oldQuery }),
   refreshObserver: 0,
   refresh: () =>
     set((state) => ({ refreshObserver: state.refreshObserver + 1 })),

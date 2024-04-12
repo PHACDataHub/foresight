@@ -1,4 +1,4 @@
-import { type Node as OgmaNode } from "@linkurious/ogma";
+import { type Node as OgmaNode, type RawNode } from "@linkurious/ogma";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as d3 from "d3";
 import {
@@ -32,10 +32,13 @@ import FormControl from "@mui/material/FormControl";
 import Select, { type SelectChangeEvent } from "@mui/material/Select";
 
 import { Dot } from "lucide-react";
-import { type Article, type Cluster } from "~/server/api/routers/post";
-import { type ClusterNodeSections, useStore } from "~/app/_store";
 import {
-  createScale,
+  type AllDataTypes,
+  type Article,
+  type Cluster,
+} from "~/server/api/routers/post";
+import { type ClusterNodeSection, useStore } from "~/app/_store";
+import {
   getNodeData,
   getRawNodeData,
   isLocationValid,
@@ -54,9 +57,9 @@ const Location = styled("div")<{
     if (status === "invalid") return theme.palette.error.main;
   }, [status, theme.palette.error.main]);
   const bg = useMemo(() => {
-    if (!status) return theme.palette.primary.main;
+    if (!status) return "#808080";
     return "#fff";
-  }, [status, theme.palette.primary.main]);
+  }, [status]);
   return {
     ...theme.typography.button,
     fontSize: 13,
@@ -64,7 +67,7 @@ const Location = styled("div")<{
     backgroundColor: bg,
     textDecoration: status === "invalid" ? "line-through" : undefined,
     border: `1px solid ${color}`,
-    borderRadius: 100,
+    borderRadius: 8,
     whiteSpace: "pretty",
     padding: "4px 10px 4px 10px",
   };
@@ -142,72 +145,69 @@ export function ClusterNode(
     | {
         clusterNode: OgmaNode<Cluster>;
         details: boolean;
-        expand: ClusterNodeSections[];
+        activeTab: ClusterNodeSection;
       },
 ) {
   const { clusterNode } = props;
   const details = "details" in props && props.details;
+  const activeTab = "activeTab" in props && props.activeTab;
 
   const [question, setQuestion] = useState("");
   const endOfQARef = useRef<HTMLSpanElement | null>(null);
   const [groupArticlesBy, setGroupArticlesBy] = useState<GroupByOptions>("");
   const [tab, setTab] = useState(0);
 
-  const {
-    qa,
-    addQA,
-    ogma,
-    refresh,
-    expandedClusters,
-    augmentScale,
-    geoMode,
-    feature_GroupArticleBy,
-    searchMatches,
-  } = useStore();
+  const { qa, addQA, ogma, geoMode, feature_GroupArticleBy, searchMatches } =
+    useStore();
 
-  const id = useMemo(() => {
-    if (!clusterNode) return null;
-    const data = getNodeData<Cluster | undefined>(clusterNode);
-    if (!data) return null;
-    return data.id;
-  }, [clusterNode]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [isFetching, setIsFetching] = useState(false);
 
-  const { data, isFetching } = api.post.cluster.useQuery(
-    {
-      id: id ?? "",
-    },
-    { enabled: Boolean(details && id), refetchOnWindowFocus: false },
-  );
+  useEffect(() => {
+    if (activeTab === false || activeTab === "summary") {
+      setTab(0);
+    } else setTab(1);
+  }, [activeTab]);
+
+  const clusterQuery = api.post.cluster.useMutation();
   const questionApi = api.post.question.useMutation();
 
+  useEffect(() => {
+    const fetchCluster = async () => {
+      if (clusterNode && details && ogma) {
+        setIsFetching(true);
+        const d = await clusterQuery.mutateAsync({
+          id: clusterNode.getData("id"),
+        });
+        setArticles(
+          d.nodes
+            .filter(
+              (n: RawNode<AllDataTypes>) =>
+                getRawNodeData(n)?.type === "article",
+            )
+            .filter((n, i, arr) => {
+              return i === arr.findIndex((b) => b.id === n.id);
+            })
+            .map((n) => getRawNodeData<Article>(n))
+            .sort(
+              (a, b) =>
+                d3.descending(
+                  searchMatches.includes(`${a.id}`) ? 1 : 0,
+                  searchMatches.includes(`${b.id}`) ? 1 : 0,
+                ) || d3.descending(a.gphin_score, b.gphin_score),
+            ),
+        );
+        setIsFetching(false);
+      }
+    };
+    void fetchCluster();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clusterNode, details, ogma]);
+
   const cluster = useMemo(() => {
-    if (details && data) {
-      const c = data.nodes.find((n) => getRawNodeData(n)?.type === "cluster");
-      if (!c) return null;
-      return getRawNodeData<Cluster>(c);
-    }
     if (clusterNode) return getNodeData<Cluster>(clusterNode);
     return null;
-  }, [clusterNode, data, details]);
-
-  const handleArticleLocate = useCallback(() => {
-    if (!cluster) return;
-    if (expandedClusters.includes(cluster.id)) {
-      refresh();
-      const node_ids = data?.nodes
-        .filter((n) => getRawNodeData(n)?.type === "article")
-        .map((n) => `${getRawNodeData<Article>(n).id}`);
-      if (!node_ids) return;
-      setTimeout(() => {
-        ogma?.events.once("idle", () => {
-          const nodes = ogma
-            ?.getNodes()
-            .filter((n) => `${getNodeData<Article>(n)?.id}` in node_ids);
-          void nodes?.locate();
-        });
-      }, 2000);
-    }
-  }, [cluster, data?.nodes, expandedClusters, ogma, refresh]);
+  }, [clusterNode]);
 
   const handleGroupArticleByChange = useCallback(
     (evt: SelectChangeEvent<string>) => {
@@ -254,52 +254,6 @@ export function ClusterNode(
     },
     [addQA, cluster, question, questionApi],
   );
-
-  useEffect(() => {
-    if (!ogma || !data || !cluster) return;
-    const loadData = async () => {
-      const node_ids = ogma
-        .getNodes()
-        .map((n) => n.getId())
-        .concat(data.nodes.map((n) => `${n.id}`));
-      augmentScale(
-        createScale({
-          nodes: data.nodes.concat(
-            ogma.getNodes().map((n) => ({ data: getNodeData(n) })),
-          ),
-          edges: data.edges,
-        }),
-      );
-      await ogma.addGraph({
-        nodes: data.nodes.map((n) => ({
-          ...n,
-          data: { ...n.data, cluster_id: cluster.id },
-        })),
-        edges: data.edges.filter(
-          (e) => node_ids.includes(e.source) && node_ids.includes(e.target),
-        ),
-      });
-      handleArticleLocate();
-    };
-    void loadData();
-  }, [cluster, data, handleArticleLocate, ogma, augmentScale]);
-
-  const articles = useMemo(() => {
-    if (!details || !data) return [];
-    return data.nodes
-      .filter((n) => getRawNodeData(n)?.type === "article")
-      .filter((n, i, arr) => {
-        return i === arr.findIndex((b) => b.id === n.id);
-      })
-      .map((n) => getRawNodeData<Article>(n))
-      .sort(
-        (a, b) =>
-          d3.descending(
-            searchMatches.includes(`${a.id}`) ? 1 : 0,
-            searchMatches.includes(`${b.id}`) ? 1 : 0,
-          ) || d3.descending(a.gphin_score, b.gphin_score),
-      );
-  }, [data, details, searchMatches]);
 
   const handleTabChange = useCallback(
     (evt: React.SyntheticEvent, newTab: number) => {
@@ -368,6 +322,9 @@ export function ClusterNode(
   if (details)
     return (
       <>
+        <div className="pl-[30px] pr-[12px] pt-[10px]">
+          <NodeTitle dataNode={clusterNode} showLocate={showLocate} />
+        </div>
         <Tabs
           value={tab}
           className="h-[42px] pl-[30px]"
@@ -400,9 +357,6 @@ export function ClusterNode(
             <div className="flex flex-1 flex-col pl-[30px] pr-[12px] pt-[10px]">
               <div className="flex flex-1 flex-col">
                 <div className="h-0 flex-auto overflow-auto pr-[12px]">
-                  {showLocate && <NodeTitle dataNode={clusterNode} />}
-                  {!showLocate && <NodeTitle title={cluster.title} />}
-
                   <ClusterLocations cluster={cluster} />
 
                   <section>
@@ -507,7 +461,7 @@ export function ClusterNode(
           </>
         )}
         {tab === 1 && (
-          <div className="h-0 flex-auto flex-col space-y-[8px] overflow-scroll pl-[30px] pr-[12px] pt-[12px]">
+          <div className="h-0 flex-auto flex-col space-y-[8px] overflow-y-scroll pl-[30px] pr-[12px] pt-[12px]">
             <div className="flex flex-col space-y-[12px]">
               <div className="flex flex-col items-center">
                 <Typography variant="body1" fontSize={14}>
@@ -555,7 +509,11 @@ export function ClusterNode(
                 </div>
               )}
             </div>
-            {groupedArticles === null && <ArticleList articles={articles} />}
+            {groupedArticles === null && (
+              <div className="flex flex-col">
+                <ArticleList articles={articles} />
+              </div>
+            )}
             {groupedArticles &&
               d3.map(groupedArticles, ([group, a], idx) => {
                 const title =
@@ -601,8 +559,7 @@ export function ClusterNode(
 
   return (
     <section className="flex flex-1 flex-col">
-      {showLocate && <NodeTitle dataNode={clusterNode} />}
-      {!showLocate && <NodeTitle title={cluster.title} />}
+      <NodeTitle dataNode={clusterNode} showLocate={showLocate} />
       <ClusterLocations cluster={cluster} />
       <Typography variant="body1" fontSize={16}>
         <HighlightSearchTerms text={cluster.summary ?? ""} />

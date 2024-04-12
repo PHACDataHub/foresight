@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  type Edge,
-  type MouseButtonEvent,
-  type Node as OgmaNode,
-} from "@linkurious/ogma";
+import { type MouseButtonEvent } from "@linkurious/ogma";
 
-import {
-  EdgeStyleRule,
-  NodeFilter,
-  NodeStyleRule,
-  useOgma,
-} from "@linkurious/ogma-react";
+import { NodeFilter, useOgma } from "@linkurious/ogma-react";
 import {
   forwardRef,
   useCallback,
@@ -22,12 +13,7 @@ import {
 } from "react";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
-import {
-  findAlongPath,
-  getNodeColor,
-  getNodeData,
-  getNodeRadius,
-} from "~/app/_utils/graph";
+import { findAlongPath, getNodeData } from "~/app/_utils/graph";
 
 export interface LayoutServiceRef {
   refresh: () => void;
@@ -64,11 +50,9 @@ const LayoutService = forwardRef(
       setSelectedNode,
       focus,
       selectedNode,
-      scale,
       refreshObserver,
       setFocus,
       toggleExpandedCluster,
-      searchMatches,
     } = useStore();
 
     const selectedPath = useMemo(() => {
@@ -81,30 +65,13 @@ const LayoutService = forwardRef(
       return null;
     }, [selectedNode]);
 
-    const edgeOnSelectedPath = useCallback(
-      (e: Edge) => {
-        const dataTarget = e.getTarget();
-        const dataSource = e.getSource();
-        return (
-          selectedPath &&
-          ((selectedNode?.node === dataTarget &&
-            selectedPath.includes(dataSource)) ||
-            (selectedNode?.node === dataSource &&
-              selectedPath.includes(dataTarget)) ||
-            (selectedPath.includes(dataSource) &&
-              selectedPath.includes(dataTarget)))
-        );
-      },
-      [selectedNode, selectedPath],
-    );
-
     useEffect(() => {
       if (openNode) {
         const nodes = ogma
           .getNodes()
           .filter((n) => (n.getData() as { id: string }).id === openNode);
         nodes.setSelected(true);
-        setSelectedNode({ node: nodes.get(0), expand: ["summary", "qa"] });
+        setSelectedNode({ node: nodes.get(0), activeTab: "summary" });
         setOpenNode(undefined);
       }
     }, [openNode, ogma, setSelectedNode, setOpenNode]);
@@ -253,39 +220,17 @@ const LayoutService = forwardRef(
               (target.getData() as { location_generated?: boolean })
                 ?.location_generated === true) &&
             target.isNode
-            ? { node: target, expand: ["summary", "qa"] }
+            ? { node: target, activeTab: "summary" }
             : null,
         );
         setFocus(null);
       };
 
-      const doubleClickHandler = ({
-        target,
-      }: MouseButtonEvent<unknown, unknown>) => {
-        if (target && !target.isVirtual() && target.isNode) {
-          const data = getNodeData(target);
-          if (data?.type === "hierarchicalcluster" || data?.type === "threat") {
-            setFocus(target);
-          } else if (data?.type === "cluster") {
-            setFocus(null);
-            toggleExpandedCluster(data.id);
-            setLayout("force");
-            updateLayout();
-          }
-        }
-      };
-
-      // ogma.events.on(["addNodes", "removeNodes"], onNodesAdded);
-
-      ogma.events
-        .on("click", clickHandler)
-        .on("doubleclick", doubleClickHandler);
+      ogma.events.on("click", clickHandler);
 
       // cleanup
       return () => {
-        // ogma.events.off(onNodesAdded);
         ogma.events.off(clickHandler);
-        ogma.events.off(doubleClickHandler);
       };
     }, [
       ogma.events,
@@ -296,176 +241,12 @@ const LayoutService = forwardRef(
       updateLayout,
     ]);
 
-    const isHaloed = useCallback(
-      (n: OgmaNode | null) => {
-        if (!n) return false;
-        const id = `${n.getData("id") as string}`;
-        return searchMatches.includes(id);
-      },
-      [searchMatches],
-    );
-
-    // useEffect(() => {
-    //   if (!ogma.styles.getClass("termHighlight"))
-    //     ogma.styles.createClass({
-    //       name: "termHighlight",
-    //       nodeAttributes: {
-    //         halo: {
-    //           color: "yellow",
-    //           strokeColor: "#ccc",
-    //           width: 10,
-    //         },
-    //       },
-    //     });
-    //   void ogma.getNodes().removeClass("termHighlight");
-    //   void ogma
-    //     .getNodes()
-    //     .filter((n) => isHaloed(n))
-    //     .addClass("termHighlight");
-    // }, [isHaloed, ogma, refreshObserver]);
-
     useImperativeHandle(ref, () => ({
       refresh: updateLayout,
     }));
 
     return (
-      <>
-        {hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}
-        <EdgeStyleRule
-          attributes={{
-            shape: (e) => {
-              const source = getNodeData(e.getSource());
-              const target = getNodeData(e.getTarget());
-              if (source?.type === "threat" || target?.type === "threat")
-                return {
-                  head: "square",
-                  tail: "square",
-                };
-              const tail =
-                source?.type === "hierarchicalcluster" ? "arrow" : undefined;
-              const head =
-                source?.type === "article" ? "sharp-arrow" : undefined;
-              return {
-                tail,
-                head,
-              };
-            },
-            text: (e) => {
-              const d = e.getData() as { neo4jType: string } | undefined;
-              const content = d?.neo4jType ?? "";
-              return {
-                size: 15,
-                content,
-              };
-            },
-            width: (e) => {
-              const d = e.getData() as { neo4jType: string } | undefined;
-              if (d?.neo4jType === "SIMILAR_TO") return 2;
-              if (edgeOnSelectedPath(e)) return 2;
-              return 1;
-            },
-            color: (e) => {
-              if (edgeOnSelectedPath(e)) return "#ee8f00";
-              const d = e.getData() as { neo4jType: string } | undefined;
-              if (d?.neo4jType === "SIMILAR_TO") return "#000";
-            },
-          }}
-        />
-
-        <NodeStyleRule
-          selector={(n) =>
-            n.isVirtual() &&
-            (n.getData() as { location_generated?: boolean })
-              ?.location_generated === false
-          }
-          attributes={{
-            color: "rgb(90,111,196)",
-            halo: (n) => {
-              if (
-                n
-                  .getSubNodes()
-                  ?.reduce((p: boolean, c) => p || isHaloed(c), false)
-              )
-                return {
-                  color: "yellow",
-                  strokeColor: "#ccc",
-                  width: 10,
-                };
-            },
-
-            badges: {
-              topRight: {
-                scale: 0.6,
-                stroke: {
-                  width: 0.5,
-                },
-                text: (n) => `${n.getSubNodes()?.size}`,
-              },
-            },
-            radius: (n) => {
-              const data = getNodeData(n);
-              if (!data) return;
-              const s = scale[data.type];
-              if (s) {
-                const r =
-                  n.getSubNodes()?.reduce((p: number, c) => {
-                    const d = getNodeData(c);
-                    const r = d ? getNodeRadius(d) : 0;
-                    return Math.max(p, r);
-                  }, 0) ?? 1;
-                return s(r);
-              } else {
-                return 10;
-              }
-            },
-          }}
-        />
-        <NodeStyleRule
-          selector={(n) =>
-            !n.isVirtual() ||
-            (n.isVirtual() &&
-              (n.getData() as { location_generated?: boolean })
-                ?.location_generated === true)
-          }
-          attributes={{
-            text: {
-              size: 15,
-              content: (n) => {
-                const data = getNodeData(n);
-                if (data?.type === "hierarchicalcluster")
-                  return `${data.id} (${data.clusters.length})`;
-                if (data?.type === "cluster") return data.title;
-                if (data?.type === "threat") return data.title;
-                if (fullScreen && data?.type === "article") return data.title;
-              },
-            },
-            color: (n) => {
-              const data = getNodeData(n);
-              return getNodeColor(data);
-            },
-            radius: (n) => {
-              const data = getNodeData(n);
-              if (!data) return;
-              const r = getNodeRadius(data);
-              const s = scale[data.type];
-              if (s) {
-                return s(r);
-              } else {
-                console.log(`no scale!  ${data.type}`);
-                return 10;
-              }
-            },
-            halo: (n) => {
-              if (isHaloed(n))
-                return {
-                  color: "yellow",
-                  strokeColor: "#ccc",
-                  width: 10,
-                };
-            },
-          }}
-        />
-      </>
+      <>{hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}</>
     );
   },
 );

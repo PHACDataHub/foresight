@@ -400,7 +400,7 @@ const translateGraph = (
           const source = n.data?.neo4jProperties as ClusterRecord;
           const data: Cluster = {
             type: "cluster",
-            answers: {}, //JSON.parse(source.answers) as Record<string, string>,
+            answers: JSON.parse(source.answers) as Record<string, string>,
             countries: source.countries,
             id: source.id,
             keywords: source.keywords,
@@ -563,19 +563,63 @@ export const postRouter = createTRPCRouter({
 
   cluster: publicProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       const session = driver.session();
       try {
+        const t = funcTimer("cluster NEW Query");
         const result = await session.run(
           `
-          MATCH (c:Cluster {id: $id})<-[r:IN_CLUSTER]-(a:Article)
-            WITH c, r, a
-              OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
-          RETURN c, r, a, r_sim
+          MATCH (cluster:Cluster {id: $id})
+          RETURN cluster {
+            nodeid: id(cluster),
+            type: "cluster",
+            answers: apoc.convert.fromJsonMap(cluster.answers),
+            countries: cluster.countries,
+            id: cluster.id,
+            keywords: cluster.keywords,
+            labels: cluster.labels,
+            locations: apoc.convert.fromJsonList(cluster.locations),
+            name: cluster.name,
+            nr_articles: cluster.nr_articles,
+            state_date: cluster.start_date,
+            representative_docs: cluster.representative_docs,
+            summary: cluster.summary,
+            title: cluster.title,
+            topic_id: cluster.topic_id,
+            _articles: [(cluster)<-[r:IN_CLUSTER]-(article:Article) | article {
+              nodeid: id(article),
+              cluster_id: cluster.id,
+              type: "article",
+              _rels: r,
+              _similar: [(article)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(cluster) | r_sim],
+              .id,
+              outlier: article:Outlier,
+              .prob_size,
+              .title,
+              .content,
+              .factiva_file_name,
+              .factiva_folder,
+              .gphin_score,
+              .gphin_state,
+              .probability,
+              .pub_date,
+              .pub_name,
+              .pub_time
+            }]
+          }
     `,
           { id: input.id },
         );
-        return translateGraph(await OgmaLib.parse.neo4j(result));
+        t.measure("Neo4J query completed");
+        t.payload([result.records], true);
+        const rawGraph = createGraph();
+        result.records.forEach((record) => {
+          const data = record.get("cluster") as Neo4JTransferRecord;
+          parseData(data, rawGraph, true);
+        });
+        t.measure("Graph translation complete.");
+        t.payload([rawGraph]);
+        return rawGraph;
       } finally {
         await session.close();
       }
@@ -666,16 +710,6 @@ export const postRouter = createTRPCRouter({
           .prob_size,
           .title,
           data__incomplete__: true
-          // ,
-          // .content,
-          // .factiva_file_name,
-          // .factiva_folder,
-          // .gphin_score,
-          // .gphin_state,
-          // .probability,
-          // .pub_date,
-          // .pub_name,
-          // .pub_time
         }
       `,
           { period, threats: input.threats },
@@ -818,7 +852,6 @@ export const postRouter = createTRPCRouter({
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
         everything: z.boolean().optional(),
         threats: z.array(z.string()),
-        oldQuery: z.boolean().optional(),
       }),
     )
     .query(async ({ input }) => {
@@ -826,10 +859,9 @@ export const postRouter = createTRPCRouter({
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
-        if (!input.oldQuery) {
-          const t = funcTimer("hierarchicalClusters NEW Query");
-          const threats = await session.run(
-            `
+        const t = funcTimer("hierarchicalClusters NEW Query");
+        const threats = await session.run(
+          `
           WITH $period + '-\\d+' AS id_pattern
           MATCH (threat:Threat WHERE threat.text IN $threats)<-[r:DETECTED_THREAT]-(c:Cluster WHERE c.id =~ id_pattern)
           with threat, collect(r) as rels
@@ -841,11 +873,11 @@ export const postRouter = createTRPCRouter({
             score: threat.score
           }
           `,
-            { period, threats: input.threats },
-          );
+          { period, threats: input.threats },
+        );
 
-          const result2 = await session.run(
-            `
+        const result2 = await session.run(
+          `
           WITH $period + '-\\d+' AS id_pattern
           MATCH (hr:HierarchicalCluster)-[r:CONTAINS*..]->(c:Cluster)
           WHERE
@@ -864,7 +896,7 @@ export const postRouter = createTRPCRouter({
             _clusters: [(hr)-[:CONTAINS]->(cluster:Cluster WHERE cluster IN clusters) | cluster {
               nodeid: id(cluster),
               type: "cluster",
-              answers: {},
+              answers: apoc.convert.fromJsonMap(cluster.answers),
               countries: cluster.countries,
               id: cluster.id,
               keywords: cluster.keywords,
@@ -895,84 +927,25 @@ export const postRouter = createTRPCRouter({
             }]
           }
         `,
-            { period, threats: input.threats },
-          );
-          t.measure("Neo4J query completed");
-          t.payload([threats.records, result2.records], true);
-
-          const rawGraph = createGraph();
-
-          result2.records.forEach((record) => {
-            const data = record.get("hr") as Neo4JTransferRecord;
-            parseData(data, rawGraph, input.everything);
-          });
-          threats.records.forEach((record) => {
-            const data = record.get("threat") as Neo4JTransferRecord;
-            parseData(data, rawGraph, input.everything);
-          });
-          t.measure("Graph translation complete.");
-          t.payload([rawGraph]);
-          t.end();
-          return rawGraph.get();
-        }
-
-        const t = funcTimer("hierarchicalClusters OLD Query");
-
-        const result = await session.run(
-          `
-                WITH $period + '-\\d+' AS id_pattern
-                  MATCH (hr:HierarchicalCluster)-[hr_r:CONTAINS*..]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
-                    WHERE c.id =~ id_pattern AND t.text IN $threats
-
-                  ${
-                    input.everything && false
-                      ? `WITH hr, hr_r, c, r, t
-                    OPTIONAL MATCH (c)<-[r2:IN_CLUSTER]-(a:Article)
-                  WITH hr, hr_r, c, r, t, r2, a
-                    OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
-        `
-                      : ""
-                  }
-                RETURN hr, hr_r, c , r, t ${input.everything && false ? ", a, r2, r_sim" : ""}
-                `,
           { period, threats: input.threats },
         );
-
         t.measure("Neo4J query completed");
-        t.payload([result.records], true);
+        t.payload([threats.records, result2.records], true);
 
-        const ret = translateGraph(await OgmaLib.parse.neo4j(result), (n) => {
-          if (!input.everything) return n;
-          if (n.data?.type === "cluster")
-            return {
-              ...n,
-              data: {
-                type: "cluster",
-                id: n.data.id,
-                locations: n.data.locations,
-                nr_articles: n.data.nr_articles,
-                title: n.data.title,
-                summary: n.data.summary,
-              },
-            };
-          if (n.data?.type === "article")
-            return {
-              ...n,
-              data: {
-                type: "article",
-                id: n.data.id,
-                outlier: n.data.outlier,
-                prob_size: n.data.prob_size,
-                title: n.data.title,
-                cluster_id: "",
-              },
-            };
+        const rawGraph = createGraph();
 
-          return n;
+        result2.records.forEach((record) => {
+          const data = record.get("hr") as Neo4JTransferRecord;
+          parseData(data, rawGraph, input.everything);
+        });
+        threats.records.forEach((record) => {
+          const data = record.get("threat") as Neo4JTransferRecord;
+          parseData(data, rawGraph, input.everything);
         });
         t.measure("Graph translation complete.");
+        t.payload([rawGraph]);
         t.end();
-        return ret;
+        return rawGraph.get();
       } finally {
         await session.close();
       }
