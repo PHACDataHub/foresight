@@ -23,6 +23,22 @@ interface RawGraphInterface {
   get: () => { nodes: RawNode<AllDataTypes>[]; edges: RawEdge[] };
 }
 
+const ans = `apoc.convert.fromJsonMap(
+  apoc.text.replace(
+    apoc.text.replace(
+      apoc.text.replace(
+        cluster.answers,
+        "What date did the disease start\\?",
+        "What date did the disease start to spread?"
+      ),
+      "What is the possible source of the disease\\?",
+      "What is the likely source of the disease?"
+    ),
+    "What geo location does the disease spread\\?",
+    "Where is the disease currently spreading?"
+  )
+)`;
+
 const getPeriod = ({ day, history }: { day: number; history?: number }) => {
   const baseDate = new Date("2019-12-01");
   baseDate.setDate(baseDate.getDate() + day - 1);
@@ -573,7 +589,7 @@ export const postRouter = createTRPCRouter({
           RETURN cluster {
             nodeid: id(cluster),
             type: "cluster",
-            answers: apoc.convert.fromJsonMap(cluster.answers),
+            answers: ${ans},
             countries: cluster.countries,
             id: cluster.id,
             keywords: cluster.keywords,
@@ -896,7 +912,7 @@ export const postRouter = createTRPCRouter({
             _clusters: [(hr)-[:CONTAINS]->(cluster:Cluster WHERE cluster IN clusters) | cluster {
               nodeid: id(cluster),
               type: "cluster",
-              answers: apoc.convert.fromJsonMap(cluster.answers),
+              answers: ${ans},
               countries: cluster.countries,
               id: cluster.id,
               keywords: cluster.keywords,

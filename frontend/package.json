@@ -80,7 +80,7 @@
   },
   "envDependencies": {
     "@linkurious/ogma": "https://get.linkurio.us/api/get/npm/ogma/5.0.6/?secret=${OGMA_KEY}",
-    "@linkurious/ogma-react": "^5.0.3",
+    "@linkurious/ogma-react": "^5.0.2",
     "@linkurious/ogma-timeline-plugin": "0.2.6"
   },
   "devDependencies": {
