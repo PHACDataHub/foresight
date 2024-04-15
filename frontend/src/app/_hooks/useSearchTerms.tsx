@@ -9,7 +9,7 @@ export function useSearchTerms() {
         .concat(searchAsYouType)
         .map((t) => t.toLowerCase().trim())
         .filter((t) => t.length >= 3);
-    return searchTerms;
+    return searchTerms.map((t) => t.toLowerCase().trim());
   }, [searchAsYouType, searchTerms]);
 
   return terms;
