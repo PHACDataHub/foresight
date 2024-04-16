@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import Typography from "@mui/material/Typography";
 import Skeleton from "@mui/material/Skeleton";
 
+import { useTranslations } from "next-intl";
 import { type Article } from "~/server/api/routers/post";
 import { NodeTitle } from "~/app/_components/NodeTitle";
 import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
@@ -21,6 +22,8 @@ export default function ArticleComponent({
   const { ogma } = useStore();
   const [article, setArticle] = useState(articleNode);
   const [loading, setLoading] = useState(false);
+
+  const t = useTranslations("ArticleComponent");
 
   const fetchArticle = useCallback(
     async (article_id: number, cluster_id: string) => {
@@ -61,7 +64,7 @@ export default function ArticleComponent({
               fontSize={14}
               className={loading ? "flex-1" : ""}
             >
-              {loading ? <Skeleton /> : "Publication:"}
+              {loading ? <Skeleton /> : t("publication")}
             </Typography>
 
             <Typography
@@ -83,7 +86,7 @@ export default function ArticleComponent({
                   fontSize={14}
                   className={loading ? "flex-1" : ""}
                 >
-                  {loading ? <Skeleton /> : "Pub Time:"}
+                  {loading ? <Skeleton /> : t("pubTime")}
                 </Typography>
                 <Typography
                   variant="body1"
@@ -104,7 +107,7 @@ export default function ArticleComponent({
                   fontSize={14}
                   className={loading ? "flex-1" : ""}
                 >
-                  {loading ? <Skeleton /> : "Pub Date:"}
+                  {loading ? <Skeleton /> : t("pubDate")}
                 </Typography>
                 <Typography
                   variant="body1"
@@ -129,7 +132,7 @@ export default function ArticleComponent({
                   fontSize={14}
                   className={loading ? "flex-1" : ""}
                 >
-                  {loading ? <Skeleton /> : "GPHIN State:"}
+                  {loading ? <Skeleton /> : t("state")}
                 </Typography>
                 <Typography
                   variant="body1"
@@ -146,7 +149,7 @@ export default function ArticleComponent({
                   fontSize={14}
                   className={loading ? "flex-1" : ""}
                 >
-                  {loading ? <Skeleton /> : "GPHIN Score:"}
+                  {loading ? <Skeleton /> : t("score")}
                 </Typography>
                 <Typography
                   variant="body1"
@@ -168,7 +171,7 @@ export default function ArticleComponent({
                 className="border p-2 text-white"
                 style={{ backgroundColor: getNodeColor(article) }}
               >
-                Outlier
+                {t("outlier")}
               </Typography>
             </div>
           )}

@@ -12,7 +12,11 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { useStore } from "~/app/_store";
 import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 
-export default function HighlightTerms() {
+export default function HighlightTerms({
+  messages,
+}: {
+  messages: { label: string; placeholder: string };
+}) {
   const { searchTerms, setSearchTerms, setSearchAsYouType } = useStore();
 
   const updateSearchAsYouType = useDebounceCallback(setSearchAsYouType, 300);
@@ -61,8 +65,8 @@ export default function HighlightTerms() {
       renderInput={(params) => (
         <TextField
           variant="outlined"
-          label="Highlight terms"
-          placeholder="Enter terms to highlight"
+          label={messages.label}
+          placeholder={messages.placeholder}
           {...params}
           InputLabelProps={{ sx: { fontSize: 16 } }}
           InputProps={{

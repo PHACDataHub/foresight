@@ -10,7 +10,17 @@ import InputLabel from "@mui/material/InputLabel";
 
 import { useStore } from "~/app/_store";
 
-export default function HistoryChooser() {
+export default function HistoryChooser({
+  messages,
+}: {
+  messages: {
+    label: string;
+    today: string;
+    last3: string;
+    last7: string;
+    last30: string;
+  };
+}) {
   const { history } = useStore();
   const router = useRouter();
   const { locale, day } = useParams();
@@ -37,30 +47,30 @@ export default function HistoryChooser() {
   return (
     <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
       <InputLabel sx={{ fontSize: 16 }} id="select-timespan">
-        Time Span
+        {messages.label}
       </InputLabel>
       <Select
         sx={{ fontSize: 16 }}
         labelId="select-timespan"
         value={history ? `${history}` : "1"}
         onChange={handleChange}
-        label="Time Span"
+        label={messages.label}
       >
         <MenuItem sx={{ fontSize: 16 }} value={1}>
-          Today
+          {messages.today}
         </MenuItem>
         <MenuItem
           sx={{ fontSize: 16 }}
           disabled={dayNum < 33 || dayNum > 39}
           value={3}
         >
-          Last 3 Days
+          {messages.last3}
         </MenuItem>
         <MenuItem sx={{ fontSize: 16 }} disabled={dayNum !== 37} value={7}>
-          Last 7 Days
+          {messages.last7}
         </MenuItem>
         <MenuItem sx={{ fontSize: 16 }} disabled={dayNum !== 60} value={30}>
-          Last 30 Days
+          {messages.last30}
         </MenuItem>
       </Select>
     </FormControl>

@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 
 import Typography from "@mui/material/Typography";
 
@@ -23,9 +24,13 @@ export default async function LocaleDayLayout({
   children: React.ReactNode;
   params: { day: string; locale: string };
 }) {
+  const messages = await getMessages();
+
   const t = await getTranslations("App");
   const timeTravelMsg = await getTranslations("TimeTravel");
-
+  const msgHighlightTerms = await getTranslations("HighlightTerms");
+  const msgHistoryChooser = await getTranslations("HistoryChooser");
+  
   const startDate = new Date(2019, 11, 1, 12);
   const endDate = new Date(2020, 0, 31, 12);
   const date = new Date(startDate);
@@ -33,13 +38,9 @@ export default async function LocaleDayLayout({
 
   return (
     <AppWrapper>
-      <div className="flex items-center justify-between pr-[30px] pb-[16px] mt-[16px] space-x-[10px] border-b">
-        <div className="flex space-x-[24px] pl-[30px]  items-end">
-          <Typography
-            variant="h4"
-            fontSize={24}
-            fontWeight="medium"
-          >
+      <div className="mt-[16px] flex items-center justify-between space-x-[10px] border-b pb-[16px] pr-[30px]">
+        <div className="flex items-end space-x-[24px]  pl-[30px]">
+          <Typography variant="h4" fontSize={24} fontWeight="medium">
             {t("title")}
           </Typography>
           <TodayIs
@@ -50,8 +51,15 @@ export default async function LocaleDayLayout({
           />
         </div>
         <div className="flex items-center space-x-[16px]">
-        <div className="flex-1"><HighlightTerms /></div>
-        <TimeTravel
+          <div className="flex-1">
+            <HighlightTerms
+              messages={{
+                label: msgHighlightTerms("label"),
+                placeholder: msgHighlightTerms("placeholder"),
+              }}
+            />
+          </div>
+          <TimeTravel
             startDate={startDate}
             endDate={endDate}
             date={date}
@@ -60,15 +68,43 @@ export default async function LocaleDayLayout({
               travelText: timeTravelMsg("travelText"),
             }}
           />
-          <HistoryChooser />
+          <HistoryChooser
+            messages={{
+              label: msgHistoryChooser("label"),
+              today: msgHistoryChooser("today"),
+              last3: msgHistoryChooser("last3"),
+              last7: msgHistoryChooser("last7"),
+              last30: msgHistoryChooser("last30"),
+            }}
+          />
           <div className="flex-2">
-          <WorkingWith />
+            <NextIntlClientProvider
+              messages={
+                typeof messages.WorkingWith === "object"
+                  ? messages.WorkingWith
+                  : {}
+              }
+            >
+              <WorkingWith />
+            </NextIntlClientProvider>
           </div>
         </div>
-        <ThreatSelector />
+        <NextIntlClientProvider
+          messages={
+            typeof messages.ThreatSelector === "object"
+              ? messages.ThreatSelector
+              : {}
+          }
+        >
+          <ThreatSelector />
+        </NextIntlClientProvider>
       </div>
       <div className="mb-[10px] flex flex-1 flex-col items-center justify-center overflow-hidden pr-[30px]">
-        <Graph />
+        <NextIntlClientProvider
+          messages={typeof messages.Graph === "object" ? messages.Graph : {}}
+        >
+          <Graph />
+        </NextIntlClientProvider>
       </div>
       {children}
     </AppWrapper>

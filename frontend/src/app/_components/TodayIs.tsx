@@ -4,8 +4,8 @@
  * Component used to display the current date as a locale string.
  */
 
-import { useParams } from "next/navigation";
 import React from "react";
+import { useParams } from "next/navigation";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import Typography from "@mui/material/Typography";
 

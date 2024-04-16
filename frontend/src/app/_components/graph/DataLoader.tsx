@@ -1,6 +1,7 @@
 import { useOgma } from "@linkurious/ogma-react";
 import { type Neo4JEdgeData, type NodeList } from "@linkurious/ogma";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { api } from "~/trpc/react";
 import { useStore } from "~/app/_store";
 import {
@@ -24,6 +25,7 @@ export default function DataLoader({
   const ogma = useOgma<AllDataTypes, Neo4JEdgeData<Record<string, unknown>>>();
   const [totalSize, setTotalSize] = useState(0);
   const [progress, setProgress] = useState(0);
+  const t = useTranslations("DataLoader");
 
   const {
     everything,
@@ -161,11 +163,11 @@ export default function DataLoader({
 
   if (isFetching)
     return (
-      <ProgressBar text="Downloading" percent={progress} showPercent={false} />
+      <ProgressBar text={t("downloading")} percent={progress} showPercent={false} />
     );
 
   if (totalSize > 0)
-    return <ProgressBar text="Rendering" totalSize={totalSize} />;
+    return <ProgressBar text={t("rendering")} totalSize={totalSize} />;
 
   return <></>;
 }

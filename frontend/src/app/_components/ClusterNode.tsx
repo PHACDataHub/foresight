@@ -32,6 +32,7 @@ import FormControl from "@mui/material/FormControl";
 import Select, { type SelectChangeEvent } from "@mui/material/Select";
 
 import { Dot } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   type AllDataTypes,
   type Article,
@@ -101,6 +102,7 @@ function ArticleList({ articles }: { articles: Article[] }) {
 }
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
+  const t = useTranslations("ClusterLocations")
   if (!cluster?.locations) return;
   const locations = cluster.locations.filter(
     (l) => Boolean(l.location) && typeof l.location === "string",
@@ -110,7 +112,7 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
       {locations.map((l, i) => (
         <li key={`loc_${i}`} className="m-1 p-0">
           <Location
-            title={!isLocationValid(l) ? "Invalid or missing coordinates" : ""}
+            title={!isLocationValid(l) ? t("invalid") : ""}
             status={isLocationValid(l) ? undefined : "invalid"}
           >
             {l.location}
@@ -118,8 +120,8 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
         </li>
       ))}
       {locations.length === 0 && (
-        <Location title="No location data is available" status="missing">
-          No Location
+        <Location title={t("noLocationTitle")} status="missing">
+          {t("noLocation")}
         </Location>
       )}
     </ul>
@@ -156,6 +158,8 @@ export function ClusterNode(
   const endOfQARef = useRef<HTMLSpanElement | null>(null);
   const [groupArticlesBy, setGroupArticlesBy] = useState<GroupByOptions>("");
   const [tab, setTab] = useState(0);
+
+  const t = useTranslations("ClusterNode");
 
   const { qa, addQA, ogma, geoMode, feature_GroupArticleBy, searchMatches } =
     useStore();
@@ -332,12 +336,12 @@ export function ClusterNode(
           centered
           variant="fullWidth"
         >
-          <Tab sx={{ fontSize: 14 }} label="Summary" />
+          <Tab sx={{ fontSize: 14 }} label={t("summary")} />
           <Tab
             sx={{ fontSize: 14 }}
             label={
               <div className="flex items-center space-x-2">
-                <span>Articles</span>
+                <span>{t("articles")}</span>
                 <Chip
                   sx={{ fontSize: 14 }}
                   label={
@@ -358,7 +362,6 @@ export function ClusterNode(
               <div className="flex flex-1 flex-col">
                 <div className="h-0 flex-auto overflow-auto pr-[12px]">
                   <ClusterLocations cluster={cluster} />
-
                   <section>
                     <Typography variant="body1" fontSize={14}>
                       <HighlightSearchTerms text={cluster.summary ?? ""} />
@@ -366,7 +369,7 @@ export function ClusterNode(
                   </section>
                   <section className="mt-[10px] border-t pt-[10px]">
                     <Typography variant="h5" fontSize={16} fontWeight={500}>
-                      Questions about this cluster
+                      {t("questions")}
                     </Typography>
                     <ul className="mt-[10px]">
                       {Object.entries(cluster.answers ?? []).map(
@@ -447,8 +450,8 @@ export function ClusterNode(
               <TextField
                 InputLabelProps={{ sx: { fontSize: 16 } }}
                 variant="outlined"
-                label="Chat Console"
-                placeholder="Ask a question"
+                label={t("chat.label")}
+                placeholder={(t("chat.placeholder"))}
                 onKeyUp={handleQuestion}
                 onChange={handleQuestionChange}
                 value={question}
@@ -465,8 +468,8 @@ export function ClusterNode(
             <div className="flex flex-col space-y-[12px]">
               <div className="flex flex-col items-center">
                 <Typography variant="body1" fontSize={14}>
-                  GPHIN: <b>Published</b> ({trashed_published.published}){" "}
-                  <b>Trashed</b> ({trashed_published.trashed})
+                  GPHIN: <b>{t("published")}</b> ({trashed_published.published}){" "}
+                  <b>{t("trashed")}</b> ({trashed_published.trashed})
                 </Typography>
               </div>
 
@@ -477,32 +480,32 @@ export function ClusterNode(
                       id="group_articles_by_select"
                       sx={{ fontSize: 14 }}
                     >
-                      Group articles by ...
+                      {t("groupBy")}
                     </InputLabel>
                     <Select
                       sx={{ fontSize: 14 }}
                       labelId="group_articles_by_select"
                       value={groupArticlesBy}
-                      label="Group articles by"
+                      label={t("groupBy")}
                       onChange={handleGroupArticleByChange}
                     >
                       <MenuItem sx={{ fontSize: 14 }} value="">
-                        <em>No Grouping</em>
+                        <em>{t("noGrouping")}</em>
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 14 }} value="pub_name">
-                        Publication
+                        {t("publication")}
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 14 }} value="pub_time">
-                        Pub Time
+                        {t("pubTime")}
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 14 }} value="pub_date">
-                        Pub Date
+                        {t("pubDate")}
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 14 }} value="gphin_state">
-                        GPHIN State
+                        {t("state")}
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 14 }} value="gphin_score">
-                        GPHIN Score
+                        {t("score")}
                       </MenuItem>
                     </Select>
                   </FormControl>

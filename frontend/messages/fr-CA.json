@@ -10,5 +10,81 @@
         "nextButton": "Prochain",
         "lastButton": "Dernier",
         "previousButton": "Precedant"
+    },
+    "HighlightTerms": {
+        "label": "Termes à souligner",
+        "placeholder": "Saisir les termes à souligner"
+    },
+    "HistoryChooser": {
+        "label": "Durée",
+        "today": "Aujourd'hui",
+        "last3": "3 derniers jours",
+        "last7": "7 derniers jours",
+        "last30": "30 derniers jours"
+    },
+    "WorkingWith": {
+        "articles": "Vous travaillez avec {count, plural, =1 {<strong>un</strong> article} other {<strong>#</strong> articles}}.",
+        "items": "Trouvé {count, plural, =1 {<strong>un</strong> élément pertinent} other {<strong>#</strong> éléments pertinents}}."
+    },
+    "ThreatSelector": {
+        "selectall": "Tout Sélectionner",
+        "selectnone": "Ne Rien Sélectionner",
+        "filterView": "Filtrer",
+        "resetToDefault": "Réinitialiser",
+        "selected": "{count, plural, =1 {un sélectionné} other {# sélectionnés}}"
+    },
+    "Graph": {
+        "resetLayout": "Réinitialiser",
+        "expandArticles": "Développer {type, select, hierarchicalcluster {les articles le long du chemin} other {tous les articles}}",
+        "collapseArticles": "Réduire les articles développés",
+        "layoutNodes": "Mise en page utilisant l'algorithme \"{layout}\"",
+        "satelliteToggle": "Basculer entre la vue satellite et la vue terrain",
+        "mapView": "Basculer entre la vue cartographique et graphique",
+        "fullScreen": "Basculer l'affichage plein écran",
+        "SidePanel": {
+            "panelTitle": "{type, select, cluster {Cluster sélectionné} article {Article sélectionné} hierarchicalcluster {Clusters dans la hiérarchie} threat {Clusters liés à la menace} other {Clusters d'Article}}",
+            "id": "IDENTIFIANT:",
+            "clusters": "Clusters:",
+            "title": "Titre:",
+            "score": "Note:"
+        },
+        "ClusterLocations": {
+            "noLocation": "Aucun emplacement",
+            "noLocationTitle": "Aucune donnée de localisation n'est disponible",
+            "invalid": "Coordonnées invalides ou manquantes"
+        },
+        "ClusterNode": {
+            "summary": "Résumé",
+            "articles": "Articles",
+            "questions": "Questions sur ce cluster",
+            "chat": {
+                "label": "Console de discussion",
+                "placeholder": "Poser une question"
+            },
+            "published": "Publié",
+            "trashed": "Mis à la poubelle",
+            "groupBy": "Regrouper les articles par ...",
+            "noGrouping": "Aucun regroupement",
+            "publication": "Publication",
+            "pubTime": "Heure de publication",
+            "pubDate": "Date de publication",
+            "state": "État GPHIN",
+            "score": "Note GPHIN"
+        },
+        "ArticleComponent": {
+            "publication": "Publication:",
+            "pubTime": "Heure de publication:",
+            "pubDate": "Date de publication:",
+            "state": "État GPHIN:",
+            "score": "Note GPHIN:",
+            "outlier": "Valeur aberrante"
+        },
+        "NodeTitle": {
+            "openTitle": "{clear, select, true {Articles dans ce cluster} other {Effacer la sélection}}"
+        },
+        "DataLoader": {
+            "downloading": "Téléchargement",
+            "rendering": "Rendu en cours"
+        }
     }
 }

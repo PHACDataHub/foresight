@@ -10,5 +10,81 @@
         "nextButton": "Next",
         "lastButton": "Last",
         "previousButton": "Previous"
+    },
+    "HighlightTerms": {
+        "label": "Highlight terms",
+        "placeholder": "Enter terms to highlight"
+    },
+    "HistoryChooser": {
+        "label": "Time Span",
+        "today": "Today",
+        "last3": "Last 3 Days",
+        "last7": "Last 7 Days",
+        "last30": "Last 30 Days"
+    },
+    "WorkingWith": {
+        "articles": "You are working with {count, plural, =1 {<strong>one</strong> article} other {<strong>#</strong> articles}}.",
+        "items": "Found {count, plural, =1 {<strong>one</strong> relevant item} other {<strong>#</strong> relevant items}}."
+    },
+    "ThreatSelector": {
+        "selectall": "Select All",
+        "selectnone": "Select None",
+        "filterView": "Filter View",
+        "resetToDefault": "Reset to default",
+        "selected": "{count, plural, =1 {one} other {#}} selected"
+    },
+    "Graph": {
+        "resetLayout": "Reset Layout",
+        "expandArticles": "Expand {type, select, hierarchicalcluster {articles along path} other {all articles}}",
+        "collapseArticles": "Collapse expanded articles",
+        "layoutNodes": "Layout nodes using the \"{layout}\" algorithm",
+        "satelliteToggle": "Toggle between satellite and terrain view",
+        "mapView": "Toggle between map and graph view",
+        "fullScreen": "Toggle Full Screen View",
+        "SidePanel": {
+            "panelTitle": "{type, select, cluster {Selected Cluster} article {Selected Article} hierarchicalcluster {Clusters in hierarchy} threat {Clusters related to threat} other {Article Clusters}}",
+            "id": "ID:",
+            "clusters": "Clusters:",
+            "title": "Title:",
+            "score": "Score:"
+        },
+        "ClusterLocations": {
+            "noLocation": "No Location",
+            "noLocationTitle": "No location data is available",
+            "invalid": "Invalid or missing coordinates"
+        },
+        "ClusterNode": {
+            "summary": "Summary",
+            "articles": "Articles",
+            "questions": "Questions about this cluster",
+            "chat": {
+                "label": "Chat Console",
+                "placeholder": "Ask a question"
+            },
+            "published": "Published",
+            "trashed": "Trashed",
+            "groupBy": "Group articles by ...",
+            "noGrouping": "No Grouping",
+            "publication": "Publication",
+            "pubTime": "Pub Time",
+            "pubDate": "Pub Date",
+            "state": "GPHIN State",
+            "score": "GPHIN Score"
+        },
+        "ArticleComponent": {
+            "publication": "Publication:",
+            "pubTime": "Pub Time:",
+            "pubDate": "Pub Date:",
+            "state": "GPHIN State:",
+            "score": "GPHIN Score:",
+            "outlier": "Outlier"
+        },
+        "NodeTitle": {
+            "openTitle": "{clear, select, true {Articles in this cluster} other {Clear selection}}"
+        },
+        "DataLoader": {
+            "downloading": "Downloading",
+            "rendering": "Rendering"
+        }
     }
 }

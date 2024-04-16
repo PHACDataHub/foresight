@@ -1,29 +1,36 @@
 "use client";
 
-import Typography from "@mui/material/Typography";
 import { useMemo } from "react";
+import Typography from "@mui/material/Typography";
+import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
 
 export default function WorkingWith() {
   const { articleCount, searchMatches } = useStore();
-
+  const t = useTranslations();
   const articleMsg = useMemo(() => {
     if (articleCount === 0) return <></>;
     return (
       <Typography variant="body1" fontSize={16}>
-        You are working with <b>{articleCount.toLocaleString()}</b> articles.
+        {t.rich("articles", {
+          strong: (c) => <strong>{c}</strong>,
+          count: articleCount,
+        })}
       </Typography>
     );
-  }, [articleCount]);
+  }, [articleCount, t]);
 
   const highlightMsg = useMemo(() => {
     if (!searchMatches || searchMatches.length === 0) return <></>;
     return (
       <Typography variant="body1" fontSize={16}>
-        Found <b>{searchMatches.length.toLocaleString()}</b> relevant items.
+        {t.rich("items", {
+          strong: (c) => <strong>{c}</strong>,
+          count: searchMatches.length,
+        })}
       </Typography>
     );
-  }, [searchMatches]);
+  }, [searchMatches, t]);
 
   return (
     <>

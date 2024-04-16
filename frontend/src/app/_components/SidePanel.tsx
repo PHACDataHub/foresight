@@ -11,6 +11,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
 
+import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
 
 import ClusterNodeList from "~/app/_components/ClusterNodeList";
@@ -26,6 +27,8 @@ export default function SidePanel() {
     setShowInfoPanel,
     selectedNode,
   } = useStore();
+
+  const t = useTranslations("SidePanel");
 
   const handleNodeViewToggle = useCallback(() => {
     if (showInfoPanel) setPanelWasToggled(true);
@@ -56,18 +59,6 @@ export default function SidePanel() {
     }
     return clusters;
   }, [clusters, selectedData, selectedNode?.node]);
-
-  const panelTitle = useMemo(() => {
-    if (selectedData) {
-      if (selectedData.type === "cluster") return "Selected Cluster";
-      if (selectedData.type === "article") return "Selected Article";
-      if (selectedData.type === "hierarchicalcluster")
-        return "Clusters in hierarchy";
-      if (selectedData.type === "threat") return "Clusters related to threat";
-      return "Selected";
-    }
-    return "Article Clusters";
-  }, [selectedData]);
 
   const panelBadge = useMemo(() => {
     if (
@@ -152,7 +143,7 @@ export default function SidePanel() {
 
   return (
     <div
-      className={`min-w-[480px] flex w-full flex-col ${!showInfoPanel ? " cursor-pointer" : ""} `}
+      className={`flex w-full min-w-[480px] flex-col ${!showInfoPanel ? " cursor-pointer" : ""} `}
       onClick={clickHandler}
     >
       <div className={headerClassNames} style={headerStyles}>
@@ -160,7 +151,7 @@ export default function SidePanel() {
           <>
             {/* <Badge max={10000} badgeContent={panelBadge} color="info"> */}
             <Typography variant="h5" fontWeight="bold" fontSize={20}>
-              {panelTitle}
+              {t("panelTitle", { type: selectedData?.type })}
               {Boolean(panelBadge && panelBadge > 0) && (
                 <Chip
                   label={panelBadge}
@@ -187,7 +178,7 @@ export default function SidePanel() {
             <div className="flex flex-col space-y-[8px] pb-[12px] pt-[12px]">
               <div className="flex space-x-2">
                 <Typography variant="body1" fontSize={14}>
-                  ID:
+                  {t("id")}
                 </Typography>
                 <Typography variant="body1" fontSize={14} fontWeight={500}>
                   {selectedData.id}
@@ -195,7 +186,7 @@ export default function SidePanel() {
               </div>
               <div className="flex space-x-2">
                 <Typography variant="body1" fontSize={14}>
-                  Clusters:
+                {t("clusters")}
                 </Typography>
                 <Typography variant="body1" fontSize={14} fontWeight={500}>
                   {selectedData.clusters.length}
@@ -209,7 +200,7 @@ export default function SidePanel() {
             <div className="flex flex-col space-y-[8px] pb-[12px] pt-[12px]">
               <div className="flex space-x-2">
                 <Typography variant="body1" fontSize={14}>
-                  Title:
+                  {t("title")}
                 </Typography>
                 <Typography variant="body1" fontSize={14} fontWeight={500}>
                   {selectedData.title}
@@ -217,7 +208,7 @@ export default function SidePanel() {
               </div>
               <div className="flex space-x-2">
                 <Typography variant="body1" fontSize={14}>
-                  Score
+                  {t("score")}
                 </Typography>
                 <Typography variant="body1" fontSize={14} fontWeight={500}>
                   {selectedData.score}

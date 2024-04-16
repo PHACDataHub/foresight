@@ -17,12 +17,14 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Chip from "@mui/material/Chip";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
+import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
 
 function ThreatSelectorComponent() {
   const [open, setOpen] = useState(false);
   const { threats: selected, setThreats } = useStore();
+  const t = useTranslations();
   const { data: threats } = api.post.threats.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
@@ -71,9 +73,9 @@ function ThreatSelectorComponent() {
   }, [selected.length, setThreats, threats]);
 
   const groupSelectText = useMemo(() => {
-    if (!threats || threats.length !== selected.length) return "Select All";
-    return "Select None";
-  }, [selected.length, threats]);
+    if (!threats || threats.length !== selected.length) return t("selectall");
+    return t("selectnone");
+  }, [t, selected.length, threats]);
 
   return (
     <div className="relative" onClick={preventPropagation}>
@@ -84,12 +86,15 @@ function ThreatSelectorComponent() {
         endIcon={<FontAwesomeIcon icon={faAngleDown} />}
         onClick={handleOpenClick}
       >
-        Filter View
+        {t("filterView")}
       </Button>
       {open && (
         <div className="absolute right-0 z-[1402] flex w-[600px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
           <div className="flex h-[52px] items-center justify-between pb-[20px] pt-[22px]">
-            <Chip label={`${selected.length} Selected`} sx={{ fontSize: 14 }} />
+            <Chip
+              label={t("selected", { count: selected.length })}
+              sx={{ fontSize: 14 }}
+            />
             <div className="space-x-[10px]">
               <Button
                 variant="contained"
@@ -104,7 +109,7 @@ function ThreatSelectorComponent() {
                 color="error"
                 sx={{ fontSize: 14 }}
               >
-                Reset to default
+                {t("resetToDefault")}
               </Button>
             </div>
           </div>

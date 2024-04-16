@@ -58,6 +58,7 @@ import MenuItem from "@mui/material/MenuItem";
 import "leaflet/dist/leaflet.css";
 import { useResizeObserver } from "usehooks-ts";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { type LayoutModes, useStore } from "~/app/_store";
 import { createScale, findAlongPath, getNodeData } from "~/app/_utils/graph";
@@ -97,6 +98,8 @@ export default function Graph() {
 
   const getArticles = api.post.getArticles.useMutation();
   const [cachedExpansion, setCachedExpansion] = useState(false);
+
+  const t = useTranslations();
 
   const {
     history,
@@ -416,7 +419,11 @@ export default function Graph() {
   const layouts: [LayoutModes, JSX.Element, boolean][] = useMemo(() => {
     return [
       ["force", <Workflow size={22} key="force" />, layoutBusy.length === 0],
-      ["hierarchical", <Waypoints size={22} key="waypoints" />, layoutBusy.length === 0 && !everything],
+      [
+        "hierarchical",
+        <Waypoints size={22} key="waypoints" />,
+        layoutBusy.length === 0 && !everything,
+      ],
       ["grid", <Grip size={22} key="grid" />, layoutBusy.length === 0],
       [
         "radial",
@@ -615,7 +622,7 @@ export default function Graph() {
                         <ButtonGroup>
                           <IconButton
                             className="foresight-graph-btn"
-                            title="Reset layout"
+                            title={t("resetLayout")}
                             onClick={handleReset}
                           >
                             <RefreshCcw size={22} />
@@ -623,12 +630,11 @@ export default function Graph() {
                           <IconButton
                             className={`foresight-graph-btn${expanding ? " disabled" : ""}`}
                             disabled={expanding}
-                            title={
-                              selectedNode?.node.getData("type") ===
-                              "hierarchicalcluster"
-                                ? "Expand articles along path"
-                                : "Expand all articles"
-                            }
+                            title={t("expandArticles", {
+                              type: selectedNode?.node.getData(
+                                "type",
+                              ) as string,
+                            })}
                             onClick={handleExpandRelatedClusters}
                           >
                             {expanding && (
@@ -639,7 +645,7 @@ export default function Graph() {
                           <IconButton
                             className="foresight-graph-btn"
                             onClick={handleCollapseAllClick}
-                            title="Collapsed expanded articles"
+                            title={t("collapseArticles")}
                           >
                             <FileX2 size={22} />
                           </IconButton>
@@ -652,7 +658,7 @@ export default function Graph() {
                               data-layout={l}
                               disabled={!enabled}
                               onClick={handleLayoutClick}
-                              title={`Layout nodes using the ${l} algorithm`}
+                              title={t("layoutNodes", { layout: l })}
                             >
                               {layoutBusy.includes(l) ? (
                                 <FontAwesomeIcon icon={faSpinner} spin />
@@ -668,7 +674,7 @@ export default function Graph() {
                       <IconButton
                         className={`foresight-graph-btn${mapMode === "hybrid" ? " active" : ""}`}
                         onClick={handleSatelliteClick}
-                        title="Toggle between satellite and terrain view"
+                        title={t("satelliteToggle")}
                       >
                         <Satellite size={22} />
                       </IconButton>
@@ -676,14 +682,14 @@ export default function Graph() {
                     <IconButton
                       className="foresight-graph-btn"
                       onClick={handleGeoBtnClick}
-                      title="View clusters on a map"
+                      title={t("mapView")}
                     >
                       <Map size={22} />
                     </IconButton>
                     <IconButton
                       className="foresight-graph-btn"
                       onClick={handleMaximizeClick}
-                      title="Switch to Full Screen View"
+                      title={t("fullScreen")}
                     >
                       {!maximized && <Maximize2 size={22} />}
                       {maximized && <Minimize2 size={22} />}

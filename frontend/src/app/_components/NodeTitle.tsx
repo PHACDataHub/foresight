@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 
 import { Locate, Newspaper, Undo2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getNodeData } from "~/app/_utils/graph";
 import { useStore } from "~/app/_store";
 import { type Cluster } from "~/server/api/routers/post";
@@ -15,6 +16,7 @@ export function NodeTitle(
   opts: { dataNode: OgmaNode; showLocate?: boolean } | { title: string },
 ) {
   const { ogma, setSelectedNode, selectedNode } = useStore();
+  const t = useTranslations("NodeTitle");
 
   const dataNode = "dataNode" in opts ? opts.dataNode : null;
   const showLocate = "showLocate" in opts ? opts.showLocate : false;
@@ -81,11 +83,7 @@ export function NodeTitle(
             className="foresight-graph-btn"
             style={{ width: 32, height: 32 }}
             onClick={handleOpen}
-            title={
-              selectedNode?.node !== dataNode
-                ? "Articles in this cluster"
-                : "Clear selection"
-            }
+            title={t("openTitle", { clear: selectedNode?.node !== dataNode})}
           >
             {selectedNode?.node !== dataNode ? (
               <Newspaper size={22} />
