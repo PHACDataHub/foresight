@@ -22,6 +22,7 @@ const Interactions = () => {
     setFocus,
     setLayoutBusy,
     setLayoutNotBusy,
+    refresh,
   } = useStore();
   const ogma = useOgma();
   const cluster = api.post.cluster.useMutation();
@@ -44,7 +45,6 @@ const Interactions = () => {
           } else {
             toggleExpandedCluster(data.id);
             ogma.events.once("idle", async () => {
-              setLayout("force");
               setFocus(null);
               let lNodes: NodeList<unknown, unknown> | null = null;
               const neigh = target
@@ -66,13 +66,8 @@ const Interactions = () => {
                 const g = await ogma.addGraph(articles);
                 lNodes = g.nodes;
               }
+              refresh();
               ogma.events.once("idle", async () => {
-                setLayoutBusy("force");
-                await ogma.layouts.force({
-                  gpu: true,
-                  duration: 0,
-                  onSync: () => setLayoutNotBusy("force"),
-                });
                 await (lNodes ?? neigh).locate({ duration: 300, padding: 135 });
               });
             });
@@ -85,6 +80,7 @@ const Interactions = () => {
       ogma.events.off(doubleClickHandler);
     };
   }, [
+    refresh,
     setLayout,
     setLayoutBusy,
     augmentScale,

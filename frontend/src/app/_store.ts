@@ -123,6 +123,8 @@ export interface ForesightStore {
   setSearchTerms: (searchTerms: string[]) => void;
   searchMatches: string[];
   setSearchMatches: (searchMatches: string[]) => void;
+  searchAnd: boolean;
+  setSearchAnd: (searchAnd: boolean) => void;
   clusters?: NodeList<Cluster>;
   setClusters: (clusters?: NodeList<Cluster>) => void;
   // TODO: refactor open node madness
@@ -240,6 +242,8 @@ export const useStore = create<ForesightStore>((set) => ({
   setSearchTerms: (searchTerms: string[]) => set({ searchTerms }),
   searchMatches: [],
   setSearchMatches: (searchMatches) => set({ searchMatches }),
+  searchAnd: false,
+  setSearchAnd: (searchAnd) => set({ searchAnd }),
   clusters: undefined,
   setClusters: (clusters) => set({ clusters }),
   treeDirection: "BT",

@@ -38,6 +38,7 @@ export default function DataLoader({
     threats,
     setSearchMatches,
     setLayout,
+    searchAnd,
   } = useStore();
   const terms = useSearchTerms();
 
@@ -65,7 +66,7 @@ export default function DataLoader({
 
   // Fetch which nodes should be highlighted
   const { data: highlightedNodeIds } = api.post.nodesWithTerms.useQuery(
-    { day, history, everything, threats, terms },
+    { day, history, everything, threats, terms, and: searchAnd },
     {
       refetchOnWindowFocus: false,
     },

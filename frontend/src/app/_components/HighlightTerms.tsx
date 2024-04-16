@@ -9,6 +9,13 @@ import Highlighter from "react-highlight-words";
 
 import { useDebounceCallback } from "usehooks-ts";
 import Autocomplete from "@mui/material/Autocomplete";
+import {
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  Switch,
+  Typography,
+} from "@mui/material";
 import { useStore } from "~/app/_store";
 import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 
@@ -17,7 +24,13 @@ export default function HighlightTerms({
 }: {
   messages: { label: string; placeholder: string };
 }) {
-  const { searchTerms, setSearchTerms, setSearchAsYouType } = useStore();
+  const {
+    searchTerms,
+    setSearchTerms,
+    setSearchAsYouType,
+    searchAnd,
+    setSearchAnd,
+  } = useStore();
 
   const updateSearchAsYouType = useDebounceCallback(setSearchAsYouType, 300);
 
@@ -35,6 +48,10 @@ export default function HighlightTerms({
     },
     [setSearchTerms, updateSearchAsYouType],
   );
+
+  const handleSearchAndClick = useCallback(() => {
+    setSearchAnd(!searchAnd);
+  }, [searchAnd, setSearchAnd]);
 
   useEffect(() => {
     // Ensure nothing is highlighted when the component is reloaded
@@ -72,6 +89,14 @@ export default function HighlightTerms({
           InputProps={{
             ...params.InputProps,
             sx: { fontSize: 16 },
+            endAdornment: (
+              <FormControlLabel
+                control={
+                  <Checkbox value={searchAnd} onClick={handleSearchAndClick} />
+                }
+                label={<Typography fontSize={16}>All</Typography>}
+              />
+            ),
           }}
         />
       )}

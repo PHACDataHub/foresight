@@ -512,38 +512,40 @@ export const postRouter = createTRPCRouter({
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
         everything: z.boolean().optional(),
         threats: z.array(z.string()),
+        and: z.boolean().optional(),
       }),
     )
     .query(async ({ input }) => {
       const session = driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
+      const comp = input.and ? "all" : "any";
+
+      if (input.terms.length === 0) return [];
 
       try {
         const result = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
-        UNWIND $terms AS term 
         MATCH (c:Cluster)-[:DETECTED_THREAT]->(t:Threat)
           WHERE 
             (c.id =~ id_pattern AND t.text IN $threats) AND (
-              (toLower(c.title) CONTAINS term OR toLower(c.summary) CONTAINS term)
+              ${comp}(term in $terms WHERE toLower(c.title) CONTAINS term OR toLower(c.summary) CONTAINS term)
               OR EXISTS {
                 MATCH (c)<-[:IN_CLUSTER]-(a:Article)
-                  WHERE toLower(a.title) CONTAINS term OR toLower(a.content) CONTAINS term 
+                  WHERE ${comp}(term IN $terms WHERE toLower(a.title) CONTAINS term OR toLower(a.content) CONTAINS term)
               }
             )
         return c.id as id
         UNION
         WITH $period + '-\\d+' AS id_pattern
-        UNWIND $terms AS term 
         MATCH (a:Article)-[:IN_CLUSTER]->(c:Cluster)-[r:DETECTED_THREAT]->(t:Threat)
           WHERE
             c.id =~ id_pattern AND t.text IN $threats AND (
-              toLower(a.title) CONTAINS term OR toLower(a.content) CONTAINS term 
+              ${comp}(term IN $terms WHERE toLower(a.title) CONTAINS term OR toLower(a.content) CONTAINS term)
             )
         return a.id as id
         `,
-          { terms: input.terms, period, threats: input.threats },
+          { terms: input.terms, period, threats: input.threats},
         );
         return result.records.map((record) => {
           const id = record.get("id") as string;
