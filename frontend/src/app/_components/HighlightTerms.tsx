@@ -9,20 +9,14 @@ import Highlighter from "react-highlight-words";
 
 import { useDebounceCallback } from "usehooks-ts";
 import Autocomplete from "@mui/material/Autocomplete";
-import {
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Box, Checkbox, FormControlLabel, Typography } from "@mui/material";
 import { useStore } from "~/app/_store";
 import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 
 export default function HighlightTerms({
   messages,
 }: {
-  messages: { label: string; placeholder: string };
+  messages: { label: string; placeholder: string, includeAll: string };
 }) {
   const {
     searchTerms,
@@ -59,48 +53,46 @@ export default function HighlightTerms({
   }, [updateSearchAsYouType]);
 
   return (
-    <Autocomplete
-      className="min-w-[300px] max-w-[500px]"
-      sx={{ fontSize: 16 }}
-      freeSolo
-      fullWidth
-      options={[]}
-      value={searchTerms}
-      onChange={handleSearchChange}
-      onInputChange={handleSearchInputChange}
-      multiple
-      renderTags={(value, props) =>
-        value.map((option, index) => (
-          <Chip
-            sx={{ fontSize: 13, padding: "3px 4px 3px 4px" }}
-            label={option}
-            {...props({ index })}
-            key={`chip-${index}`}
+    <Box display="flex" flexDirection="column" alignItems="end">
+      <Autocomplete
+        className="min-w-[300px] max-w-[500px]"
+        sx={{ fontSize: 16 }}
+        freeSolo
+        fullWidth
+        options={[]}
+        value={searchTerms}
+        onChange={handleSearchChange}
+        onInputChange={handleSearchInputChange}
+        multiple
+        renderTags={(value, props) =>
+          value.map((option, index) => (
+            <Chip
+              sx={{ fontSize: 13, padding: "3px 4px 3px 4px" }}
+              label={option}
+              {...props({ index })}
+              key={`chip-${index}`}
+            />
+          ))
+        }
+        renderInput={(params) => (
+          <TextField
+            variant="outlined"
+            label={messages.label}
+            placeholder={messages.placeholder}
+            {...params}
+            InputLabelProps={{ sx: { fontSize: 16 } }}
+            InputProps={{
+              ...params.InputProps,
+              sx: { fontSize: 16 },
+            }}
           />
-        ))
-      }
-      renderInput={(params) => (
-        <TextField
-          variant="outlined"
-          label={messages.label}
-          placeholder={messages.placeholder}
-          {...params}
-          InputLabelProps={{ sx: { fontSize: 16 } }}
-          InputProps={{
-            ...params.InputProps,
-            sx: { fontSize: 16 },
-            endAdornment: (
-              <FormControlLabel
-                control={
-                  <Checkbox value={searchAnd} onClick={handleSearchAndClick} />
-                }
-                label={<Typography fontSize={16}>All</Typography>}
-              />
-            ),
-          }}
-        />
-      )}
-    />
+        )}
+      />
+      <FormControlLabel
+        control={<Checkbox value={searchAnd} onClick={handleSearchAndClick} />}
+        label={<Typography fontSize={16}>{messages.includeAll}</Typography>}
+      />
+    </Box>
   );
 }
 

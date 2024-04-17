@@ -13,7 +13,8 @@
     },
     "HighlightTerms": {
         "label": "Termes à souligner",
-        "placeholder": "Saisir les termes à souligner"
+        "placeholder": "Saisir les termes à souligner",
+        "includeAll": "Doit inclure tous les termes"
     },
     "HistoryChooser": {
         "label": "Durée",

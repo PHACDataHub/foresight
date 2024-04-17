@@ -13,7 +13,8 @@
     },
     "HighlightTerms": {
         "label": "Highlight terms",
-        "placeholder": "Enter terms to highlight"
+        "placeholder": "Enter terms to highlight",
+        "includeAll": "Must include all terms"
     },
     "HistoryChooser": {
         "label": "Time Span",
