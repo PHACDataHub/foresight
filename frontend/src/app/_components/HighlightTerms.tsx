@@ -53,9 +53,9 @@ export default function HighlightTerms({
   }, [updateSearchAsYouType]);
 
   return (
-    <Box display="flex" flexDirection="column">
+    <Box display="flex" className="space-x-2">
       <Autocomplete
-        className="min-w-[300px] max-w-[500px]"
+        className="min-w-[400px]"
         sx={{ fontSize: 16 }}
         freeSolo
         fullWidth
@@ -90,7 +90,7 @@ export default function HighlightTerms({
       />
       <FormControlLabel
         control={<Checkbox value={searchAnd} onClick={handleSearchAndClick} />}
-        label={<Typography fontSize={16}>{messages.includeAll}</Typography>}
+        label={<Typography fontSize={16}>All</Typography>}
       />
     </Box>
   );

@@ -38,7 +38,7 @@ export default async function LocaleDayLayout({
 
   return (
     <AppWrapper>
-      <div className="mt-[16px] flex items-center justify-between space-x-[10px] border-b pr-[30px]">
+      <div className="mt-[16px] flex items-center justify-between space-x-[10px] border-b pb-[16px] pr-[30px]">
         <div className="flex items-end space-x-[24px]  pl-[30px]">
           <Typography variant="h4" fontSize={24} fontWeight="medium">
             {t("title")}
