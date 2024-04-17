@@ -53,7 +53,7 @@ export default function HighlightTerms({
   }, [updateSearchAsYouType]);
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="end">
+    <Box display="flex" flexDirection="column">
       <Autocomplete
         className="min-w-[300px] max-w-[500px]"
         sx={{ fontSize: 16 }}

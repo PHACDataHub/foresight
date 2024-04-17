@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import Typography from "@mui/material/Typography";
 
 import AppWrapper from "~/app/_components/AppWrapper";
-import Graph from "~/app/_components/graph";
+import PanelInterface from "~/app/_components/PanelInterface";
 import HighlightTerms from "~/app/_components/HighlightTerms";
 import HistoryChooser from "~/app/_components/HistoryChooser";
 import TimeTravel from "~/app/_components/TimeTravel";
@@ -56,6 +56,7 @@ export default async function LocaleDayLayout({
               messages={{
                 label: msgHighlightTerms("label"),
                 placeholder: msgHighlightTerms("placeholder"),
+                includeAll: msgHighlightTerms("includeAll")
               }}
             />
           </div>
@@ -103,7 +104,7 @@ export default async function LocaleDayLayout({
         <NextIntlClientProvider
           messages={typeof messages.Graph === "object" ? messages.Graph : {}}
         >
-          <Graph />
+          <PanelInterface />
         </NextIntlClientProvider>
       </div>
       {children}
