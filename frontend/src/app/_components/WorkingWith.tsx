@@ -4,10 +4,13 @@ import { useMemo } from "react";
 import Typography from "@mui/material/Typography";
 import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
+import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 
 export default function WorkingWith() {
   const { articleCount, searchMatches } = useStore();
   const t = useTranslations();
+  const terms = useSearchTerms();
+
   const articleMsg = useMemo(() => {
     if (articleCount === 0) return <></>;
     return (
@@ -21,7 +24,7 @@ export default function WorkingWith() {
   }, [articleCount, t]);
 
   const highlightMsg = useMemo(() => {
-    if (!searchMatches || searchMatches.length === 0) return <></>;
+    if (terms.length === 0) return <></>;
     return (
       <Typography variant="body1" fontSize={16}>
         {t.rich("items", {
@@ -30,7 +33,7 @@ export default function WorkingWith() {
         })}
       </Typography>
     );
-  }, [searchMatches, t]);
+  }, [searchMatches.length, t, terms.length]);
 
   return (
     <>

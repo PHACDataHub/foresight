@@ -37,7 +37,7 @@ export default function ClusterNodeList({
         <div
           key={`clusterList_${i}`}
           style={
-            searchMatches.includes(c.getData("id"))
+            c && searchMatches.includes(c.getData("id"))
               ? { padding: 4, backgroundColor: "rgba(255,255,0,0.2)" }
               : {}
           }
