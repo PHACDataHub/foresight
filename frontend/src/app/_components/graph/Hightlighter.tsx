@@ -84,8 +84,8 @@ export default function Hightlighter() {
       // void highlights.current.nodesToHighlight.addClass("highlighted");
       void highlights.current.nodesToDim.addClass("dimmed", 250);
     };
-    ogma.events.on("mouseover", onMouseOver);
-    ogma.events.on("mouseout", clearHighlight);
+    // ogma.events.on("mouseover", onMouseOver);
+    // ogma.events.on("mouseout", clearHighlight);
     return () => {
       ogma.events.off(onMouseOver);
       ogma.events.off(clearHighlight);

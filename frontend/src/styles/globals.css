@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 
+@keyframes show {
+  100% {
+    transform: none;
+  }
+}
+
 #def-appTop {
   border-bottom: 1px solid #000;
   height: 80px;

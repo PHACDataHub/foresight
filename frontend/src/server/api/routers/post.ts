@@ -3,24 +3,28 @@ import neo4j, {
   type QueryResult,
   type Relationship,
 } from "neo4j-driver";
-import OgmaLib, {
-  type Neo4JEdgeData,
-  type Neo4JNodeData,
-  type RawEdge,
-  type RawGraph,
-  type RawNode,
-} from "@linkurious/ogma";
+import { type RawEdge, type RawNode } from "@linkurious/ogma";
 import { z } from "zod";
 
 import { env } from "~/env";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
+const pixel = {
+  article: { min: 2, max: 10 },
+  cluster: { min: 10, max: 25 },
+  hr: { min: 5, max: 15 },
+  threat: { min: 5, max: 15 },
+};
+
 interface RawGraphInterface {
   nodes: RawNode[];
   edges: RawEdge[];
   edge_index: Record<string, boolean>;
-  get: () => { nodes: RawNode<AllDataTypes>[]; edges: RawEdge[] };
+  get: (opts?: { nodes?: RawNode<AllDataTypes>[]; edges?: RawEdge[] }) => {
+    nodes: RawNode<AllDataTypes>[];
+    edges: RawEdge[];
+  };
 }
 
 const ans = `apoc.convert.fromJsonMap(
@@ -64,15 +68,15 @@ const getPeriod = ({ day, history }: { day: number; history?: number }) => {
 };
 
 const createGraph = () => {
-  const nodes: RawNode[] = [];
+  const nodes: RawNode<AllDataTypes>[] = [];
   const edges: RawEdge[] = [];
   const rawGraph: RawGraphInterface = {
     nodes,
     edges,
     edge_index: {},
-    get: () => ({
-      nodes,
-      edges,
+    get: (opts) => ({
+      nodes: nodes.concat(opts?.nodes ?? []),
+      edges: edges.concat(opts?.edges ?? []),
     }),
   };
   return rawGraph;
@@ -109,37 +113,41 @@ const parseData = (
   obj: Neo4JTransferRecord,
   rawGraph: RawGraphInterface,
   include_articles: boolean | undefined,
+  cb: (a: object) => object = (a) => a,
 ) => {
   const id = `${obj.nodeid.toNumber()}`;
   rawGraph.nodes.push({
     id,
-    data: convertNeo4jTypes(obj),
+    data: cb(convertNeo4jTypes(obj)),
   });
   addEdges(obj._rels, rawGraph);
 
   if (obj.type === "hierarchicalcluster") {
     obj._clusters.forEach((cluster) => {
-      parseData(cluster, rawGraph, include_articles);
+      parseData(cluster, rawGraph, include_articles, cb);
     });
   } else if (obj.type === "cluster") {
     if (include_articles)
       obj._articles.forEach((articles) =>
-        parseData(articles, rawGraph, include_articles),
+        parseData(articles, rawGraph, include_articles, cb),
       );
   } else if (obj.type === "article") {
     addEdges(obj._similar, rawGraph);
   }
 };
 
-const funcTimer = (msg: string) => {
-  const width = 80;
+const funcTimer = (
+  msg: string,
+  params?: Record<
+    string,
+    string | string[] | number | null | undefined | boolean
+  >,
+) => {
+  const width = 120;
   const start = new Date();
   let marked = start;
-  const prefix = `[${start.toLocaleTimeString()}]`;
-  const label = `${prefix} ${msg}`;
-  console.log(`${label} ${"#".repeat(width - label.length - 1)}`);
 
-  return {
+  const i = {
     measure: (title: string, mark?: boolean) => {
       const end = new Date();
       const elapsed = (end.getTime() - marked.getTime()).toLocaleString(
@@ -153,14 +161,18 @@ const funcTimer = (msg: string) => {
       );
       const prefix = `[${end.toLocaleTimeString()}] ${elapsed}`;
       const label = `${prefix} ${title}`;
-      console.log(`${label}${" ".repeat(width - label.length - 1)}#`);
+      console.log(
+        `${label}${" ".repeat(Math.max(0, width - label.length - 1))}#`,
+      );
       if (mark) marked = new Date();
     },
     msg: (title: string, mark?: boolean) => {
       const end = new Date();
       const prefix = `[${end.toLocaleTimeString()}]`;
       const label = `${prefix} ${title}`;
-      console.log(`${label}${" ".repeat(width - label.length - 1)}#`);
+      console.log(
+        `${label}${" ".repeat(Math.max(0, width - label.length - 1))}#`,
+      );
       if (mark) marked = new Date();
     },
     payload: (data: unknown[], mark?: boolean) => {
@@ -176,7 +188,9 @@ const funcTimer = (msg: string) => {
         },
       );
       const label = `${prefix} PAYLOAD: ${payload}`;
-      console.log(`${label}${" ".repeat(width - label.length - 1)}#`);
+      console.log(
+        `${label}${" ".repeat(Math.max(0, width - label.length - 1))}#`,
+      );
       if (mark) marked = new Date();
     },
     mark: () => {
@@ -194,9 +208,21 @@ const funcTimer = (msg: string) => {
         },
       );
       const label = `[${end.toLocaleTimeString()}] Total time: ${elapsed}`;
-      console.log(`${label} ${"#".repeat(width - label.length - 1)}`);
+      console.log(
+        `${label} ${"#".repeat(Math.max(0, width - label.length - 1))}`,
+      );
     },
   };
+
+  const prefix = `[${start.toLocaleTimeString()}]`;
+  const label = `${prefix} ${msg}`;
+  console.log(`${label} ${"#".repeat(Math.max(0, width - label.length - 1))}`);
+  if (params)
+    JSON.stringify(params, null, 2)
+      .split("\n")
+      .forEach((m) => i.msg(m));
+
+  return i;
 };
 
 export type Neo4JNumber = { low: number; high: number };
@@ -255,6 +281,7 @@ export interface HierarchicalCluster {
   clusters: number[];
   id: string;
   name: string;
+  radius: number;
 }
 
 export interface HierarchicalClusterRecord
@@ -266,6 +293,7 @@ export interface Threat {
   type: "threat";
   title: string;
   score?: number;
+  radius: number;
 }
 
 export interface ThreatRecord extends Omit<Threat, "title"> {
@@ -299,6 +327,7 @@ export interface Cluster {
   summary: string;
   title: string;
   topic_id?: string;
+  radius: number;
 }
 
 export interface ClusterRecord
@@ -334,6 +363,7 @@ export type Article = {
   title: string;
   data__incomplete__?: boolean;
   cluster_id: string;
+  radius: number;
 };
 
 export interface ArticleRecord
@@ -388,112 +418,75 @@ const convertNeo4jTypes = (obj: Neo4JTransferRecord) => {
   );
 };
 
-const translateGraph = (
-  graph: RawGraph<
-    Neo4JNodeData<Record<string, unknown>>,
-    Neo4JEdgeData<Record<string, unknown>>
-  >,
-  nodeTranslate: (obj: RawNode<AllDataTypes>) => RawNode<AllDataTypes> = (
-    obj,
-  ) => obj,
-): RawGraph<AllDataTypes, Neo4JEdgeData<Record<string, unknown>>> => {
-  const g = graph as unknown as RawGraph<
-    Neo4JNodeData<AllRecordTypes>,
-    Neo4JEdgeData<Record<string, unknown>>
-  >;
-  return {
-    nodes: g.nodes
-      .map((n) => {
-        if (n.data?.neo4jLabels.includes("Threat")) {
-          const source = n.data?.neo4jProperties as ThreatRecord;
-          const data: Threat = {
-            type: "threat",
-            title: source.text,
-            score: source.score,
-          };
-          return { ...n, data };
-        } else if (n.data?.neo4jLabels.includes("Cluster")) {
-          const source = n.data?.neo4jProperties as ClusterRecord;
-          const data: Cluster = {
-            type: "cluster",
-            answers: JSON.parse(source.answers) as Record<string, string>,
-            countries: source.countries,
-            id: source.id,
-            keywords: source.keywords,
-            labels: source.labels,
-            locations: JSON.parse(
-              source.locations ?? "[]",
-            ) as ClusterLocation[],
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            // location: JSON.parse(source.locations ?? "[]").filter(
-            //   (l: { latitude?: number; longitude?: number }) =>
-            //     typeof l.latitude === "number" &&
-            //     typeof l.longitude === "number",
-            //   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            // )[0],
-            // location: JSON.parse(
-            //   source.locations ?? "[]",
-            // )[0],
-            name: source.name,
-            nr_articles: parseInt(source.nr_articles),
-            start_date: new Date(
-              source.start_date.year.low,
-              source.start_date.month.low - 1,
-              source.start_date.day.low,
-            ),
-            representative_docs: source.representative_docs.map((n) => n.low),
-            summary: source.summary,
-            title: source.title,
-            topic_id: source.topic_id,
-          };
-          return { ...n, data };
-        } else if (n.data?.neo4jLabels.includes("HierarchicalCluster")) {
-          const source = n.data?.neo4jProperties as HierarchicalClusterRecord;
-          const data: HierarchicalCluster = {
-            type: "hierarchicalcluster",
-            clusters: source.clusters.map((n) => n.low),
-            id: source.id,
-            name: source.name,
-          };
-          return { ...n, data };
-        } else if (n.data?.neo4jLabels.includes("Article")) {
-          const source = n.data?.neo4jProperties as ArticleRecord;
-          const data: Article = {
-            type: "article",
-            outlier: n.data.neo4jLabels.includes("Outlier"),
-            content: source.content,
-            factiva_file_name: source.factiva_file_name,
-            factiva_folder: source.factiva_folder,
-            gphin_score: source.gphin_score,
-            gphin_state: source.gphin_state,
-            id: parseInt(source.id),
-            prob_size: source.prob_size,
-            probability: source.probability,
-            pub_date: new Date(
-              source.pub_date.year.low,
-              source.pub_date.month.low - 1,
-              source.pub_date.day.low,
-              5,
-            ),
-            pub_name: source.pub_name,
-            pub_time: new Date(source.pub_time),
-            title: source.title,
-            cluster_id: "",
-          };
-          return { ...n, data };
-        } else {
-          throw new Error("Unsupported node type!");
-        }
-      })
-      .map((n) => nodeTranslate(n)),
-    edges: g.edges,
-  };
-};
-
 const driver = neo4j.driver(
   env.NEO4J_URL,
   neo4j.auth.basic(env.NEO4J_USERNAME, env.NEO4J_PASSWORD),
 );
+
+const getArticles = async (opts: { clusters: string[] }) => {
+  const session = driver.session();
+  try {
+    const t = funcTimer("getArticles", opts);
+    const minmax = await session.run(
+      `
+    MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article)
+    WHERE
+      c.id IN $clusters
+    RETURN log(min(article.prob_size)) as article_min, log(max(article.prob_size)) as article_max
+    `,
+      { clusters: opts.clusters },
+    );
+
+    const article_min = minmax.records.at(0)?.get("article_min") as number;
+    const article_max = minmax.records.at(0)?.get("article_max") as number;
+
+    const result2 = await session.run(
+      `
+    MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article)
+    WHERE c.id IN $clusters
+    RETURN article {
+      nodeid: id(article),
+      type: "article",
+      cluster_id: c.id,
+      _rels: r,
+      _similar: [(article)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c) | r_sim],
+      .id,
+      outlier: article:Outlier,
+      .prob_size,
+      .pub_date,
+      .title,
+      radius: (
+        ($max_pixel - $min_pixel) *
+        (
+          log(article.prob_size) - $article_min
+        ) /
+          ($article_max - $article_min)
+      ) + $min_pixel,
+      data__incomplete__: true
+    }
+  `,
+      {
+        clusters: opts.clusters,
+        article_min,
+        article_max,
+        min_pixel: pixel.article.min,
+        max_pixel: pixel.article.max,
+      },
+    );
+    t.measure("Neo4J query completed", true);
+
+    const rawGraph = createGraph();
+    result2.records.forEach((record) => {
+      const data = record.get("article") as Neo4JTransferRecord;
+      parseData(data, rawGraph, false);
+    });
+    t.measure("Graph translation complete.");
+    t.end();
+    return rawGraph.get();
+  } finally {
+    await session.close();
+  }
+};
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
@@ -523,6 +516,7 @@ export const postRouter = createTRPCRouter({
       if (input.terms.length === 0) return [];
 
       try {
+        const t = funcTimer("nodesWithTerms", input);
         const result = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -545,12 +539,16 @@ export const postRouter = createTRPCRouter({
             )
         return a.id as id
         `,
-          { terms: input.terms, period, threats: input.threats},
+          { terms: input.terms, period, threats: input.threats },
         );
-        return result.records.map((record) => {
+        t.measure("Neo4J query completed", true);
+        const ret = result.records.map((record) => {
           const id = record.get("id") as string;
           return `${id}`;
         });
+        t.measure("Mapping complete.");
+        t.end();
+        return ret;
       } finally {
         await session.close();
       }
@@ -584,7 +582,20 @@ export const postRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const session = driver.session();
       try {
-        const t = funcTimer("cluster NEW Query");
+        const t = funcTimer("cluster", input);
+        const minmax = await session.run(
+          `
+        MATCH (c:Cluster {id: $id})<-[r:IN_CLUSTER]-(article:Article)
+        RETURN
+          log(min(article.prob_size)) as article_min,
+          log(max(article.prob_size)) as article_max
+        `,
+          { id: input.id },
+        );
+
+        const article_min = minmax.records.at(0)?.get("article_min") as number;
+        const article_max = minmax.records.at(0)?.get("article_max") as number;
+
         const result = await session.run(
           `
           MATCH (cluster:Cluster {id: $id})
@@ -614,6 +625,13 @@ export const postRouter = createTRPCRouter({
               outlier: article:Outlier,
               .prob_size,
               .title,
+              radius: (
+                ($max_pixel - $min_pixel) *
+                (
+                  log(article.prob_size) - $article_min
+                ) /
+                  ($article_max - $article_min)
+              ) + $min_pixel,
               .content,
               .factiva_file_name,
               .factiva_folder,
@@ -626,17 +644,22 @@ export const postRouter = createTRPCRouter({
             }]
           }
     `,
-          { id: input.id },
+          {
+            id: input.id,
+            article_min,
+            article_max,
+            min_pixel: pixel.article.min,
+            max_pixel: pixel.article.max,
+          },
         );
-        t.measure("Neo4J query completed");
-        t.payload([result.records], true);
+        t.measure("Neo4J query completed", true);
         const rawGraph = createGraph();
         result.records.forEach((record) => {
           const data = record.get("cluster") as Neo4JTransferRecord;
           parseData(data, rawGraph, true);
         });
         t.measure("Graph translation complete.");
-        t.payload([rawGraph]);
+        t.end();
         return rawGraph;
       } finally {
         await session.close();
@@ -653,7 +676,7 @@ export const postRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const session = driver.session();
       try {
-        const t = funcTimer("getArticle NEW Query");
+        const t = funcTimer("getArticle", input);
         const result2 = await session.run(
           `
         MATCH (article:Article { id: $article_id })
@@ -678,8 +701,7 @@ export const postRouter = createTRPCRouter({
       `,
           { article_id: input.article_id, cluster_id: input.cluster_id },
         );
-        t.measure("Neo4J query completed");
-        t.payload([result2.records], true);
+        t.measure("Neo4J query completed", true);
 
         const rawGraph = createGraph();
         result2.records.forEach((record) => {
@@ -687,7 +709,6 @@ export const postRouter = createTRPCRouter({
           parseData(data, rawGraph, false);
         });
         t.measure("Graph translation complete.");
-        t.payload([rawGraph]);
         t.end();
         return rawGraph.get();
       } finally {
@@ -698,75 +719,11 @@ export const postRouter = createTRPCRouter({
   getArticles: publicProcedure
     .input(
       z.object({
-        day: z.number().gte(1).lte(62),
-        history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
-        threats: z.array(z.string()),
+        clusters: z.array(z.string()),
       }),
     )
     .mutation(async ({ input }) => {
-      const session = driver.session();
-      const period = getPeriod({ day: input.day, history: input.history });
-      try {
-        const t = funcTimer("getArticles NEW Query");
-        const result2 = await session.run(
-          `
-        WITH $period + '-\\d+' AS id_pattern
-        MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article)
-        WHERE
-          c.id =~ id_pattern AND
-          EXISTS {
-            (c)-[:DETECTED_THREAT]->(t:Threat WHERE t.text IN $threats)
-          }
-        RETURN article {
-          nodeid: id(article),
-          type: "article",
-          cluster_id: c.id,
-          _rels: r,
-          _similar: [(article)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c) | r_sim],
-          .id,
-          outlier: article:Outlier,
-          .prob_size,
-          .title,
-          data__incomplete__: true
-        }
-      `,
-          { period, threats: input.threats },
-        );
-        t.measure("Neo4J query completed");
-        t.payload([result2.records], true);
-
-        const rawGraph = createGraph();
-        result2.records.forEach((record) => {
-          const data = record.get("article") as Neo4JTransferRecord;
-          parseData(data, rawGraph, false);
-        });
-        t.measure("Graph translation complete.");
-        t.payload([rawGraph]);
-        t.end();
-        return rawGraph.get();
-      } finally {
-        await session.close();
-      }
-    }),
-
-  expandCluster: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      const session = driver.session();
-      try {
-        const result = await session.run(
-          `
-          MATCH (c:Cluster {id: $id})<-[r:IN_CLUSTER]-(a:Article)
-            WITH c, r, a
-              OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
-          RETURN c, r, a, r_sim
-    `,
-          { id: input.id },
-        );
-        return translateGraph(await OgmaLib.parse.neo4j(result));
-      } finally {
-        await session.close();
-      }
+      return await getArticles({ clusters: input.clusters });
     }),
 
   question: publicProcedure
@@ -797,33 +754,6 @@ export const postRouter = createTRPCRouter({
         );
         const answer = result.records.at(0)?.get("answer") as string[];
         return answer;
-      } finally {
-        await session.close();
-      }
-    }),
-
-  articles: publicProcedure
-    .input(
-      z.object({
-        cluster_id: z.string(),
-      }),
-    )
-    .query(async ({ input }) => {
-      const session = driver.session();
-
-      try {
-        const result = await session.run(
-          `
-          MATCH (a:Article)-[r:IN_CLUSTER]->(c:Cluster {id: $cluster_id})
-          WITH c, r, a
-            OPTIONAL MATCH (a)-[r_sim:SIMILAR_TO]-(oa)-[:IN_CLUSTER]-(c)
-          RETURN 
-            a, r_sim
-        `,
-          { cluster_id: input.cluster_id },
-        );
-
-        return translateGraph(await OgmaLib.parse.neo4j(result));
       } finally {
         await session.close();
       }
@@ -877,23 +807,90 @@ export const postRouter = createTRPCRouter({
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
-        const t = funcTimer("hierarchicalClusters NEW Query");
+        const t = funcTimer("hierarchicalClusters", input);
         const threats = await session.run(
           `
           WITH $period + '-\\d+' AS id_pattern
           MATCH (threat:Threat WHERE threat.text IN $threats)<-[r:DETECTED_THREAT]-(c:Cluster WHERE c.id =~ id_pattern)
-          with threat, collect(r) as rels
+          WITH collect(threat) as threats, collect(r) as rels, log(MIN(threat.score)) as min, log(MAX(threat.score)) as max
+          UNWIND threats as threat
           return threat {
             nodeid: id(threat),
             type: "threat",
             _rels: rels,
             title: threat.text,
-            score: threat.score
+            score: threat.score,
+            radius: CASE threat.score IS NOT NULL 
+              WHEN True THEN 
+                (
+                  ($max_pixel - $min_pixel) *
+                  (log(threat.score) - min) / (max - min)
+                ) + $min_pixel
+              ELSE
+                $min_pixel
+              END
           }
           `,
+          {
+            period,
+            threats: input.threats,
+            max_pixel: pixel.threat.max,
+            min_pixel: pixel.threat.min,
+          },
+        );
+
+        const minmax = await session.run(
+          `
+          WITH $period + '-\\d+' AS id_pattern
+          MATCH (hr:HierarchicalCluster)-[r:CONTAINS*..]->(c:Cluster)
+          WHERE
+            c.id =~ id_pattern AND
+            EXISTS {
+              (c)-[:DETECTED_THREAT]->(t:Threat WHERE t.text IN $threats)
+            }
+          return
+            log(MIN(c.nr_articles)) as cluster_min,
+            log(MAX(c.nr_articles)) as cluster_max,
+            log(MIN(SIZE(hr.clusters))) as hr_min,
+            log(MAX(SIZE(hr.clusters))) as hr_max
+        `,
           { period, threats: input.threats },
         );
 
+        const cluster_min = minmax.records.at(0)?.get("cluster_min") as number;
+        const cluster_max = minmax.records.at(0)?.get("cluster_max") as number;
+        const hr_min = minmax.records.at(0)?.get("hr_min") as number;
+        const hr_max = minmax.records.at(0)?.get("hr_max") as number;
+
+        const stddev_query = await session.run(
+          `
+        WITH $period + '-\\d+' AS id_pattern          
+        MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article)
+        WHERE
+          c.id =~ id_pattern AND
+          EXISTS {
+            (c)-[:DETECTED_THREAT]->(t:Threat WHERE t.text IN $threats)
+          }
+        WITH c.id as id, article.pub_date as d, count(*) as counts
+          RETURN id, stDev(counts) as std;    
+        `,
+          { period, threats: input.threats },
+        );
+        let stddev_min: number | null = null;
+        let stddev_max: number | null = null;
+        const stddev = Object.fromEntries(
+          stddev_query.records.map((r) => {
+            stddev_min =
+              typeof stddev_min !== "number"
+                ? (r.get("std") as number)
+                : Math.min(stddev_min, r.get("std") as number);
+            stddev_max =
+              typeof stddev_max !== "number"
+                ? (r.get("std") as number)
+                : Math.max(stddev_max, r.get("std") as number);
+            return [r.get("id") as string, r.get("std") as number];
+          }),
+        );
         const result2 = await session.run(
           `
           WITH $period + '-\\d+' AS id_pattern
@@ -903,13 +900,23 @@ export const postRouter = createTRPCRouter({
             EXISTS {
               (c)-[:DETECTED_THREAT]->(t:Threat WHERE t.text IN $threats)
             }
-          WITH hr, collect(r) as rels, collect(c) as clusters
+          WITH
+            hr,
+            collect(r) as rels,
+            collect(c) as clusters
           RETURN hr {
             nodeid: id(hr),
             type: "hierarchicalcluster",
             .clusters,
             .id,
             .name,
+            radius: (
+              ($max_hr_pixel - $min_hr_pixel) *
+              (
+                log(SIZE(hr.clusters)) - $hr_min
+              ) /
+                ($hr_max - $hr_min)
+            ) + $min_hr_pixel,
             _rels: rels,
             _clusters: [(hr)-[:CONTAINS]->(cluster:Cluster WHERE cluster IN clusters) | cluster {
               nodeid: id(cluster),
@@ -926,6 +933,13 @@ export const postRouter = createTRPCRouter({
               representative_docs: cluster.representative_docs,
               summary: cluster.summary,
               title: cluster.title,
+              radius: (
+                  ($max_pixel - $min_pixel) *
+                  (
+                    log(cluster.nr_articles) - $cluster_min
+                  ) /
+                    ($cluster_max - $cluster_min)
+                ) + $min_pixel,
               topic_id: cluster.topic_id${
                 input.everything
                   ? `,
@@ -945,25 +959,49 @@ export const postRouter = createTRPCRouter({
             }]
           }
         `,
-          { period, threats: input.threats },
+          {
+            period,
+            threats: input.threats,
+            max_pixel: pixel.cluster.max,
+            min_pixel: pixel.cluster.min,
+            max_hr_pixel: pixel.hr.max,
+            min_hr_pixel: pixel.hr.min,
+            cluster_min,
+            cluster_max,
+            hr_min,
+            hr_max,
+          },
         );
-        t.measure("Neo4J query completed");
-        t.payload([threats.records, result2.records], true);
+        t.measure("Neo4J query completed", true);
 
         const rawGraph = createGraph();
 
+        const clusters: string[] = [];
         result2.records.forEach((record) => {
           const data = record.get("hr") as Neo4JTransferRecord;
-          parseData(data, rawGraph, input.everything);
+          if (data.type === "hierarchicalcluster") {
+            clusters.push(...data._clusters.map((c) => c.id as string));
+          }
+          parseData(data, rawGraph, input.everything, (o) => {
+            if ("type" in o && o.type === "cluster" && "id" in o) {
+              const cluster_id = o.id as string;
+              const stdev = stddev[cluster_id]!;
+              if (stdev) {
+                return { ...o, stdev, stddev_min, stddev_max };
+              }
+            }
+            return o;
+          });
         });
+        const articles = await getArticles({ clusters });
+
         threats.records.forEach((record) => {
           const data = record.get("threat") as Neo4JTransferRecord;
           parseData(data, rawGraph, input.everything);
         });
         t.measure("Graph translation complete.");
-        t.payload([rawGraph]);
         t.end();
-        return rawGraph.get();
+        return rawGraph.get(articles);
       } finally {
         await session.close();
       }

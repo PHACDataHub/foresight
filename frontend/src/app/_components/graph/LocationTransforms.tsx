@@ -1,13 +1,17 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-// import L from "leaflet";
-
-import { type GeoClustering } from "@linkurious/ogma";
-import { NeighborGeneration, useOgma } from "@linkurious/ogma-react";
+import type OgmaLib from "@linkurious/ogma";
+import {
+  type GeoClustering,
+  type InputTarget,
+} from "@linkurious/ogma";
+import { NeighborGeneration, Ogma, useOgma } from "@linkurious/ogma-react";
 
 import L, { type Map } from "leaflet";
 import { useStore } from "~/app/_store";
 import { getNodeData, isLocationValid } from "~/app/_utils/graph";
+import Styles from "./Styles";
+import LayoutService from "./Layout";
 
 type GoogleMutant = {
   googleMutant: (opts: { type: string }) => {
@@ -17,7 +21,14 @@ type GoogleMutant = {
 };
 
 export default function LocationTransforms() {
-  const { geoMode, refresh, mapMode } = useStore();
+  const { mapMode } = useStore();
+
+  const ogmaHoverContainerRef = useRef<HTMLDivElement | null>(null);
+  const ogmaHoverRef = useRef<OgmaLib | null>(null);
+
+  const geoClustering = useRef<GeoClustering<unknown, unknown> | null>(null);
+  const [enable, setEnable] = useState(false);
+
   const ogma = useOgma();
 
   const tiles = useMemo(() => {
@@ -27,73 +38,124 @@ export default function LocationTransforms() {
     });
   }, [mapMode]);
 
+  /* Prepare geo clustering */
   useEffect(() => {
-    const ogmaUpdate = () => {
-      if (mapMode === "open" || !geoMode) return;
-      const map = ogma.geo.getMap();
-      if (map) tiles.addTo(map);
-    };
-    if (ogma.geo.enabled()) ogmaUpdate();
-
-    ogma.events.on("geoReady", ogmaUpdate);
-
-    return () => {
-      ogma.events.off(ogmaUpdate);
-      const map = ogma.geo.getMap();
-      if (map) tiles.removeFrom(map);
-    };
-  }, [geoMode, mapMode, ogma, tiles]);
-
-  useEffect(() => {
-    const enableGeoMode = async () => {
-      await ogma.geo.enable({
-        longitudePath: "location.longitude",
-        latitudePath: "location.latitude",
-        minZoomLevel: 2,
-        maxZoomLevel: 10,
-        sizeRatio: 0.8,
-      });
-    };
-    const disableGeoMode = async (t: GeoClustering<unknown, unknown>) => {
-      await t.disable();
-      await t.destroy();
-      await ogma.geo.disable();
-      refresh();
-    };
-    if (geoMode) {
-      void enableGeoMode();
-      const t = ogma.transformations.addGeoClustering({
-        enabled: true,
-        radius: 100,
-        nodeGenerator: (nodes) => {
-          const n = nodes.get(0);
-          const data = getNodeData(n);
-          if (!data) return null;
-          if (nodes.size === 1)
-            return {
-              data: {
-                ...data,
-              },
-            };
+    geoClustering.current = ogma.transformations.addGeoClustering({
+      enabled: false,
+      radius: 100,
+      nodeGenerator: (nodes) => {
+        const n = nodes.get(0);
+        const data = getNodeData(n);
+        if (!data) return null;
+        if (nodes.size === 1)
           return {
             data: {
               ...data,
-              location_generated: false,
             },
           };
-        },
-      });
+        return {
+          data: {
+            ...data,
+            location_generated: false,
+          },
+        };
+      },
+    });
+    return () => {
+      if (geoClustering.current) {
+        void geoClustering.current.disable();
+        void geoClustering.current.destroy();
+      }
+    };
+  }, [ogma.transformations]);
 
-      return () => {
-        void disableGeoMode(t);
-      };
-    }
-  }, [geoMode, ogma, refresh]);
+  /* Activate geo clustering and neighbour generation */
+  useEffect(() => {
+    const handleGeoModeEnabled = () => {
+      setEnable(true);
+      void geoClustering.current?.enable();
+    };
+    const handleGeoModeDisabled = () => {
+      setEnable(false);
+      void geoClustering.current?.disable();
+    };
+    const handleGeoReady = () => {
+      if (mapMode === "open") return;
+      const map = ogma.geo.getMap();
+      if (map) tiles.addTo(map);
+    };
+
+    ogma.events.on("geoReady", handleGeoReady);
+    ogma.events.on("geoEnabled", handleGeoModeEnabled);
+    ogma.events.on("geoDisabled", handleGeoModeDisabled);
+
+    if (ogma.geo.enabled()) handleGeoReady();
+
+    return () => {
+      ogma.events.off(handleGeoModeEnabled);
+      ogma.events.off(handleGeoModeDisabled);
+      ogma.events.off(handleGeoReady);
+      const map = ogma.geo.getMap();
+      if (map) tiles.removeFrom(map);
+    };
+  }, [mapMode, ogma, tiles]);
+
+  /* Bind events related to clustered hover action */
+  useEffect(() => {
+    const handleHideHover = () => {
+      ogmaHoverContainerRef.current?.classList.add("hidden");
+    };
+    const handleMouseOver = async ({
+      target,
+    }: {
+      target: InputTarget<unknown, unknown>;
+    }) => {
+      if (
+        !target ||
+        !target.isNode ||
+        !target.isVirtual() ||
+        !ogmaHoverContainerRef.current ||
+        !ogmaHoverRef.current
+      )
+        return;
+      const subNodes = target.getSubNodes()!;
+      if (subNodes?.size <= 1) {
+        ogmaHoverContainerRef.current?.classList.add("hidden");
+        return;
+      }
+      const subEdges = subNodes?.getAdjacentEdges({
+        filter: "all",
+        bothExtremities: true,
+      });
+      ogmaHoverContainerRef.current.classList.remove("hidden");
+      if (subNodes) {
+        const { x, y } = target.getPositionOnScreen();
+        ogmaHoverContainerRef.current.style.left = `${x + 50}px`;
+        ogmaHoverContainerRef.current.style.top = `${y}px`;
+        await ogmaHoverRef.current.setGraph({
+          nodes: subNodes.toJSON(),
+          edges: subEdges.toJSON(),
+        });
+        await ogmaHoverRef.current.layouts.force({
+          gpu: true,
+          locate: true,
+          margin: 50,
+          duration: 0,
+        });
+      }
+    };
+    ogma.events
+      .on("mouseover", handleMouseOver)
+      .on(["click", "dragStart", "viewChanged"], handleHideHover);
+    return () => {
+      ogma.events.off(handleMouseOver).off(handleHideHover);
+    };
+  }, [ogma.events]);
 
   return (
     <>
       <NeighborGeneration
-        enabled={geoMode}
+        enabled={enable}
         selector={(n) => {
           const d = getNodeData(n);
           return (
@@ -124,6 +186,19 @@ export default function LocationTransforms() {
           };
         }}
       />
+      <div ref={ogmaHoverContainerRef} className="hoverogma hidden">
+        <Ogma
+          ref={ogmaHoverRef}
+          options={{
+            width: 150,
+            height: 150,
+            backgroundColor: "rgba(250,250,250,0.75)",
+          }}
+        >
+          <Styles />
+          <LayoutService hover={true} />
+        </Ogma>
+      </div>
     </>
   );
 }

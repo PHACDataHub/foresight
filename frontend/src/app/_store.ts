@@ -1,15 +1,12 @@
 import { create } from "zustand";
 import {
   type Neo4JEdgeData,
-  type NodeList,
   type Node as OgmaNode,
   type RawGraph,
 } from "@linkurious/ogma";
 
-import type OgmaLib from "@linkurious/ogma";
-
 import { type ScaleLinear } from "d3";
-import { type AllDataTypes, type Cluster } from "~/server/api/routers/post";
+import { type AllDataTypes } from "~/server/api/routers/post";
 
 const defaultThreats = [
   "Outbreaks of known infectious diseases",
@@ -45,9 +42,6 @@ export interface ForesightStore {
   setLayoutBusy: (layout: LayoutModes) => void;
   setLayoutNotBusy: (layout: LayoutModes) => void;
 
-  ogma: OgmaLib | null;
-  setOgma: (ogma: OgmaLib | null) => void;
-
   mapMode: "open" | "roadmap" | "satellite" | "terrain" | "hybrid";
   setMapMode: (
     mapMode: "open" | "roadmap" | "satellite" | "terrain" | "hybrid",
@@ -57,6 +51,9 @@ export interface ForesightStore {
 
   rodMode: boolean;
   toggleRodMode: () => void;
+
+  appError: string;
+  registerError: (appError: string) => void;
 
   expandedClusters: string[];
   setExpandedClusters: (expandedClusters: string[]) => void;
@@ -125,8 +122,6 @@ export interface ForesightStore {
   setSearchMatches: (searchMatches: string[]) => void;
   searchAnd: boolean;
   setSearchAnd: (searchAnd: boolean) => void;
-  clusters?: NodeList<Cluster>;
-  setClusters: (clusters?: NodeList<Cluster>) => void;
   // TODO: refactor open node madness
   openNode?: string;
   setOpenNode: (locateNode?: string) => void;
@@ -135,8 +130,6 @@ export interface ForesightStore {
   toggleTreeDirection: () => void;
   layout: LayoutModes;
   setLayout: (layout: LayoutModes) => void;
-  geoMode: boolean;
-  setGeoMode: (geoMode: boolean) => void;
   threats: string[];
   setThreats: (threats: string[] | null) => void;
 }
@@ -155,12 +148,12 @@ export const useStore = create<ForesightStore>((set) => ({
   feature_GroupArticleBy: false,
   setFeature_GroupArticleBy: (feature_GroupArticleBy) =>
     set({ feature_GroupArticleBy }),
-  ogma: null,
-  setOgma: (ogma) => set({ ogma }),
   rodMode: false,
   mapMode: "roadmap",
   setMapMode: (mapMode) => set({ mapMode }),
   toggleRodMode: () => set((state) => ({ rodMode: !state.rodMode })),
+  appError: "",
+  registerError: (appError) => set({ appError }),
   expandedClusters: [],
   setExpandedClusters: (expandedClusters: string[]) =>
     set({ expandedClusters }),
@@ -244,8 +237,6 @@ export const useStore = create<ForesightStore>((set) => ({
   setSearchMatches: (searchMatches) => set({ searchMatches }),
   searchAnd: false,
   setSearchAnd: (searchAnd) => set({ searchAnd }),
-  clusters: undefined,
-  setClusters: (clusters) => set({ clusters }),
   treeDirection: "BT",
   setTreeDirection: (treeDirection: "BT" | "TB" | "LR" | "RL") =>
     set({ treeDirection }),
@@ -260,8 +251,6 @@ export const useStore = create<ForesightStore>((set) => ({
   },
   layout: "force",
   setLayout: (layout) => set({ layout }),
-  geoMode: false,
-  setGeoMode: (geoMode: boolean) => set({ geoMode }),
   threats: defaultThreats,
   setThreats: (threats) => {
     if (!threats) {

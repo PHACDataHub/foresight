@@ -5,11 +5,10 @@ import Skeleton from "@mui/material/Skeleton";
 
 import { useTranslations } from "next-intl";
 import { type Article } from "~/server/api/routers/post";
-import { NodeTitle } from "~/app/_components/NodeTitle";
+import { Title } from "~/app/_components/Title";
 import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 import { getNodeColor } from "~/app/_utils/graph";
 import { api } from "~/trpc/react";
-import { useStore } from "~/app/_store";
 
 export default function ArticleComponent({
   article: articleNode,
@@ -19,7 +18,6 @@ export default function ArticleComponent({
   standAlone?: boolean;
 }) {
   const getArticle = api.post.getArticle.useMutation();
-  const { ogma } = useStore();
   const [article, setArticle] = useState(articleNode);
   const [loading, setLoading] = useState(false);
 
@@ -27,21 +25,14 @@ export default function ArticleComponent({
 
   const fetchArticle = useCallback(
     async (article_id: number, cluster_id: string) => {
-      if (!ogma) return;
       setLoading(true);
       const a = await getArticle.mutateAsync({ article_id, cluster_id });
       setLoading(false);
       const articleData = a.nodes.at(0);
-      if (articleData?.id) {
-        await ogma.addGraph(a);
-        const node = ogma.getNode(articleData.id);
-        if (node) {
-          node.setData(articleData.data);
-          setArticle(articleData.data as Article);
-        }
-      }
+      const data = articleData?.data as Article | undefined;
+      if (data) setArticle(data);
     },
-    [getArticle, ogma],
+    [getArticle],
   );
 
   useEffect(() => {
@@ -179,7 +170,7 @@ export default function ArticleComponent({
 
         {standAlone && (
           <div className="mr-[12px]">
-            <NodeTitle title={article.title} />
+            <Title title={article.title} />
           </div>
         )}
 

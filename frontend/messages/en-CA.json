@@ -2,6 +2,9 @@
     "App": {
         "title": "Foresight"
     },
+    "AppWrapper": {
+        "__layout__error__": "Unable to apply layout."
+    },
     "TimeTravel": {
         "chooseDate": "Today is",
         "currentDate": "current",
@@ -54,7 +57,7 @@
             "noLocationTitle": "No location data is available",
             "invalid": "Invalid or missing coordinates"
         },
-        "ClusterNode": {
+        "ClusterView": {
             "summary": "Summary",
             "articles": "Articles",
             "questions": "Questions about this cluster",
@@ -80,7 +83,7 @@
             "score": "GPHIN Score:",
             "outlier": "Outlier"
         },
-        "NodeTitle": {
+        "Title": {
             "openTitle": "{clear, select, true {Articles in this cluster} other {Clear selection}}"
         },
         "DataLoader": {

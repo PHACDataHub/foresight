@@ -21,6 +21,7 @@ export default function useParamsWithStore(
       const t = parseInt(params.history);
       if (t === 3 || t === 7 || t === 30) {
         if (store.history !== t) {
+          store.setSelectedNode(null);
           store.setHistory(t);
           if (t === 30) store.setEverything(false);
         }

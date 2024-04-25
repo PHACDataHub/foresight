@@ -3,14 +3,7 @@
 import { type MouseButtonEvent } from "@linkurious/ogma";
 
 import { NodeFilter, useOgma } from "@linkurious/ogma-react";
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-} from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import useDebounceCallback from "~/app/_hooks/useDebouncedCallback";
 import { useStore } from "~/app/_store";
 import { findAlongPath, getNodeData } from "~/app/_utils/graph";
@@ -19,250 +12,198 @@ export interface LayoutServiceRef {
   refresh: () => void;
 }
 
-const LayoutService = forwardRef(
-  (
-    {
-      threats,
-      fullScreen,
-      dataLoaded,
-      onExitFullScreen,
-      hover,
-    }: {
-      threats: string[];
-      dataLoaded: boolean;
-      fullScreen: boolean;
-      hover?: boolean;
-      onExitFullScreen?: () => void;
-    },
-    ref,
-  ) => {
-    const ogma = useOgma();
-    const timer = useRef<NodeJS.Timeout | null>(null);
+export default function LayoutService({ hover }: { hover?: boolean }) {
+  const ogma = useOgma();
 
-    const {
-      treeDirection,
-      geoMode,
-      openNode,
-      layout,
-      setLayout,
-      setOpenNode,
-      everything,
-      setSelectedNode,
-      focus,
-      selectedNode,
-      refreshObserver,
-      setFocus,
-      toggleExpandedCluster,
-      setLayoutBusy,
-      setLayoutNotBusy,
-    } = useStore();
+  const {
+    treeDirection,
+    openNode,
+    layout,
+    setLayout,
+    setOpenNode,
+    everything,
+    setSelectedNode,
+    focus,
+    selectedNode,
+    refreshObserver,
+    setFocus,
+    toggleExpandedCluster,
+    setLayoutBusy,
+    setLayoutNotBusy,
+  } = useStore();
 
-    const selectedPath = useMemo(() => {
-      if (!selectedNode) return null;
-      const data = getNodeData(selectedNode.node);
-      if (data?.type === "hierarchicalcluster")
-        return findAlongPath(selectedNode.node, "out", () => true);
-      if (data?.type === "cluster" || data?.type === "threat")
-        return findAlongPath(selectedNode.node, "in", () => true);
-      return null;
-    }, [selectedNode]);
+  const selectedPath = useMemo(() => {
+    if (!selectedNode) return null;
+    const data = getNodeData(selectedNode.node);
+    if (data?.type === "hierarchicalcluster")
+      return findAlongPath(selectedNode.node, "out", () => true);
+    if (data?.type === "cluster" || data?.type === "threat")
+      return findAlongPath(selectedNode.node, "in", () => true);
+    return null;
+  }, [selectedNode]);
 
-    useEffect(() => {
-      if (openNode) {
-        const nodes = ogma
-          .getNodes()
-          .filter((n) => (n.getData() as { id: string }).id === openNode);
-        nodes.setSelected(true);
-        setSelectedNode({ node: nodes.get(0), activeTab: "summary" });
-        setOpenNode(undefined);
-      }
-    }, [openNode, ogma, setSelectedNode, setOpenNode]);
+  useEffect(() => {
+    if (openNode) {
+      const nodes = ogma
+        .getNodes()
+        .filter((n) => (n.getData() as { id: string }).id === openNode);
+      nodes.setSelected(true);
+      setSelectedNode({ node: nodes.get(0), activeTab: "summary" });
+      setOpenNode(undefined);
+    }
+  }, [openNode, ogma, setSelectedNode, setOpenNode]);
 
-    const layoutGraph = useCallback(async () => {
-      setLayoutBusy(layout);
-      if (!geoMode && !focus) {
-        if (layout === "grid" && !hover) {
-          await ogma.layouts.grid({
-            locate: true,
-            onSync: () => setLayoutNotBusy("grid"),
-          });
-        } else if ((hover ?? layout === "force") || everything) {
-          await ogma.layouts.force({
-            locate: true,
-            gpu: true,
-            // gravity: 0.1,
-            // charge: 20,
-            duration: hover ? 0 : undefined,
-            onSync: () => setLayoutNotBusy("force"),
-          });
-          if (hover) {
-            await ogma.view.locateGraph({ padding: 75 });
-          }
-        } else if (selectedNode?.node && layout === "radial") {
-          await ogma.layouts.radial({
-            centralNode: selectedNode.node,
-            locate: true,
-            onSync: () => {
-              console.log("sync!");
-              setLayoutNotBusy("radial");
-            },
-          });
-        } else if (selectedNode?.node && layout === "concentric") {
-          await ogma.layouts.concentric({
-            centralNode: selectedNode.node,
-            locate: true,
-            onSync: () => setLayoutNotBusy("concentric"),
-          });
-        } else if (layout === "hierarchical" && !hover) {
-          await ogma.layouts.hierarchical({
-            locate: true,
-            direction: treeDirection,
-            onSync: () => setLayoutNotBusy("hierarchical"),
-          });
+  const layoutGraph = useCallback(async () => {
+    setLayoutBusy(layout);
+    if (!ogma.geo.enabled() && !focus) {
+      if (layout === "grid" && !hover) {
+        await ogma.layouts.grid({
+          locate: true,
+          onSync: () => setLayoutNotBusy("grid"),
+        });
+      } else if ((hover ?? layout === "force") || everything) {
+        await ogma.layouts.force({
+          locate: true,
+          gpu: true,
+          // gravity: 0.1,
+          // charge: 20,
+          duration: hover ? 0 : undefined,
+          onSync: () => setLayoutNotBusy("force"),
+        });
+        if (hover) {
+          await ogma.view.locateGraph({ padding: 75 });
         }
+      } else if (selectedNode?.node && layout === "radial") {
+        await ogma.layouts.radial({
+          centralNode: selectedNode.node,
+          locate: true,
+          onSync: () => {
+            console.log("sync!");
+            setLayoutNotBusy("radial");
+          },
+        });
+      } else if (selectedNode?.node && layout === "concentric") {
+        await ogma.layouts.concentric({
+          centralNode: selectedNode.node,
+          locate: true,
+          onSync: () => setLayoutNotBusy("concentric"),
+        });
+      } else if (layout === "hierarchical" && !hover) {
+        await ogma.layouts.hierarchical({
+          locate: true,
+          direction: treeDirection,
+          onSync: () => setLayoutNotBusy("hierarchical"),
+        });
       }
-    }, [
-      setLayoutBusy,
-      layout,
-      geoMode,
-      focus,
-      setLayoutNotBusy,
-      hover,
-      everything,
-      selectedNode,
-      ogma,
-      treeDirection,
-    ]);
+    }
+  }, [
+    setLayoutBusy,
+    layout,
+    focus,
+    setLayoutNotBusy,
+    hover,
+    everything,
+    selectedNode,
+    ogma,
+    treeDirection,
+  ]);
 
-    const updateLayout = useDebounceCallback(() => {
-      void layoutGraph();
-    }, [layoutGraph]);
+  const updateLayout = useDebounceCallback(() => {
+    void layoutGraph();
+  }, [layoutGraph]);
 
-    useEffect(() => {
-      if (focus && selectedPath) {
-        const related = selectedPath; // findAlongPath(focus, "out", () => true);
-        const nodes = ogma
-          .getNodes()
-          .filter((n) => n === focus || related.includes(n));
-        const viewSubGraph = async () => {
-          await layoutGraph();
-          const box = ogma.view.getGraphBoundingBox();
-          const height = nodes.getBoundingBox();
-          await nodes
-            // .filter((n) => getNodeData(n)?.type !== "threat")
-            .setAttribute("y", box.maxY + (height.maxY - height.minY));
+  useEffect(() => {
+    if (focus && selectedPath) {
+      const related = selectedPath; // findAlongPath(focus, "out", () => true);
+      const nodes = ogma
+        .getNodes()
+        .filter((n) => n === focus || related.includes(n));
+      const viewSubGraph = async () => {
+        await layoutGraph();
+        const box = ogma.view.getGraphBoundingBox();
+        const height = nodes.getBoundingBox();
+        await nodes
+          // .filter((n) => getNodeData(n)?.type !== "threat")
+          .setAttribute("y", box.maxY + (height.maxY - height.minY));
 
-          const clusters = nodes.filter(
-            (n) => n === focus || getNodeData(n)?.type === "cluster",
-          );
-
-          const locateClusters = getNodeData(focus)?.type === "threat";
-
-          await ogma.layouts.hierarchical({
-            locate: !locateClusters,
-            nodes,
-            direction: treeDirection,
-          });
-
-          if (locateClusters) await clusters.locate();
-
-          await ogma
-            .getEdges()
-            .filter(
-              (e) =>
-                !(
-                  selectedPath &&
-                  selectedPath.includes(e.getSource()) &&
-                  selectedPath.includes(e.getTarget())
-                ) &&
-                selectedPath &&
-                (selectedPath.includes(e.getSource()) ||
-                  selectedPath.includes(e.getTarget())),
-            )
-            .setAttribute("opacity", 0.1);
-        };
-        void viewSubGraph();
-      } else {
-        void ogma.getEdges().setAttribute("opacity", 1);
-      }
-    }, [
-      focus,
-      layout,
-      ogma,
-      setLayout,
-      selectedPath,
-      layoutGraph,
-      treeDirection,
-    ]);
-
-    useEffect(() => {
-      if (!geoMode) updateLayout();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [treeDirection, threats, layout, geoMode, refreshObserver]);
-
-    useEffect(() => {
-      const pollFullscreen = () => {
-        timer.current = setTimeout(() => {
-          if (!ogma.view.isFullScreen()) {
-            if (onExitFullScreen) onExitFullScreen();
-          } else pollFullscreen();
-        }, 200);
-      };
-      ogma.events.once("idle", async () => {
-        await ogma.view.setFullScreen(fullScreen);
-        fullScreen && pollFullscreen();
-      });
-      if (!fullScreen) {
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = null;
-        return;
-      }
-      return () => {
-        if (timer.current) clearTimeout(timer.current);
-      };
-    }, [fullScreen, ogma, onExitFullScreen]);
-
-    useEffect(() => {
-      dataLoaded && updateLayout();
-    }, [dataLoaded, updateLayout]);
-
-    useEffect(() => {
-      const clickHandler = ({ target }: MouseButtonEvent<unknown, unknown>) => {
-        setSelectedNode(
-          target &&
-            (!target.isVirtual() ||
-              (target.getData() as { location_generated?: boolean })
-                ?.location_generated === true) &&
-            target.isNode
-            ? { node: target, activeTab: "summary" }
-            : null,
+        const clusters = nodes.filter(
+          (n) => n === focus || getNodeData(n)?.type === "cluster",
         );
-        setFocus(null);
+
+        const locateClusters = getNodeData(focus)?.type === "threat";
+
+        await ogma.layouts.hierarchical({
+          locate: !locateClusters,
+          nodes,
+          direction: treeDirection,
+        });
+
+        if (locateClusters) await clusters.locate();
+
+        await ogma
+          .getEdges()
+          .filter(
+            (e) =>
+              !(
+                selectedPath &&
+                selectedPath.includes(e.getSource()) &&
+                selectedPath.includes(e.getTarget())
+              ) &&
+              selectedPath &&
+              (selectedPath.includes(e.getSource()) ||
+                selectedPath.includes(e.getTarget())),
+          )
+          .setAttribute("opacity", 0.1);
       };
+      void viewSubGraph();
+    } else {
+      void ogma.getEdges().setAttribute("opacity", 1);
+    }
+  }, [
+    focus,
+    layout,
+    ogma,
+    setLayout,
+    selectedPath,
+    layoutGraph,
+    treeDirection,
+  ]);
 
-      ogma.events.on("click", clickHandler);
+  useEffect(() => {
+    if (!ogma.geo.enabled()) updateLayout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [treeDirection, layout, refreshObserver]);
 
-      // cleanup
-      return () => {
-        ogma.events.off(clickHandler);
-      };
-    }, [
-      ogma.events,
-      setFocus,
-      setLayout,
-      setSelectedNode,
-      toggleExpandedCluster,
-      updateLayout,
-    ]);
+  useEffect(() => {
+    const clickHandler = ({ target }: MouseButtonEvent<unknown, unknown>) => {
+      setSelectedNode(
+        target &&
+          (!target.isVirtual() ||
+            (target.getData() as { location_generated?: boolean })
+              ?.location_generated === true) &&
+          target.isNode
+          ? { node: target, activeTab: "summary" }
+          : null,
+      );
+      setFocus(null);
+    };
 
-    useImperativeHandle(ref, () => ({
-      refresh: updateLayout,
-    }));
+    ogma.events.on("click", clickHandler);
 
-    return (
-      <>{hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}</>
-    );
-  },
-);
-LayoutService.displayName = "LayoutService";
-export default LayoutService;
+    // cleanup
+    return () => {
+      ogma.events.off(clickHandler);
+    };
+  }, [
+    ogma.events,
+    setFocus,
+    setLayout,
+    setSelectedNode,
+    toggleExpandedCluster,
+    updateLayout,
+  ]);
+
+  return (
+    <>{hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}</>
+  );
+}

@@ -10,13 +10,15 @@ import Highlighter from "react-highlight-words";
 import { useDebounceCallback } from "usehooks-ts";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Box, Checkbox, FormControlLabel, Typography } from "@mui/material";
+import { useParams } from "next/navigation";
 import { useStore } from "~/app/_store";
 import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
+import { api } from "~/trpc/react";
 
 export default function HighlightTerms({
   messages,
 }: {
-  messages: { label: string; placeholder: string, includeAll: string };
+  messages: { label: string; placeholder: string; includeAll: string };
 }) {
   const {
     searchTerms,
@@ -24,7 +26,35 @@ export default function HighlightTerms({
     setSearchAsYouType,
     searchAnd,
     setSearchAnd,
+    everything,
+    history,
+    threats,
+    setSearchMatches,
   } = useStore();
+  const { day } = useParams();
+  const terms = useSearchTerms();
+
+  // Fetch which nodes should be highlighted
+  const { data: highlightedNodeIds } = api.post.nodesWithTerms.useQuery(
+    {
+      day: parseInt(day as string),
+      history,
+      everything,
+      threats,
+      terms,
+      and: searchAnd,
+    },
+    {
+      refetchOnWindowFocus: false,
+      enabled: typeof day == "string",
+    },
+  );
+
+  useEffect(() => {
+    if (highlightedNodeIds) {
+      setSearchMatches(highlightedNodeIds);
+    }
+  }, [highlightedNodeIds, setSearchMatches]);
 
   const updateSearchAsYouType = useDebounceCallback(setSearchAsYouType, 300);
 
