@@ -43,6 +43,15 @@ export function getDataId(data?: AllDataTypes) {
   return `${data.id}`;
 }
 
+export function sameDate(d1?: Date, d2?: Date) {
+  if (!d1 || !d2) return false;
+  return (
+    d1.getDate() === d2.getDate() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getFullYear() === d2.getFullYear()
+  );
+}
+
 export function getNodeData<T = AllDataTypes | undefined>(
   node: OgmaNode,
 ): T | undefined {

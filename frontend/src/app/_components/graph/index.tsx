@@ -22,6 +22,7 @@ import Styles from "./Styles";
 import Interactions from "./Interactions";
 import Controls from "./Controls";
 import LocationTransforms from "./LocationTransforms";
+import ClusterTimeEvolution from "./ClusterTimeEvolution";
 
 OgmaLib.libraries.leaflet = L;
 
@@ -53,7 +54,7 @@ const Graph = forwardRef<
   const { height, width } = useResizeObserver({ ref, box: "content-box" });
   const { day } = useParams();
 
-  const { clusterId } = useStore();
+  const { clusterId, feature_Timeline } = useStore();
 
   const resizeOgma = useDebounceCallback(
     (ogma: OgmaLib, max: boolean, w: number, h: number) => {
@@ -141,9 +142,10 @@ const Graph = forwardRef<
         />
         <Styles />
         <Interactions />
-        {!noControls && <LayoutService />}
-        {!noControls && <Controls />}
-        {!noControls && <LocationTransforms />}
+        {!feature_Timeline && !noControls && <LayoutService />}
+        {!feature_Timeline && !noControls && <Controls />}
+        {!feature_Timeline && !noControls && <LocationTransforms />}
+        {feature_Timeline && !noControls && <ClusterTimeEvolution />}
       </Ogma>
       {clusterId && <div className="" id="timeline" ref={timelineRef}></div>}
     </div>

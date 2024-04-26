@@ -37,6 +37,8 @@ export interface ForesightStore {
   // Feature Flags
   feature_GroupArticleBy: boolean;
   setFeature_GroupArticleBy: (feature_GroupArticleBy: boolean) => void;
+  feature_Timeline: boolean;
+  setFeature_Timeline: (feature_Timeline: boolean) => void;
 
   layoutBusy: LayoutModes[];
   setLayoutBusy: (layout: LayoutModes) => void;
@@ -148,6 +150,10 @@ export const useStore = create<ForesightStore>((set) => ({
   feature_GroupArticleBy: false,
   setFeature_GroupArticleBy: (feature_GroupArticleBy) =>
     set({ feature_GroupArticleBy }),
+
+  feature_Timeline: false,
+  setFeature_Timeline: (feature_Timeline) => set({ feature_Timeline }),
+
   rodMode: false,
   mapMode: "roadmap",
   setMapMode: (mapMode) => set({ mapMode }),

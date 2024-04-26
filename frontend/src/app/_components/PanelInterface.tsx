@@ -17,6 +17,7 @@ import {
 } from "react-resizable-panels";
 
 import type OgmaLib from "@linkurious/ogma";
+import { type RawNode } from "@linkurious/ogma";
 
 import {
   faGripLines,
@@ -33,10 +34,10 @@ import SidePanel from "~/app/_components/SidePanel";
 import { api } from "~/trpc/react";
 import { getRawNodeData } from "~/app/_utils/graph";
 
-import { type Cluster } from "~/server/api/routers/post";
+import { type Article, type Cluster } from "~/server/api/routers/post";
 import Graph from "./graph";
 import ClusterGrowth from "./ClusterGrowth";
-import TimeLineBar from "./TimeLineBar";
+// import TimeLineBar from "./TimeLineBar";
 
 export interface Country {
   country: string;
@@ -61,6 +62,7 @@ export default function PanelInterface() {
     history,
     selectedNode,
     setSelectedNode,
+    feature_Timeline,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -201,6 +203,97 @@ export default function PanelInterface() {
       .map((n) => getRawNodeData<Cluster>(n));
   }, [rawGraph, isFetching]);
 
+  const clusterEvolutionGraph = useMemo(() => {
+    if (!feature_Timeline || !rawGraph || isFetching) return null;
+    const filtered_out: string[] = [];
+    const clusters = rawGraph.nodes
+      .filter((n) => n.data?.type === "cluster")
+      .sort((a, b) => {
+        const ad = getRawNodeData<Cluster>(a);
+        const bd = getRawNodeData<Cluster>(b);
+        if (!ad || !bd) return 0;
+        if (ad.nr_articles > bd.nr_articles) return -1;
+        if (ad.nr_articles < bd.nr_articles) return 1;
+        return 0;
+      })
+      .map((n) => n.id)
+      .slice(0, 5);
+
+    const all_articles = Object.fromEntries(
+      rawGraph.nodes
+        .filter((n) => {
+          if (!n) return false;
+          const d = getRawNodeData(n);
+          if (d?.type !== "article") return false;
+          return (
+            rawGraph.edges.filter(
+              (e) => e.source === n.id && clusters.includes(e.target),
+            ).length > 0
+          );
+        })
+        .map((n) => [`${n.id}`, n]),
+    );
+
+    const nodes = rawGraph.nodes.filter((n) => {
+      const d = getRawNodeData(n);
+      if (d?.type === "cluster" && clusters.includes(n.id)) return true;
+      if (d?.type === "article" && n.id && all_articles[n.id]) return true;
+      filtered_out.push(`${n.id}`);
+      return false;
+    });
+    let edges = rawGraph.edges.filter(
+      (e) =>
+        !filtered_out.includes(`${e.source}`) &&
+        !filtered_out.includes(`${e.target}`) &&
+        (e.data as undefined | { neo4jType: string })?.neo4jType !==
+          "SIMILAR_TO",
+    );
+    for (let x = nodes.length - 1; x >= 0; x -= 1) {
+      const n = nodes[x];
+      if (!n) continue;
+      const data = getRawNodeData(n);
+      if (data?.type === "cluster") {
+        const articles = edges
+          .filter((e) => e.target === n.id && all_articles[e.source])
+          .map((e) => ({
+            edge: e,
+            node: all_articles[e.source] as RawNode<Article>,
+          }));
+        const dates = Array.from(
+          new Set(
+            articles.map((a) =>
+              getRawNodeData<Article>(a.node).pub_date?.toDateString(),
+            ),
+          ),
+        );
+        const new_clusters = dates.map((d) => ({
+          ...n,
+          id: `${d}-${n.id}`,
+          data: {
+            ...n.data,
+            cluster_date: d,
+          },
+        }));
+        nodes.splice(x, 1, ...(new_clusters as RawNode[]));
+        edges = edges
+          .filter((e) => !(e.source === n.id || e.target === n.id))
+          .concat(
+            articles.map((a) => {
+              const d = getRawNodeData<Article>(
+                a.node,
+              ).pub_date?.toDateString();
+              return {
+                ...a.edge,
+                id: `${a.edge.id}-${d}`,
+                target: `${d}-${n.id}`,
+              };
+            }),
+          );
+      }
+    }
+    return { nodes, edges };
+  }, [feature_Timeline, rawGraph, isFetching]);
+
   const startDate = useMemo(() => {
     if (history && history <= 10 && typeof day === "string") {
       const d = parseInt(day);
@@ -265,12 +358,15 @@ export default function PanelInterface() {
                 <FontAwesomeIcon icon={faSpinner} size="4x" spin />
               </div>
             )}
-            {!isFetching && rawGraph && (
+            {!isFetching && !feature_Timeline && rawGraph && (
               <Graph graph={rawGraph} ref={ogmaRef} />
+            )}
+            {feature_Timeline && clusterEvolutionGraph && (
+              <Graph graph={clusterEvolutionGraph} ref={ogmaRef} />
             )}
           </Panel>
 
-          {history && rawGraph && (
+          {history && rawGraph && clusterId && (
             <>
               {!drawerCollapsed && (
                 <PanelResizeHandle
@@ -315,7 +411,7 @@ export default function PanelInterface() {
                     endDate={endDate}
                   />
                 )}
-                {!drawerCollapsed &&
+                {/* {!drawerCollapsed &&
                   !clusterId &&
                   ogmaRef.current &&
                   startDate &&
@@ -326,7 +422,7 @@ export default function PanelInterface() {
                       startDate={startDate}
                       endDate={endDate}
                     />
-                  )}
+                  )} */}
               </Panel>
             </>
           )}

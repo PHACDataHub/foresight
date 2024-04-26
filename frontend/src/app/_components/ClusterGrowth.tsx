@@ -34,11 +34,11 @@ export default function ClusterGrowth({
   }, [endDate, startDate]);
 
   const [timeline, setTimeline] = useState(
-    history ? [0, Number(((days - 1) / 2).toFixed(0)), days - 1] : [],
+    history ? Array.from(new Array(days - 1).keys()) : [],
   );
 
   useEffect(() => {
-    setTimeline([0, Number(((days - 1) / 2).toFixed(0)), days - 1]);
+    setTimeline(Array.from(new Array(days - 1).keys()));
   }, [days]);
 
   const graphs = useMemo(() => {
@@ -158,92 +158,91 @@ export default function ClusterGrowth({
   );
 }
 
+// Select selected node in subgraphs
+// useEffect(() => {
+//   setTimeout(() => {
+//     if (!selectedNode?.node) return;
+//     graphs.forEach((g) => {
+//       const view = g?.ref.current;
+//       if (!view) return;
+//       void view.getNode(selectedNode.node.getId())?.setSelected(true);
+//     });
+//   }, 0);
+// }, [graphs, selectedNode?.node]);
 
-  // Select selected node in subgraphs
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     if (!selectedNode?.node) return;
-  //     graphs.forEach((g) => {
-  //       const view = g?.ref.current;
-  //       if (!view) return;
-  //       void view.getNode(selectedNode.node.getId())?.setSelected(true);
-  //     });
-  //   }, 0);
-  // }, [graphs, selectedNode?.node]);
+/* Create paired interactions */
+// useEffect(() => {
+//   // const drawBridges = () => {
+//   //   const canvas = canvasRef.current;
+//   //   if (!canvas) return;
+//   //   const context = canvas.getContext("2d");
+//   //   if (!context) return;
+//   //   canvas.width = canvas.clientWidth;
+//   //   canvas.height = canvas.clientHeight;
+//   //   context.clearRect(0, 0, canvas.width, canvas.height);
+//   //   context.lineWidth = 2;
+//   //   context.setLineDash([8, 4]);
+//   //   context.strokeStyle = "#888888";
+//   //   for (let x = 0; x < graphs.length - 1; x += 1) {
+//   //     const view0 = graphs[x - 1]?.ref.current;
+//   //     const view1 = graphs[x]?.ref.current;
+//   //     const view2 = graphs[x + 1]?.ref.current;
+//   //     if (!view1 || !view2) continue;
+//   //     const vw = view1.view.getSize().width;
+//   //     const bw = view0 ? view0.view.getSize().width : 0;
 
-  /* Create paired interactions */
-  // useEffect(() => {
-  //   // const drawBridges = () => {
-  //   //   const canvas = canvasRef.current;
-  //   //   if (!canvas) return;
-  //   //   const context = canvas.getContext("2d");
-  //   //   if (!context) return;
-  //   //   canvas.width = canvas.clientWidth;
-  //   //   canvas.height = canvas.clientHeight;
-  //   //   context.clearRect(0, 0, canvas.width, canvas.height);
-  //   //   context.lineWidth = 2;
-  //   //   context.setLineDash([8, 4]);
-  //   //   context.strokeStyle = "#888888";
-  //   //   for (let x = 0; x < graphs.length - 1; x += 1) {
-  //   //     const view0 = graphs[x - 1]?.ref.current;
-  //   //     const view1 = graphs[x]?.ref.current;
-  //   //     const view2 = graphs[x + 1]?.ref.current;
-  //   //     if (!view1 || !view2) continue;
-  //   //     const vw = view1.view.getSize().width;
-  //   //     const bw = view0 ? view0.view.getSize().width : 0;
-
-  //   //     view1.getNodes().forEach((n) => {
-  //   //       const n2 = view2.getNode(n.getId());
-  //   //       if (n2) {
-  //   //         const { x, y } = n2.getPositionOnScreen();
-  //   //         const { x: sx, y: sy } = n.getPositionOnScreen();
-  //   //         context.beginPath();
-  //   //         context.moveTo(bw + sx, sy);
-  //   //         context.lineTo(bw + x + vw, y);
-  //   //         context.stroke();
-  //   //       }
-  //   //     });
-  //   //   }
-  //   // };
-  //   const handleSelected = (ev: NodesEvent<unknown, unknown>) => {
-  //     ev.nodes.forEach((s) => {
-  //       graphs.forEach((g) => {
-  //         const view = g?.ref.current;
-  //         if (!view) return;
-  //         const n = view.getNode(s.getId());
-  //         void view.getNodes().removeClass("selected");
-  //         if (s !== n) {
-  //           void n?.addClass("selected");
-  //           // n?.setSelected(true);
-  //         }
-  //       });
-  //     });
-  //   };
-  //   setTimeout(() => {
-  //     graphs.forEach((g) => {
-  //       const view = g?.ref.current;
-  //       if (!view) return;
-  //       if (!view.styles.getClass("selected"))
-  //         view.styles.createClass({
-  //           name: "selected",
-  //           nodeAttributes: {
-  //             halo: {
-  //               color: "red",
-  //               width: 3,
-  //               strokeWidth: 3,
-  //             },
-  //           },
-  //         });
-  //       view.events.on("nodesSelected", handleSelected);
-  //       // view.events.on(["nodesDragProgress", "move", "zoom"], drawBridges);
-  //     });
-  //   }, 0);
-  //   return () => {
-  //     graphs.forEach((g) => {
-  //       const view = g?.ref.current;
-  //       if (!view) return;
-  //       view.events.off(handleSelected);
-  //       // view.events.off(drawBridges);
-  //     });
-  //   };
-  // }, [graphs]);
+//   //     view1.getNodes().forEach((n) => {
+//   //       const n2 = view2.getNode(n.getId());
+//   //       if (n2) {
+//   //         const { x, y } = n2.getPositionOnScreen();
+//   //         const { x: sx, y: sy } = n.getPositionOnScreen();
+//   //         context.beginPath();
+//   //         context.moveTo(bw + sx, sy);
+//   //         context.lineTo(bw + x + vw, y);
+//   //         context.stroke();
+//   //       }
+//   //     });
+//   //   }
+//   // };
+//   const handleSelected = (ev: NodesEvent<unknown, unknown>) => {
+//     ev.nodes.forEach((s) => {
+//       graphs.forEach((g) => {
+//         const view = g?.ref.current;
+//         if (!view) return;
+//         const n = view.getNode(s.getId());
+//         void view.getNodes().removeClass("selected");
+//         if (s !== n) {
+//           void n?.addClass("selected");
+//           // n?.setSelected(true);
+//         }
+//       });
+//     });
+//   };
+//   setTimeout(() => {
+//     graphs.forEach((g) => {
+//       const view = g?.ref.current;
+//       if (!view) return;
+//       if (!view.styles.getClass("selected"))
+//         view.styles.createClass({
+//           name: "selected",
+//           nodeAttributes: {
+//             halo: {
+//               color: "red",
+//               width: 3,
+//               strokeWidth: 3,
+//             },
+//           },
+//         });
+//       view.events.on("nodesSelected", handleSelected);
+//       // view.events.on(["nodesDragProgress", "move", "zoom"], drawBridges);
+//     });
+//   }, 0);
+//   return () => {
+//     graphs.forEach((g) => {
+//       const view = g?.ref.current;
+//       if (!view) return;
+//       view.events.off(handleSelected);
+//       // view.events.off(drawBridges);
+//     });
+//   };
+// }, [graphs]);

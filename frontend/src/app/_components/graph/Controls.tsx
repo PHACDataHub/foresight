@@ -58,6 +58,8 @@ export default function Controls() {
     history,
     feature_GroupArticleBy,
     setFeature_GroupArticleBy,
+    feature_Timeline,
+    setFeature_Timeline,
     setEverything,
     setFocus,
     setMapMode,
@@ -179,6 +181,10 @@ export default function Controls() {
   const handleGroupByFeatureClick = useCallback(() => {
     setFeature_GroupArticleBy(!feature_GroupArticleBy);
   }, [feature_GroupArticleBy, setFeature_GroupArticleBy]);
+
+  const handleTimelineFeatureClick = useCallback(() => {
+    setFeature_Timeline(!feature_Timeline);
+  }, [feature_Timeline, setFeature_Timeline]);
 
   const handleReset = useCallback(() => {
     setFocus(null);
@@ -363,6 +369,20 @@ export default function Controls() {
               label={
                 <span style={{ fontSize: 14 }}>
                   Feature Flag: Group Articles by...
+                </span>
+              }
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="large"
+                  checked={feature_Timeline}
+                  onChange={handleTimelineFeatureClick}
+                />
+              }
+              label={
+                <span style={{ fontSize: 14 }}>
+                  Feature Flag: Switch to top 5 cluster timeline view
                 </span>
               }
             />
