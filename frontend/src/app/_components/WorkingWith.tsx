@@ -3,16 +3,28 @@
 import { useMemo } from "react";
 import Typography from "@mui/material/Typography";
 import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 import { useStore } from "~/app/_store";
 import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
+import { api } from "~/trpc/react";
 
 export default function WorkingWith() {
-  const { articleCount, searchMatches } = useStore();
+  const { searchMatches, everything, threats, history } = useStore();
   const t = useTranslations();
   const terms = useSearchTerms();
+  const { day } = useParams();
+
+  const { isFetching, data: articleCount } =
+    api.post.hierarchicalClustersArticleCount.useQuery(
+      { day: parseInt(day as string), history, everything, threats },
+      {
+        refetchOnWindowFocus: false,
+        enabled: typeof day === "string",
+      },
+    );
 
   const articleMsg = useMemo(() => {
-    if (articleCount === 0) return <></>;
+    if (isFetching || typeof articleCount === "undefined") return <></>;
     return (
       <Typography variant="body1" fontSize={16}>
         {t.rich("articles", {
@@ -21,7 +33,7 @@ export default function WorkingWith() {
         })}
       </Typography>
     );
-  }, [articleCount, t]);
+  }, [articleCount, isFetching, t]);
 
   const highlightMsg = useMemo(() => {
     if (terms.length === 0) return <></>;

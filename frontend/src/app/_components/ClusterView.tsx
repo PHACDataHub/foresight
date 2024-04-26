@@ -1,4 +1,5 @@
-import { type Node as OgmaNode, type RawNode } from "@linkurious/ogma";
+import type OgmaLib from "@linkurious/ogma";
+import { type RawNode } from "@linkurious/ogma";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as d3 from "d3";
 import {
@@ -39,15 +40,11 @@ import {
   type Cluster,
 } from "~/server/api/routers/post";
 import { type ClusterNodeSection, useStore } from "~/app/_store";
-import {
-  getNodeData,
-  getRawNodeData,
-  isLocationValid,
-} from "~/app/_utils/graph";
+import { getDataId, getRawNodeData, isLocationValid } from "~/app/_utils/graph";
 import { api } from "~/trpc/react";
 import ArticleComponent from "./graph/Article";
 import { HighlightSearchTerms } from "./HighlightTerms";
-import { NodeTitle } from "./NodeTitle";
+import { Title } from "./Title";
 
 const Location = styled("div")<{
   status?: "missing" | "invalid";
@@ -102,7 +99,7 @@ function ArticleList({ articles }: { articles: Article[] }) {
 }
 
 function ClusterLocations({ cluster }: { cluster: Cluster }) {
-  const t = useTranslations("ClusterLocations")
+  const t = useTranslations("ClusterLocations");
   if (!cluster?.locations) return;
   const locations = cluster.locations.filter(
     (l) => Boolean(l.location) && typeof l.location === "string",
@@ -139,18 +136,20 @@ const groupByOptions = [
 
 type GroupByOptions = (typeof groupByOptions)[number];
 
-export function ClusterNode(
+export function ClusterView(
   props:
     | {
-        clusterNode: OgmaNode<Cluster>;
+        cluster: Cluster;
+        ogma?: OgmaLib;
       }
     | {
-        clusterNode: OgmaNode<Cluster>;
+        cluster: Cluster;
+        ogma?: OgmaLib;
         details: boolean;
         activeTab: ClusterNodeSection;
       },
 ) {
-  const { clusterNode } = props;
+  const { cluster, ogma } = props;
   const details = "details" in props && props.details;
   const activeTab = "activeTab" in props && props.activeTab;
 
@@ -159,10 +158,9 @@ export function ClusterNode(
   const [groupArticlesBy, setGroupArticlesBy] = useState<GroupByOptions>("");
   const [tab, setTab] = useState(0);
 
-  const t = useTranslations("ClusterNode");
+  const t = useTranslations("ClusterView");
 
-  const { qa, addQA, ogma, geoMode, feature_GroupArticleBy, searchMatches } =
-    useStore();
+  const { qa, addQA, feature_GroupArticleBy, searchMatches } = useStore();
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [isFetching, setIsFetching] = useState(false);
@@ -178,10 +176,10 @@ export function ClusterNode(
 
   useEffect(() => {
     const fetchCluster = async () => {
-      if (clusterNode && details && ogma) {
+      if (cluster && details) {
         setIsFetching(true);
         const d = await clusterQuery.mutateAsync({
-          id: clusterNode.getData("id"),
+          id: getDataId(cluster),
         });
         setArticles(
           d.nodes
@@ -206,12 +204,7 @@ export function ClusterNode(
     };
     void fetchCluster();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clusterNode, details, ogma]);
-
-  const cluster = useMemo(() => {
-    if (clusterNode) return getNodeData<Cluster>(clusterNode);
-    return null;
-  }, [clusterNode]);
+  }, [cluster, details]);
 
   const handleGroupArticleByChange = useCallback(
     (evt: SelectChangeEvent<string>) => {
@@ -268,12 +261,11 @@ export function ClusterNode(
 
   const showLocate = useMemo(
     () =>
-      Boolean(
-        !geoMode ||
-          (cluster?.locations &&
-            cluster.locations.filter((l) => isLocationValid(l)).length > 0),
+      Boolean(ogma && 
+        cluster?.locations &&
+          cluster.locations.filter((l) => isLocationValid(l)).length > 0,
       ),
-    [cluster, geoMode],
+    [cluster.locations, ogma],
   );
 
   const trashed_published = useMemo(() => {
@@ -327,7 +319,7 @@ export function ClusterNode(
     return (
       <>
         <div className="pl-[30px] pr-[12px] pt-[10px]">
-          <NodeTitle dataNode={clusterNode} showLocate={showLocate} />
+          <Title data={cluster} showLocate={showLocate} ogma={ogma} />
         </div>
         <Tabs
           value={tab}
@@ -451,7 +443,7 @@ export function ClusterNode(
                 InputLabelProps={{ sx: { fontSize: 16 } }}
                 variant="outlined"
                 label={t("chat.label")}
-                placeholder={(t("chat.placeholder"))}
+                placeholder={t("chat.placeholder")}
                 onKeyUp={handleQuestion}
                 onChange={handleQuestionChange}
                 value={question}
@@ -562,7 +554,7 @@ export function ClusterNode(
 
   return (
     <section className="flex flex-1 flex-col">
-      <NodeTitle dataNode={clusterNode} showLocate={showLocate} />
+      <Title data={cluster} showLocate={showLocate} ogma={ogma} />
       <ClusterLocations cluster={cluster} />
       <Typography variant="body1" fontSize={16}>
         <HighlightSearchTerms text={cluster.summary ?? ""} />

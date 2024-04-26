@@ -1,18 +1,16 @@
-import {
-  type NodeList,
-  type Node as OgmaNode,
-  type RawEdge,
-  type RawNode,
-} from "@linkurious/ogma";
-import * as d3 from "d3";
+"use client";
+
+import type OgmaLib from "@linkurious/ogma";
+import type { NodeList, Node as OgmaNode, RawNode } from "@linkurious/ogma";
+
+import simpleheat from "simpleheat";
+
 import {
   type AllDataTypeProperties,
   type AllDataTypes,
   type ClusterLocation,
 } from "~/server/api/routers/post";
-
-export const MAX_RADIUS = 20;
-export const MIN_RADIUS = 2;
+import { type LayoutModes, useStore } from "~/app/_store";
 
 export const nodeColours: Record<
   AllDataTypeProperties | "article_outlier" | "other",
@@ -39,6 +37,21 @@ export function findAlongPath(
   return found;
 }
 
+export function getDataId(data?: AllDataTypes) {
+  if (!data) return "";
+  if (data.type === "threat") return data.title;
+  return `${data.id}`;
+}
+
+export function sameDate(d1?: Date, d2?: Date) {
+  if (!d1 || !d2) return false;
+  return (
+    d1.getDate() === d2.getDate() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getFullYear() === d2.getFullYear()
+  );
+}
+
 export function getNodeData<T = AllDataTypes | undefined>(
   node: OgmaNode,
 ): T | undefined {
@@ -48,18 +61,22 @@ export function getNodeData<T = AllDataTypes | undefined>(
   return data as T;
 }
 
+export function getNodeId(node: OgmaNode): string {
+  return getDataId(getNodeData(node));
+}
+
 export function getRawNodeData<T = AllDataTypes | undefined>(node: RawNode): T {
   const n = node as RawNode<AllDataTypes>;
   const data = n.data;
   return data as T;
 }
 
+export function getRawNodeId(node: RawNode) {
+  return getDataId(getRawNodeData(node));
+}
+
 export function getNodeRadius(data: AllDataTypes) {
-  if (data?.type === "hierarchicalcluster") return data.clusters.length;
-  if (data?.type === "cluster") return data.nr_articles;
-  if (data?.type === "threat") return data.score ? data.score : 1;
-  if (data?.type === "article") return data.prob_size;
-  return -1;
+  return data.radius;
 }
 
 export function getNodeColor(data?: AllDataTypes) {
@@ -106,82 +123,106 @@ export function isLocationValid(l: ClusterLocation) {
   return true;
 }
 
-export function createScale(g: {
-  nodes: RawNode<AllDataTypes>[];
-  edges?: RawEdge[];
-}) {
-  const ret: Record<
-    "cluster" | "hierarchicalcluster" | "threat" | "article" | "global",
-    { min?: number; max?: number }
-  > = {
-    cluster: {},
-    hierarchicalcluster: {},
-    threat: {},
-    article: {},
-    global: {},
+export async function applyLayout(
+  opts: {
+    ogma: OgmaLib;
+    onLayoutStart?: () => void;
+    onLayoutEnd?: () => void;
+  } & (
+    | { layout: Exclude<LayoutModes, "concentric" | "radial" | "hierarchical"> }
+    | {
+        layout: Extract<LayoutModes, "hierarchical">;
+        direction: "BT" | "TB" | "LR" | "RL";
+      }
+    | {
+        layout: Extract<LayoutModes, "concentric" | "radial">;
+        centralNode: OgmaNode;
+      }
+  ),
+) {
+  const { ogma, layout, onLayoutStart, onLayoutEnd } = opts;
+  if (onLayoutStart) onLayoutStart();
+  const handleOgmaError = () => {
+    useStore.setState({ appError: "__layout__error__" });
+    handleOnSync();
   };
-  g.nodes.forEach((n) => {
-    const data = n.data;
-    if (!data) return;
-    const r = getNodeRadius(data);
+  const handleOnSync = () => {
+    window.removeEventListener("error", handleOgmaError);
+    if (onLayoutEnd) onLayoutEnd();
+  };
+  window.addEventListener("error", handleOgmaError);
+  if (layout === "grid") {
+    await ogma.layouts.grid({
+      locate: true,
+      duration: 100,
+      onSync: handleOnSync,
+    });
+  } else if (layout === "force") {
+    await ogma.layouts.force({
+      locate: {
+        duration: 0,
+        padding: 0,
+      },
+      gpu: true,
+      duration: 100,
+      onSync: handleOnSync,
+    });
+  } else if (layout === "radial") {
+    await ogma.layouts.radial({
+      centralNode: opts.centralNode,
+      locate: true,
+      duration: 100,
+      onSync: handleOnSync,
+    });
+  } else if (layout === "concentric") {
+    await ogma.layouts.concentric({
+      centralNode: opts.centralNode,
+      locate: true,
+      duration: 100,
+      onSync: handleOnSync,
+    });
+  } else if (layout === "hierarchical") {
+    await ogma.layouts.hierarchical({
+      locate: true,
+      direction: opts.direction,
+      duration: 100,
+      onSync: handleOnSync,
+    });
+  }
+}
 
-    const gomi = ret.global.min ?? r;
-    const goma = ret.global.max ?? r;
-    ret.global = {
-      min: Math.min(gomi, r),
-      max: Math.max(goma, r),
-    };
+export function heatMap(ogma: OgmaLib) {
+  const canvas = ogma.layers.addCanvasLayer((context) => {
+    context.canvas.width = ogma.view.getSize().width;
+    context.canvas.height = ogma.view.getSize().height;
+    const heat = simpleheat(context.canvas);
+    let max: number | null = null;
+    let min: number | null = null;
 
-    if (
-      data?.type === "hierarchicalcluster" ||
-      data?.type === "cluster" ||
-      data?.type === "threat" ||
-      data?.type === "article"
-    ) {
-      const omi = ret[data.type].min ?? r;
-      const oma = ret[data.type].max ?? r;
-      ret[data.type] = {
-        min: Math.min(omi, r),
-        max: Math.max(oma, r),
-      };
+    const data: [number, number, number][] = ogma
+      .getNodes()
+      .filter((n) => {
+        const d = n.getData() as object;
+        return "stdev" in d && "stddev_min" in d && "stddev_max" in d;
+      })
+      .map((n) => {
+        const d = n.getData() as object;
+        if ("stdev" in d && "stddev_min" in d && "stddev_max" in d) {
+          if (max === null) max = d.stddev_max as number;
+          if (min === null) min = d.stddev_min as number;
+          const { x, y } = n.getPositionOnScreen();
+          return [x, y, d.stdev as number];
+        }
+        return [0, 0, 0];
+      });
+    if (max !== null) {
+      heat.max(max);
     }
+    heat.data(data);
+    heat.draw();
   });
-  return {
-    global:
-      typeof ret.global.min === "number" && typeof ret.global.max === "number"
-        ? d3
-            .scaleLog([MIN_RADIUS, MAX_RADIUS])
-            .domain([ret.global.min, ret.global.max])
-        : null,
-
-    cluster:
-      typeof ret.cluster.min === "number" && typeof ret.cluster.max === "number"
-        ? d3
-            .scaleLog([MIN_RADIUS * 2, MAX_RADIUS * 2])
-            .domain([ret.cluster.min, ret.cluster.max])
-        : null,
-    hierarchicalcluster:
-      typeof ret.hierarchicalcluster.min === "number" &&
-      typeof ret.hierarchicalcluster.max === "number"
-        ? d3
-            .scaleLog([MIN_RADIUS * 1.5, MAX_RADIUS * 1.5])
-            .domain([ret.hierarchicalcluster.min, ret.hierarchicalcluster.max])
-        : null,
-
-    threat:
-      typeof ret.threat.min === "number" && typeof ret.threat.max === "number"
-        ? d3
-            .scaleLog([MIN_RADIUS * 1.7, MAX_RADIUS * 1.7])
-            .domain([ret.threat.min, ret.threat.max])
-        : null,
-
-    article:
-      typeof ret.article.min === "number" && typeof ret.article.max === "number"
-        ? d3
-            .scaleLog([MIN_RADIUS / 2, MAX_RADIUS / 2])
-            .domain([ret.article.min, ret.article.max])
-        : null,
-  };
+  canvas.moveToBottom();
+  return canvas;
 }
 
 //export function hexToRgbA(hex: string, opacity = 1) {

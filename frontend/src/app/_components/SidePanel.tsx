@@ -1,4 +1,5 @@
 import { type CSSProperties, useCallback, useMemo } from "react";
+import type OgmaLib from "@linkurious/ogma";
 
 import {
   faAngleLeft,
@@ -14,19 +15,28 @@ import Chip from "@mui/material/Chip";
 import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
 
-import ClusterNodeList from "~/app/_components/ClusterNodeList";
-import { ClusterNode } from "~/app/_components/ClusterNode";
-import { findAlongPath, getNodeColor, getNodeData } from "~/app/_utils/graph";
-import ArticleComponent from "./graph/Article";
+import ClusterList from "~/app/_components/ClusterList";
 
-export default function SidePanel() {
-  const {
-    clusters,
-    showInfoPanel,
-    setPanelWasToggled,
-    setShowInfoPanel,
-    selectedNode,
-  } = useStore();
+import {
+  findAlongPath,
+  getDataId,
+  getNodeColor,
+  getNodeData,
+  getNodeId,
+} from "~/app/_utils/graph";
+import { type Cluster } from "~/server/api/routers/post";
+import ArticleComponent from "./graph/Article";
+import { ClusterView } from "./ClusterView";
+
+export default function SidePanel({
+  clusters,
+  ogma,
+}: {
+  clusters: Cluster[];
+  ogma?: OgmaLib | null;
+}) {
+  const { showInfoPanel, setPanelWasToggled, setShowInfoPanel, selectedNode } =
+    useStore();
 
   const t = useTranslations("SidePanel");
 
@@ -41,21 +51,22 @@ export default function SidePanel() {
   }, [selectedNode?.node]);
 
   const filteredClusters = useMemo(() => {
-    // if (geoMode && clusters) {
-    //   return clusters.filter((c) => {
-    //     const d = getNodeData<Cluster>(c);
-    //     if (!d?.locations) return false;
-    //     return d.locations.filter((l) => isLocationValid(l)).length > 0;
-    //   });
-    // }
     if (!clusters || !selectedData || !selectedNode?.node) return clusters;
     if (selectedData.type === "hierarchicalcluster") {
-      const relatedNodes = findAlongPath(selectedNode.node, "out", () => true);
-      return clusters.filter((c) => relatedNodes.includes(c));
+      const relatedNodes: string[] = findAlongPath(
+        selectedNode.node,
+        "out",
+        () => true,
+      ).map((n) => getNodeId(n));
+      return clusters.filter((c) => relatedNodes.includes(getDataId(c)));
     }
     if (selectedData.type === "threat") {
-      const relatedNodes = findAlongPath(selectedNode.node, "in", () => true);
-      return clusters.filter((c) => relatedNodes.includes(c));
+      const relatedNodes = findAlongPath(
+        selectedNode.node,
+        "in",
+        () => true,
+      ).map((n) => getNodeId(n));
+      return clusters.filter((c) => relatedNodes.includes(getDataId(c)));
     }
     return clusters;
   }, [clusters, selectedData, selectedNode?.node]);
@@ -66,9 +77,9 @@ export default function SidePanel() {
       selectedData.type === "threat" ||
       selectedData.type === "hierarchicalcluster"
     )
-      return filteredClusters?.size;
+      return filteredClusters.length;
     return 0;
-  }, [filteredClusters?.size, selectedData]);
+  }, [filteredClusters.length, selectedData]);
 
   const headerClassNames = useMemo(() => {
     let base = [
@@ -132,6 +143,11 @@ export default function SidePanel() {
     return false;
   }, [selectedData]);
 
+  const selectedCluster = useMemo(() => {
+    if (!selectedNode?.node) return undefined;
+    return getNodeData<Cluster>(selectedNode.node);
+  }, [selectedNode?.node]);
+
   if (!clusters && showInfoPanel)
     return (
       <div className="flex w-full flex-col justify-center">
@@ -186,7 +202,7 @@ export default function SidePanel() {
               </div>
               <div className="flex space-x-2">
                 <Typography variant="body1" fontSize={14}>
-                {t("clusters")}
+                  {t("clusters")}
                 </Typography>
                 <Typography variant="body1" fontSize={14} fontWeight={500}>
                   {selectedData.clusters.length}
@@ -217,14 +233,15 @@ export default function SidePanel() {
             </div>
           </div>
         )}
-        <ClusterNodeList clusterNodes={filteredClusters} />
+        <ClusterList clusters={filteredClusters} ogma={ogma ?? undefined} />
       </div>
-      {showClusterNode && selectedNode?.node && (
+      {showClusterNode && selectedCluster && selectedNode && (
         <div className={clusterNodeClassNames}>
-          <ClusterNode
-            clusterNode={selectedNode.node}
+          <ClusterView
+            cluster={selectedCluster}
             activeTab={selectedNode.activeTab}
             details
+            ogma={ogma ?? undefined}
           />
         </div>
       )}

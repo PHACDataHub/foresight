@@ -2,6 +2,9 @@
     "App": {
         "title": "Sérum"
     },
+    "AppWrapper": {
+        "__layout__error__": "Impossible d'appliquer la mise en page."
+    },
     "TimeTravel": {
         "chooseDate": "Aujourd'hui c'est le",
         "currentDate": "actuelle",
@@ -54,7 +57,7 @@
             "noLocationTitle": "Aucune donnée de localisation n'est disponible",
             "invalid": "Coordonnées invalides ou manquantes"
         },
-        "ClusterNode": {
+        "ClusterView": {
             "summary": "Résumé",
             "articles": "Articles",
             "questions": "Questions sur ce cluster",
@@ -80,7 +83,7 @@
             "score": "Note GPHIN:",
             "outlier": "Valeur aberrante"
         },
-        "NodeTitle": {
+        "Title": {
             "openTitle": "{clear, select, true {Articles dans ce cluster} other {Effacer la sélection}}"
         },
         "DataLoader": {

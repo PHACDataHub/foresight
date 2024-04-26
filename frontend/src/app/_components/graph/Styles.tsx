@@ -2,8 +2,9 @@
 
 import { type Edge, type Node as OgmaNode } from "@linkurious/ogma";
 
-import { EdgeStyleRule, NodeStyleRule } from "@linkurious/ogma-react";
+import { EdgeStyleRule, NodeStyleRule, useOgma } from "@linkurious/ogma-react";
 import { useCallback, useMemo } from "react";
+
 import { useStore } from "~/app/_store";
 import {
   findAlongPath,
@@ -12,24 +13,16 @@ import {
   nodeColours,
 } from "~/app/_utils/graph";
 
-const Styles = ({ fullScreen }: { fullScreen?: boolean }) => {
-  const { scale, searchMatches, selectedNode } = useStore();
+const Styles = () => {
+  const { searchMatches, selectedNode } = useStore();
+  const ogma = useOgma();
 
-  const radiusFunction = useCallback(
-    (n: OgmaNode) => {
-      const data = getNodeData(n);
-      if (!data) return;
-      const r = getNodeRadius(data);
-      const s = scale[data.type];
-      if (s) {
-        return s(r);
-      } else {
-        console.log(`no scale!  ${data.type}`);
-        return 10;
-      }
-    },
-    [scale],
-  );
+  const radiusFunction = useCallback((n: OgmaNode) => {
+    const data = getNodeData(n);
+    if (!data) return;
+    const r = getNodeRadius(data);
+    return r;
+  }, []);
 
   const selectedPath = useMemo(() => {
     if (!selectedNode) return null;
@@ -107,17 +100,7 @@ const Styles = ({ fullScreen }: { fullScreen?: boolean }) => {
           radius: (n) => {
             const data = getNodeData(n);
             if (!data) return;
-            const s = scale[data.type];
-            const subNodes = n.getSubNodes();
-            if (s && subNodes && subNodes.size > 0) {
-              const r =
-                subNodes.reduce((p: number, c) => {
-                  const d = getNodeData(c);
-                  const r = d ? getNodeRadius(d) : 0;
-                  return p + r;
-                }, 0) / subNodes.size;
-              return s(r);
-            }
+            return getNodeRadius(data);
           },
         }}
       />
@@ -185,7 +168,9 @@ const Styles = ({ fullScreen }: { fullScreen?: boolean }) => {
         }}
       />
       <NodeStyleRule
-        selector={(n) => fullScreen === true && n.getData("type") === "article"}
+        selector={(n) =>
+          ogma.view.isFullScreen() && n.getData("type") === "article"
+        }
         attributes={{
           text: {
             content: (n) => `${n.getData("title")}`,
