@@ -34,11 +34,11 @@ export default function ClusterGrowth({
   }, [endDate, startDate]);
 
   const [timeline, setTimeline] = useState(
-    history ? Array.from(new Array(days - 1).keys()) : [],
+    history ? Array.from(new Array(days).keys()) : [],
   );
 
   useEffect(() => {
-    setTimeline(Array.from(new Array(days - 1).keys()));
+    setTimeline(Array.from(new Array(days).keys()));
   }, [days]);
 
   const graphs = useMemo(() => {
