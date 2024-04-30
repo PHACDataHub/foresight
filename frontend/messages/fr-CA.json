@@ -5,6 +5,7 @@
     "AppWrapper": {
         "__layout__error__": "Impossible d'appliquer la mise en page.",
         "ProductTour": {
+            "tour": "Tournée",
             "back": "Retour",
             "close": "Fermer",
             "last": "Dernier",

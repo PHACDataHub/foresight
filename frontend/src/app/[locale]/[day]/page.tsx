@@ -6,3 +6,4 @@ export default function Index({ params }: { params: { day: string } }) {
   useParamsWithStore(params);
   return null;
 }
+Index.displayName="Index";

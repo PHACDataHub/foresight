@@ -2,7 +2,7 @@
 
 import Link from "@mui/material/Link";
 import { useParams } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import Joyride, {
   ACTIONS,
@@ -11,6 +11,7 @@ import Joyride, {
   STATUS,
   type Styles,
 } from "react-joyride";
+import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
 
 import locale from "./locale";
@@ -135,6 +136,9 @@ export default function ProductTour() {
   const { threats, setThreats, searchTerms, selectedNode, setSearchTerms } =
     useStore();
   const { day } = useParams();
+  const t = useTranslations("ProductTour");
+
+  const label = useMemo(() => t("tour"), [t]);
 
   const handleTourClick = useCallback(
     (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -280,7 +284,7 @@ export default function ProductTour() {
   return (
     <li>
       <Link href="#" onClick={handleTourClick}>
-        Tour
+        {label}
         <Joyride
           continuous
           locale={locale}

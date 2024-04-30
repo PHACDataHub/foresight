@@ -9,7 +9,7 @@ import {
 } from "@linkurious/ogma";
 import { NeighborGeneration, Ogma, useOgma } from "@linkurious/ogma-react";
 
-import L, { type Map } from "leaflet";
+import { type Map } from "leaflet";
 import { useStore } from "~/app/_store";
 import { getNodeData, isLocationValid } from "~/app/_utils/graph";
 import Styles from "./Styles";
@@ -34,7 +34,9 @@ export default function LocationTransforms() {
   const ogma = useOgma();
 
   const tiles = useMemo(() => {
-    const gm: GoogleMutant = L.gridLayer as unknown as GoogleMutant;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const L = require("leaflet") as { gridLayer: GoogleMutant };
+    const gm = L.gridLayer;
     return gm.googleMutant({
       type: mapMode,
     });

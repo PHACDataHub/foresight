@@ -2,11 +2,18 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 config.autoAddCss = false;
 
-import { getMessages, getTranslations } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  unstable_setRequestLocale,
+} from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import { getPathname } from "@nimpl/getters/get-pathname";
+import { getParams } from '@nimpl/getters/get-params'
 
 import Typography from "@mui/material/Typography";
 
+import React from "react";
 import AppWrapper from "~/app/_components/AppWrapper";
 import PanelInterface from "~/app/_components/PanelInterface";
 import HighlightTerms from "~/app/_components/HighlightTerms";
@@ -25,11 +32,28 @@ import "~/styles/globals.css";
 
 import { TRPCReactProvider } from "~/trpc/react";
 
+// Can be imported from a shared config
+const locales = ["en-CA", "fr-CA"];
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
+  const pathName = getPathname();
+  const params = getParams();
+
+
+  if (!pathName) return null;
+  if (pathName === "/") return <>{children}</>;
+
+  unstable_setRequestLocale(params.locale as string ?? "en-CA");
+
   const messages = await getMessages();
 
   const t = await getTranslations("App");

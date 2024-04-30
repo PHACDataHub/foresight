@@ -5,6 +5,7 @@
     "AppWrapper": {
         "__layout__error__": "Unable to apply layout.",
         "ProductTour": {
+            "tour": "Tour",
             "back": "Back",
             "close": "Close",
             "last": "Last",
@@ -12,7 +13,7 @@
             "skip": "End",
             "Welcome": {
                 "title": "Welcome to Foresight",
-                "content": "Work in progress"
+                "content": "With the advent of novel technologies, our approach towards problem-solving is undergoing a paradigm shift, enabling more profound and multifaceted analyses. Our early attempt of NLP-pipeline prototype for GPHIN Next Generation represents an initial foray into leveraging technology for public health surveillance, yet it merely skims the surface of potential applications. Current capabilities extend far beyond, with the capacity to process from seven thousand to millions of articles and billions of data points every day, highlighting the critical need for automation and efficiency enhancement in data processing and analysis."
             },
             "SidePanel": {
                 "title": "The Side Panel",
