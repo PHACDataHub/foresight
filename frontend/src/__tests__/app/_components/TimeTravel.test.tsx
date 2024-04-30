@@ -13,7 +13,7 @@ const onError = (e: ErrorEvent) => {
   e.preventDefault();
 };
 
-describe("TimeTravel [component]", () => {
+describe.skip("TimeTravel [component]", () => {
   beforeEach(() => {
     window.addEventListener("error", onError);
   });

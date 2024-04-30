@@ -10,6 +10,8 @@ import { env } from "~/env";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
+const debug = false;
+
 const pixel = {
   article: { min: 2, max: 10 },
   cluster: { min: 10, max: 25 },
@@ -149,6 +151,7 @@ const funcTimer = (
 
   const i = {
     measure: (title: string, mark?: boolean) => {
+      if (!debug) return;
       const end = new Date();
       const elapsed = (end.getTime() - marked.getTime()).toLocaleString(
         "en-CA",
@@ -167,6 +170,7 @@ const funcTimer = (
       if (mark) marked = new Date();
     },
     msg: (title: string, mark?: boolean) => {
+      if (!debug) return;
       const end = new Date();
       const prefix = `[${end.toLocaleTimeString()}]`;
       const label = `${prefix} ${title}`;
@@ -176,6 +180,7 @@ const funcTimer = (
       if (mark) marked = new Date();
     },
     payload: (data: unknown[], mark?: boolean) => {
+      if (!debug) return;
       const end = new Date();
       const prefix = `[${end.toLocaleTimeString()}]`;
       const payload = (JSON.stringify(data).length - 4).toLocaleString(
@@ -194,9 +199,11 @@ const funcTimer = (
       if (mark) marked = new Date();
     },
     mark: () => {
+      if (!debug) return;
       marked = new Date();
     },
     end: () => {
+      if (!debug) return;
       const end = new Date();
       const elapsed = (end.getTime() - start.getTime()).toLocaleString(
         "en-CA",
@@ -213,15 +220,17 @@ const funcTimer = (
       );
     },
   };
-
-  const prefix = `[${start.toLocaleTimeString()}]`;
-  const label = `${prefix} ${msg}`;
-  console.log(`${label} ${"#".repeat(Math.max(0, width - label.length - 1))}`);
-  if (params)
-    JSON.stringify(params, null, 2)
-      .split("\n")
-      .forEach((m) => i.msg(m));
-
+  if (debug) {
+    const prefix = `[${start.toLocaleTimeString()}]`;
+    const label = `${prefix} ${msg}`;
+    console.log(
+      `${label} ${"#".repeat(Math.max(0, width - label.length - 1))}`,
+    );
+    if (params)
+      JSON.stringify(params, null, 2)
+        .split("\n")
+        .forEach((m) => i.msg(m));
+  }
   return i;
 };
 

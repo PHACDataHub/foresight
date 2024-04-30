@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "@mui/material/Link";
 
@@ -7,7 +7,12 @@ import ProductTour from "./ProductTour";
 
 export default function GocTheme({ children }: { children: React.ReactNode }) {
   const { locale } = useParams();
+  const [clientSide, setClientSide] = useState(false);
 
+  useEffect(() => {
+    setClientSide(true);
+  }, []);
+  
   const lngLinks = useMemo(() => {
     if (locale === "en-CA")
       return [{ text: "Français", href: "/fr-CA/1", lang: "fr" }];
@@ -44,7 +49,7 @@ export default function GocTheme({ children }: { children: React.ReactNode }) {
           <section className="flex space-x-2" style={{ fontSize: 18 }}>
             <h2 className="wb-inv">Application Menus</h2>
             <ul id="top-menu" className="flex space-x-2">
-              <ProductTour />
+              {clientSide && <ProductTour />}
             </ul>
             <ul className="flex space-x-2">
               {lngLinks.map((lng) => (

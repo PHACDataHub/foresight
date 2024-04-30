@@ -84,7 +84,6 @@ export default function PanelInterface() {
   const rodModeTracker = useRef<string>("");
   const rodModeTrackerTimer = useRef<NodeJS.Timeout | null>(null);
 
-
   useEffect(() => {
     setSelectedNode(null);
   }, [day, setSelectedNode]);
@@ -351,9 +350,13 @@ export default function PanelInterface() {
           <FontAwesomeIcon icon={faGripLinesVertical} />
         </PanelResizeHandle>
       )}
-      <Panel className="flex flex-col " order={2}>
+      <Panel className="flex flex-col " order={2} defaultSize={75}>
         <PanelGroup ref={panelDrawerRef} direction="vertical" id="drawer">
-          <Panel className="flex flex-col sdp-graph-panel" order={3}>
+          <Panel
+            className="sdp-graph-panel flex flex-col"
+            order={3}
+            defaultSize={100 - minSizeDrawer}
+          >
             {isFetching && (
               <div className="flex w-full flex-1 flex-col justify-center">
                 <FontAwesomeIcon icon={faSpinner} size="4x" spin />

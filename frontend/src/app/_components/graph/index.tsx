@@ -1,9 +1,9 @@
 "use client";
 
-import { forwardRef, useEffect, useRef, useState } from "react";
-import L from "leaflet";
+// import L from "leaflet";
+// import "leaflet.gridlayer.googlemutant";
 
-import "leaflet.gridlayer.googlemutant";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
 
 import { NodeGrouping, Ogma } from "@linkurious/ogma-react";
@@ -23,8 +23,6 @@ import Interactions from "./Interactions";
 import Controls from "./Controls";
 import LocationTransforms from "./LocationTransforms";
 import ClusterTimeEvolution from "./ClusterTimeEvolution";
-
-OgmaLib.libraries.leaflet = L;
 
 export interface Country {
   country: string;
@@ -89,6 +87,11 @@ const Graph = forwardRef<
   );
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const L = require("leaflet") as unknown;
+    require("leaflet.gridlayer.googlemutant");
+    OgmaLib.libraries.leaflet = L;
+
     const loadGoogleMaps = async () => {
       const loader = new Loader({
         apiKey: env.NEXT_PUBLIC_GOOGLE_API_KEY,
