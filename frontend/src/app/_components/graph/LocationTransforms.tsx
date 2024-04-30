@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type OgmaLib from "@linkurious/ogma";

@@ -438,7 +438,7 @@ export function ClusterView(
                 </div>
               </div>
             </div>
-            <div className="flex flex-col border-t pb-[12px] pl-[30px] pr-[10px] pt-[16px]">
+            <div className="sdp-chat-console flex flex-col border-t pb-[12px] pl-[30px] pr-[10px] pt-[16px]">
               <TextField
                 InputLabelProps={{ sx: { fontSize: 16 } }}
                 variant="outlined"

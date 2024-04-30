@@ -34,20 +34,12 @@ type TimeTravelProps = {
 };
 
 function TimeTravelComponent({
-  date = new Date(2019, 11, 1, 12),
+  date: propDate,
   startDate = new Date(2019, 11, 1, 12),
   endDate = new Date(2020, 0, 31, 12),
   onChange,
 }: TimeTravelProps) {
-  if (endDate < startDate)
-    throw new Error("endDate must occur after startDate");
-  if (!(date >= startDate && date <= endDate))
-    throw new Error("Specified date outside of range");
-  const days =
-    Math.ceil((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
-  if (days > 100) throw new Error("Only 100 days are supported.");
-
-  const { locale } = useParams();
+  const { locale, day } = useParams();
   const selectedDate = useRef<HTMLAnchorElement>(null);
 
   const router = useRouter();
@@ -62,6 +54,16 @@ function TimeTravelComponent({
       });
     }
   }, [selectedDate]);
+
+  const date = useMemo(() => {
+    if (propDate) return propDate;
+    if (typeof day === "string") {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + parseInt(day) - 1);
+      return date;
+    }
+    return startDate;
+  }, [day, propDate, startDate]);
 
   const handleDateChange = useCallback(
     (p: Date, evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -187,7 +189,7 @@ function TimeTravelComponent({
   // }, [date, locale, startDate]);
 
   return (
-    <nav className="mb-3 mt-3 flex space-x-2 whitespace-nowrap">
+    <nav className="sdp-timetravel mb-3 mt-3 flex space-x-2 whitespace-nowrap">
       <IconButton
         // href={prevDay}
         href=""

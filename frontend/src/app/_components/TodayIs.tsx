@@ -4,7 +4,7 @@
  * Component used to display the current date as a locale string.
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import Typography from "@mui/material/Typography";
@@ -22,17 +22,26 @@ type TimeTravelProps = {
   };
 };
 
-function TodayIsComponent({
-  date = new Date(2019, 11, 1, 12),
-  messages,
-}: TimeTravelProps) {
-  const { locale } = useParams();
+function TodayIsComponent({ date, messages }: TimeTravelProps) {
+  const { locale, day } = useParams();
 
   const dateToStr = useDateToStr(locale);
 
+  const dateD = useMemo(() => {
+    if (date) return date;
+    if (typeof day === "string") {
+      const startDate = new Date(2019, 11, 1, 12);
+      const newDate = new Date(startDate);
+      newDate.setDate(newDate.getDate() + parseInt(day) - 1);
+      return newDate;
+    }
+  }, [date, day]);
+
+  if (!dateD) return null;
+
   return (
     <Typography variant="subtitle1" fontSize={16} className="whitespace-nowrap">
-      {messages?.todayIs ?? "title"} {dateToStr(date)}
+      {messages?.todayIs ?? "title"} {dateToStr(dateD)}
     </Typography>
   );
 }

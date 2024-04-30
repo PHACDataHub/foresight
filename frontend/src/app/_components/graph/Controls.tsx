@@ -426,7 +426,7 @@ export default function Controls() {
         )}
         {!geoMode && (
           <>
-            <ButtonGroup>
+            <ButtonGroup className="sdp-refresh-collapse-expand">
               <IconButton
                 className="foresight-graph-btn"
                 title={t("resetLayout")}
@@ -446,7 +446,7 @@ export default function Controls() {
                 {!expanding && <FileSearch size={22} />}
               </IconButton>
               <IconButton
-                className="foresight-graph-btn"
+                className="foresight-graph-btn sdp-collapse"
                 onClick={handleCollapseAllClick}
                 title={t("collapseArticles")}
               >
@@ -454,8 +454,9 @@ export default function Controls() {
               </IconButton>
             </ButtonGroup>
             <IconButton
-              className={`foresight-graph-btn${heatMapCanvas ? " active" : ""}`}
+              className={`foresight-graph-btn${heatMapCanvas ? " active" : ""} ${!Boolean(history) ? " disabled" : ""}`}
               title="Heatmap"
+              disabled={!Boolean(history)}
               onClick={handleHeatMap}
             >
               <Heater size={22} />

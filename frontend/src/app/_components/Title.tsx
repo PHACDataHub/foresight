@@ -107,7 +107,7 @@ export function Title(
           </IconButton>
           {showLocate && (
             <IconButton
-              className="foresight-graph-btn"
+              className="foresight-graph-btn sdp-locate-btn"
               style={{ width: 32, height: 32 }}
               onClick={handleLocate}
             >

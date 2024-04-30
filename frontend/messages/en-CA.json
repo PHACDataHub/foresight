@@ -3,7 +3,90 @@
         "title": "Foresight"
     },
     "AppWrapper": {
-        "__layout__error__": "Unable to apply layout."
+        "__layout__error__": "Unable to apply layout.",
+        "ProductTour": {
+            "back": "Back",
+            "close": "Close",
+            "last": "Last",
+            "next": "Next",
+            "skip": "End",
+            "Welcome": {
+                "title": "Welcome to Foresight",
+                "content": "Work in progress"
+            },
+            "SidePanel": {
+                "title": "The Side Panel",
+                "content": "This is the side panel where you can read and interact with clusters and articles."
+            },
+            "SearchAndFilter": {
+                "title": "Search and filter functions",
+                "content": "You can search for certain keywords and specify a date and time span that you are interested in."
+            },
+            "KeywordSearch": {
+                "title": "Keyword Search",
+                "content": "For our example, try searching for the term <strong>pneumonia</strong>, and press enter when finished."
+            },
+            "DatePickerIntro": {
+                "title": "Date Picker",
+                "content": "To select a date, start by clicking on this button."
+            },
+            "DatePickerDate": {
+                "title": "Date Picker",
+                "content": "Now choose a date, for this example please select <strong>Dec 31st, 2019</strong>."
+            },
+            "FilterViewIntro": {
+                "title": "Filter View",
+                "content": "You can see the article count has changed based on our search criteria, however not all health threat categories are currently visible. Lets modify the selected categories by clicking on the <strong>Filter View</strong> button."
+            },
+            "FilterViewSelectThreat": {
+                "title": "Filter View",
+                "content": "Here you can see all the relevant public health threats that are being detected. We are interested in only a certain few. Please toggle on <strong>Unrecognized health risks</strong>."
+            },
+            "FilterViewClose": {
+                "title": "Filter View",
+                "content": "Once finished toggling health threats, close the dialog using the <strong>Filter View</strong> button."
+            },
+            "ClusterGraph": {
+                "title": "Cluster Graph",
+                "content": "Here we can see the cluster view update based on our search criteria. In this view we can see the relevant articles and how they relate to each other based on our keyword search, the speicified date and the selected health threats.<p>We will explore this graph more in later steps.</p>"
+            },
+            "GraphViews": {
+                "title": "Graph Views",
+                "content": "You can change how the graph is displayed using different layouts. A map view is also available which will display the clusters on a world map."
+            },
+            "CollapseAllIntro": {
+                "title": "Graph Views",
+                "content": "These allow you to re-apply the selected layout, expand all articles and collapse all articles."
+            },
+            "CollapseAll": {
+                "title": "Graph Views",
+                "content": "By default, all articles are expanded. Try collapsing all the articles by clicking on this button."
+            },
+            "ArticleClusters": {
+                "title": "Article Clusters",
+                "content": "On the side menu we can see the clusters sorted by size. For our example we are interested in the <strong>Viral Pneumonia Outbreak in Wuhan</strong> cluster.<p>Click on the <strong>locate</strong> button to bring this cluster into view.</p>"
+            },
+            "ExpandClusterIntro": {
+                "title": "Cluster",
+                "content": "<strong>Double click on the cluster node</strong> to expand it's contents."
+            },
+            "ExpandCluster": {
+                "title": "Cluster",
+                "content": "The article within this cluster can now be seen in green."
+            },
+            "SelectedClusterIntro": {
+                "title": "Selected Cluster",
+                "content": "Here you can see the details about the cluster we have selected. A summary about the cluster and pre-generated questions are provided below."
+            },
+            "ChatConsole": {
+                "title": "Chat Console",
+                "content": "Here you can ask your own questions to learn more about the cluster. The answers are provided by AI's understanding of the cluster."
+            },
+            "EndOfTour": {
+                "title": "End of tour",
+                "content": "This concludes our tour! If you would like to replay this tour you may do so through the <strong>button</strong> here."
+            }
+        }
     },
     "TimeTravel": {
         "chooseDate": "Today is",

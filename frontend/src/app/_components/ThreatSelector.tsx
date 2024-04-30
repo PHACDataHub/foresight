@@ -78,7 +78,7 @@ function ThreatSelectorComponent() {
   }, [t, selected.length, threats]);
 
   return (
-    <div className="relative" onClick={preventPropagation}>
+    <div className="sdp-threat-sel relative" onClick={preventPropagation}>
       <Button
         sx={{ fontSize: 14 }}
         className="whitespace-nowrap"
@@ -89,7 +89,7 @@ function ThreatSelectorComponent() {
         {t("filterView")}
       </Button>
       {open && (
-        <div className="absolute right-0 z-[1402] flex w-[600px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
+        <div className="sdp-threat-sel-list absolute right-0 z-[1402] flex w-[600px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
           <div className="flex h-[52px] items-center justify-between pb-[20px] pt-[22px]">
             <Chip
               label={t("selected", { count: selected.length })}

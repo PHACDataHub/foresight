@@ -3,7 +3,90 @@
         "title": "Sérum"
     },
     "AppWrapper": {
-        "__layout__error__": "Impossible d'appliquer la mise en page."
+        "__layout__error__": "Impossible d'appliquer la mise en page.",
+        "ProductTour": {
+            "back": "Retour",
+            "close": "Fermer",
+            "last": "Dernier",
+            "next": "Suivant",
+            "skip": "Terminer",
+            "Welcome": {
+                "title": "Bienvenue a Sérum",
+                "content": "Travail en cours"
+            },
+            "SidePanel": {
+                "title": "Le panneau latéral",
+                "content": "Ceci est le panneau latéral où vous pouvez lire et interagir avec des clusters et des articles."
+            },
+            "SearchAndFilter": {
+                "title": "Fonctions de recherche et de filtrage",
+                "content": "Vous pouvez rechercher certains mots-clés et spécifier une période de date et d'heure qui vous intéresse."
+            },
+            "KeywordSearch": {
+                "title": "Recherche par mot-clé",
+                "content": "Pour notre exemple, essayez de rechercher le terme <strong>pneumonie</strong>, et appuyez sur Entrée lorsque vous avez terminé."
+            },
+            "DatePickerIntro": {
+                "title": "Sélecteur de date",
+                "content": "Pour sélectionner une date, commencez par cliquer sur ce bouton."
+            },
+            "DatePickerDate": {
+                "title": "Sélecteur de date",
+                "content": "Maintenant, choisissez une date, pour cet exemple veuillez sélectionner le <strong>31 décembre 2019</strong>."
+            },
+            "FilterViewIntro": {
+                "title": "Vue du filtre",
+                "content": "Vous pouvez voir que le nombre d'articles a changé en fonction de nos critères de recherche, cependant toutes les catégories de menaces sanitaires ne sont pas actuellement visibles. Modifions les catégories sélectionnées en cliquant sur le bouton <strong>Vue du filtre</strong>."
+            },
+            "FilterViewSelectThreat": {
+                "title": "Vue du filtre",
+                "content": "Ici, vous pouvez voir toutes les menaces sanitaires publiques pertinentes qui sont détectées. Nous nous intéressons seulement à certaines d'entre elles. Veuillez activer <strong>Risques sanitaires non reconnus</strong>."
+            },
+            "FilterViewClose": {
+                "title": "Vue du filtre",
+                "content": "Une fois que vous avez terminé de basculer les menaces sanitaires, fermez la boîte de dialogue en utilisant le bouton <strong>Vue du filtre</strong>."
+            },
+            "ClusterGraph": {
+                "title": "Graphique de cluster",
+                "content": "Ici, nous pouvons voir la mise à jour de la vue en cluster en fonction de nos critères de recherche. Dans cette vue, nous pouvons voir les articles pertinents et comment ils se rapportent les uns aux autres en fonction de notre recherche par mot-clé, de la date spécifiée et des menaces sanitaires sélectionnées.<p>Nous explorerons ce graphique plus en détail dans les étapes suivantes.</p>"
+            },
+            "GraphViews": {
+                "title": "Vues graphiques",
+                "content": "Vous pouvez changer la façon dont le graphique est affiché en utilisant différentes mises en page. Une vue de carte est également disponible, qui affichera les clusters sur une carte du monde."
+            },
+            "CollapseAllIntro": {
+                "title": "Vues graphiques",
+                "content": "Celles-ci vous permettent de réappliquer la mise en page sélectionnée, d'étendre tous les articles et de réduire tous les articles."
+            },
+            "CollapseAll": {
+                "title": "Vues graphiques",
+                "content": "Par défaut, tous les articles sont étendus. Essayez de réduire tous les articles en cliquant sur ce bouton."
+            },
+            "ArticleClusters": {
+                "title": "Clusters d'articles",
+                "content": "Dans le menu latéral, nous pouvons voir les clusters triés par taille. Pour notre exemple, nous nous intéressons au cluster <strong>Épidémie de pneumonie virale à Wuhan</strong>.<p>Cliquez sur le bouton <strong>localiser</strong> pour afficher ce cluster.</p>"
+            },
+            "ExpandClusterIntro": {
+                "title": "Cluster",
+                "content": "<strong>Double-cliquez sur le nœud du cluster</strong> pour développer son contenu."
+            },
+            "ExpandCluster": {
+                "title": "Cluster",
+                "content": "L'article de ce cluster peut maintenant être vu en vert."
+            },
+            "SelectedClusterIntro": {
+                "title": "Cluster sélectionné",
+                "content": "Ici, vous pouvez voir les détails sur le cluster que nous avons sélectionné. Un résumé sur le cluster et des questions pré-générées sont fournies ci-dessous."
+            },
+            "ChatConsole": {
+                "title": "Console de discussion",
+                "content": "Ici, vous pouvez poser vos propres questions pour en savoir plus sur le cluster. Les réponses sont fournies par la compréhension de l'IA du cluster."
+            },
+            "EndOfTour": {
+                "title": "Fin de la visite",
+                "content": "Cela conclut notre visite ! Si vous souhaitez rejouer cette visite, vous pouvez le faire en utilisant le <strong>bouton</strong> ici."
+            }
+        }
     },
     "TimeTravel": {
         "chooseDate": "Aujourd'hui c'est le",

@@ -159,7 +159,7 @@ export default function SidePanel({
 
   return (
     <div
-      className={`flex w-full min-w-[480px] flex-col ${!showInfoPanel ? " cursor-pointer" : ""} `}
+      className={`sdp-sidepanel flex w-full min-w-[480px] flex-col ${!showInfoPanel ? " cursor-pointer" : ""} `}
       onClick={clickHandler}
     >
       <div className={headerClassNames} style={headerStyles}>

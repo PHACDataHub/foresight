@@ -48,9 +48,9 @@ export default function WorkingWith() {
   }, [searchMatches.length, t, terms.length]);
 
   return (
-    <>
+    <div>
       {articleMsg}
       {highlightMsg}
-    </>
+    </div>
   );
 }
