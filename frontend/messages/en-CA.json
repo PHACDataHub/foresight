@@ -85,7 +85,7 @@
             },
             "EndOfTour": {
                 "title": "End of tour",
-                "content": "This concludes our tour! If you would like to replay this tour you may do so through the <strong>button</strong> here."
+                "content": "This concludes our tour! If you would like to replay this tour you may do so through the <strong>Tour</strong> here."
             }
         }
     },
