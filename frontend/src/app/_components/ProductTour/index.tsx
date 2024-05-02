@@ -228,6 +228,12 @@ export default function ProductTour() {
           .forwardOutOf("FilterViewSelectThreat", () => {
             setThreats(threats.concat(["Unrecognized health risks"]));
           })
+          .outOf("FilterViewSelectThreat", () => {
+            const el = document.querySelector<HTMLButtonElement>(
+              ".sdp-threat-sel > button",
+            );
+            if (el) el.click();
+          })
           .into("CollapseAll", () => {
             const el = document.querySelector<HTMLButtonElement>(".sdp-expand");
             if (el) el.click();
@@ -309,7 +315,7 @@ export default function ProductTour() {
 
   return (
     <li>
-      <Link href="#" onClick={handleTourClick}>
+      <Link href="#" onClick={handleTourClick} data-touring={run}>
         {label}
       </Link>
       <Joyride

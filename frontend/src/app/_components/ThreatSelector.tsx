@@ -31,7 +31,11 @@ function ThreatSelectorComponent() {
 
   useEffect(() => {
     if (open) {
-      const onClose = () => setOpen(false);
+      const onClose = () => {
+        const el = document.querySelector("a[data-touring=true]");
+        if (el) return;
+        setOpen(false);
+      }
       setTimeout(() => {
         window.addEventListener("click", onClose);
       }, 100);
