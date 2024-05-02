@@ -10,10 +10,10 @@
             "close": "Fermer",
             "last": "Dernier",
             "next": "Suivant",
-            "skip": "Terminer",
+            "skip": "Fin",
             "Welcome": {
-                "title": "Bienvenue a Sérum",
-                "content": "Travail en cours"
+                "title": "Bienvenue à Sérum",
+                "content": "Avec l'avènement de nouvelles technologies, notre approche de la résolution des problèmes subit un changement de paradigme, permettant des analyses plus profondes et multifacettes. Notre première tentative de prototype de pipeline NLP pour GPHIN Next Generation représente une première incursion dans l'utilisation de la technologie pour la surveillance de la santé publique, mais elle effleure à peine la surface des applications potentielles. Les capacités actuelles vont bien au-delà, avec la capacité de traiter de sept mille à des millions d'articles et de milliards de points de données chaque jour, mettant en évidence le besoin critique d'automatisation et d'amélioration de l'efficacité dans le traitement et l'analyse des données."
             },
             "SidePanel": {
                 "title": "Le panneau latéral",
@@ -25,27 +25,27 @@
             },
             "KeywordSearch": {
                 "title": "Recherche par mot-clé",
-                "content": "Pour notre exemple, essayez de rechercher le terme <strong>pneumonie</strong>, et appuyez sur Entrée lorsque vous avez terminé."
+                "content": "Si vous vouliez rechercher <strong>pneumonie</strong> par exemple, vous le saisiriez ici. Vous pouvez rechercher plusieurs mots-clés simultanément en appuyant sur Entrée entre eux."
             },
-            "DatePickerIntro": {
-                "title": "Sélecteur de date",
-                "content": "Pour sélectionner une date, commencez par cliquer sur ce bouton."
+            "KeywordSearchBoolean": {
+                "title": "Recherche par mot-clé",
+                "content": "Par défaut, les clusters ou les articles contenant <strong>n'importe lequel de vos termes de recherche</strong> seront mis en surbrillance. Si vous souhaitez uniquement mettre en surbrillance ceux qui correspondent à tous les termes, sélectionnez cette case."
             },
-            "DatePickerDate": {
+            "DatePicker": {
                 "title": "Sélecteur de date",
-                "content": "Maintenant, choisissez une date, pour cet exemple veuillez sélectionner le <strong>31 décembre 2019</strong>."
+                "content": "Vous pouvez utiliser ce bouton pour sélectionner le jour sur lequel vous souhaitez travailler. Vous pouvez remonter dans le temps pour voir comment les nouvelles sont apparues le <strong>6 janvier 2020</strong> par exemple."
+            },
+            "History": {
+                "title": "Période de temps",
+                "content": "Certaines dates incluent la possibilité d'examiner l'évolution des clusters sur une période de temps. Ce prototype inclut des vues sur 3 et 7 jours pour le 6 janvier, et une vue sur 30 jours pour le 29 janvier. Nous choisirons <strong>3 jours</strong> pour cet exemple."
             },
             "FilterViewIntro": {
                 "title": "Vue du filtre",
-                "content": "Vous pouvez voir que le nombre d'articles a changé en fonction de nos critères de recherche, cependant toutes les catégories de menaces sanitaires ne sont pas actuellement visibles. Modifions les catégories sélectionnées en cliquant sur le bouton <strong>Vue du filtre</strong>."
+                "content": "Vous pouvez voir que le nombre d'articles a changé en fonction de nos critères de recherche, cependant toutes les catégories de menaces sanitaires ne sont pas actuellement visibles. Nous pouvons modifier les catégories sélectionnées en cliquant sur le bouton <strong>Vue du filtre</strong>."
             },
             "FilterViewSelectThreat": {
                 "title": "Vue du filtre",
-                "content": "Ici, vous pouvez voir toutes les menaces sanitaires publiques pertinentes qui sont détectées. Nous nous intéressons seulement à certaines d'entre elles. Veuillez activer <strong>Risques sanitaires non reconnus</strong>."
-            },
-            "FilterViewClose": {
-                "title": "Vue du filtre",
-                "content": "Une fois que vous avez terminé de basculer les menaces sanitaires, fermez la boîte de dialogue en utilisant le bouton <strong>Vue du filtre</strong>."
+                "content": "Ici, vous pouvez voir toutes les menaces sanitaires publiques pertinentes qui sont détectées. Nous nous intéressons seulement à certaines d'entre elles. Nous allons ajouter <strong>Risques sanitaires non reconnus</strong>."
             },
             "ClusterGraph": {
                 "title": "Graphique de cluster",
@@ -61,19 +61,23 @@
             },
             "CollapseAll": {
                 "title": "Vues graphiques",
-                "content": "Par défaut, tous les articles sont étendus. Essayez de réduire tous les articles en cliquant sur ce bouton."
+                "content": "Par défaut, tous les articles sont étendus. Ce bouton réduit les articles ne laissant visibles que les clusters, les clusters hiérarchiques et les menaces."
             },
             "ArticleClusters": {
                 "title": "Clusters d'articles",
-                "content": "Dans le menu latéral, nous pouvons voir les clusters triés par taille. Pour notre exemple, nous nous intéressons au cluster <strong>Épidémie de pneumonie virale à Wuhan</strong>.<p>Cliquez sur le bouton <strong>localiser</strong> pour afficher ce cluster.</p>"
+                "content": "Dans le menu latéral, nous pouvons voir les clusters triés par taille. Vous pouvez localiser n'importe quel cluster sur le graphique en utilisant le bouton <strong>localiser</strong>."
             },
             "ExpandClusterIntro": {
                 "title": "Cluster",
-                "content": "<strong>Double-cliquez sur le nœud du cluster</strong> pour développer son contenu."
+                "content": "Vous pouvez également <strong>double-cliquer sur les nœuds de cluster</strong> pour développer leur contenu."
             },
             "ExpandCluster": {
                 "title": "Cluster",
                 "content": "L'article de ce cluster peut maintenant être vu en vert."
+            },
+            "ClusterGrowth": {
+                "title": "Croissance du cluster",
+                "content": "Ici, nous pouvons examiner l'évolution d'un cluster au fil du temps."
             },
             "SelectedClusterIntro": {
                 "title": "Cluster sélectionné",
@@ -85,7 +89,7 @@
             },
             "EndOfTour": {
                 "title": "Fin de la visite",
-                "content": "Cela conclut notre visite ! Si vous souhaitez rejouer cette visite, vous pouvez le faire en utilisant le <strong>bouton</strong> ici."
+                "content": "Ceci conclut notre visite ! Si vous souhaitez rejouer cette visite, vous pouvez le faire via le <strong>bouton</strong> ici."
             }
         }
     },

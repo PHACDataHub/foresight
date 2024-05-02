@@ -114,7 +114,9 @@ const Graph = forwardRef<
   useEffect(() => {
     if (ogma && noControls && layout) {
       setTimeout(() => {
-        void applyLayout({ ogma, layout });
+        ogma.events.once("idle", () => {
+          void applyLayout({ ogma, layout });
+        });
       }, 0);
     }
   }, [layout, noControls, ogma, graph]);
@@ -129,7 +131,7 @@ const Graph = forwardRef<
         onReady={(ogma) => setOgma(ogma)}
         options={{
           minimumHeight: 100,
-          minimumWidth: 100,
+          minimumWidth: 160,
         }}
       >
         <NodeGrouping

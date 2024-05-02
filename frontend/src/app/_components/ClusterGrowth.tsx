@@ -88,7 +88,7 @@ export default function ClusterGrowth({
   }, [clusterId, days, rawGraph?.edges, rawGraph?.nodes, startDate]);
 
   return (
-    <div className="relative flex flex-wrap justify-center space-x-2 border-t pt-2">
+    <div className="sdp-cluster-growth relative flex flex-wrap justify-center space-x-2 border-t pt-2">
       {graphs.map((g, i) => {
         return (
           <div key={`day_${i}`}>

@@ -45,7 +45,11 @@ export default function HistoryChooser({
   );
 
   return (
-    <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+    <FormControl
+      className="sdp-history-chooser"
+      variant="standard"
+      sx={{ m: 1, minWidth: 120 }}
+    >
       <InputLabel sx={{ fontSize: 16 }} id="select-timespan">
         {messages.label}
       </InputLabel>

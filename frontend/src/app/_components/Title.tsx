@@ -35,9 +35,9 @@ export function Title(
       return;
     }
     const n = ogma?.getNodes().filter((n) => getNodeId(n) === getDataId(data));
-    if (n?.size === 1) {
+    if (n?.size === 1 && ogma) {
       const dataNode = n.get(0);
-      setSelectedNode({ node: dataNode, activeTab: "articles" });
+      setSelectedNode({ node: dataNode, activeTab: "articles", ogma });
       dataNode.setSelected(true);
     }
   }, [data, selectedNode?.node, setSelectedNode, ogma]);
@@ -98,7 +98,7 @@ export function Title(
       {data && (
         <div className="flex space-x-2">
           <IconButton
-            className="foresight-graph-btn"
+            className="foresight-graph-btn sdp-select-node-btn"
             style={{ width: 32, height: 32 }}
             onClick={handleOpen}
             title={t("openTitle", { clear: !isSelected })}

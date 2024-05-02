@@ -428,14 +428,14 @@ export default function Controls() {
           <>
             <ButtonGroup className="sdp-refresh-collapse-expand">
               <IconButton
-                className="foresight-graph-btn"
+                className="sdp-refresh foresight-graph-btn"
                 title={t("resetLayout")}
                 onClick={handleReset}
               >
                 <RefreshCcw size={22} />
               </IconButton>
               <IconButton
-                className={`foresight-graph-btn${expanding ? " disabled" : ""}`}
+                className={`sdp-expand foresight-graph-btn${expanding ? " disabled" : ""}`}
                 disabled={expanding}
                 title={t("expandArticles", {
                   type: selectedNode?.getData("type") as string,
@@ -492,6 +492,7 @@ export default function Controls() {
         )}
         <IconButton
           className="foresight-graph-btn"
+          property={geoMode ? "geoActive" : "geoInactive"}
           onClick={handleGeoBtnClick}
           title={t("mapView")}
         >

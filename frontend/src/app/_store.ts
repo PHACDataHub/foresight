@@ -4,6 +4,7 @@ import {
   type Node as OgmaNode,
   type RawGraph,
 } from "@linkurious/ogma";
+import type OgmaLib from "@linkurious/ogma";
 
 import { type ScaleLinear } from "d3";
 import { type AllDataTypes } from "~/server/api/routers/post";
@@ -24,6 +25,7 @@ export type ClusterNodeSection = "summary" | "articles";
 export type SelectedNode = {
   node: OgmaNode;
   activeTab: ClusterNodeSection;
+  ogma: OgmaLib;
 };
 
 export type LayoutModes =
@@ -266,6 +268,9 @@ export const useStore = create<ForesightStore>((set) => ({
   selectedNode: null,
   setSelectedNode: (selectedNode) =>
     set((state) => {
+      if (!selectedNode?.node && state.selectedNode?.node) {
+        state.selectedNode.node.setSelected(false);
+      }
       if (!state.panelWasToggled && !state.showInfoPanel && selectedNode)
         return { selectedNode, showInfoPanel: true };
       return { selectedNode };

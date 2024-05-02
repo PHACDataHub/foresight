@@ -48,7 +48,7 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
         .getNodes()
         .filter((n) => (n.getData() as { id: string }).id === openNode);
       nodes.setSelected(true);
-      setSelectedNode({ node: nodes.get(0), activeTab: "summary" });
+      setSelectedNode({ node: nodes.get(0), activeTab: "summary", ogma });
       setOpenNode(undefined);
     }
   }, [openNode, ogma, setSelectedNode, setOpenNode]);
@@ -182,7 +182,7 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
             (target.getData() as { location_generated?: boolean })
               ?.location_generated === true) &&
           target.isNode
-          ? { node: target, activeTab: "summary" }
+          ? { node: target, activeTab: "summary", ogma }
           : null,
       );
       setFocus(null);
@@ -195,7 +195,7 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
       ogma.events.off(clickHandler);
     };
   }, [
-    ogma.events,
+    ogma,
     setFocus,
     setLayout,
     setSelectedNode,

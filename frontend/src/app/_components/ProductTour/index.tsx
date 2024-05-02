@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "@mui/material/Link";
-import { useParams } from "next/navigation";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import Joyride, {
   ACTIONS,
@@ -12,58 +18,68 @@ import Joyride, {
   type Styles,
 } from "react-joyride";
 import { useTranslations } from "next-intl";
-import { useStore } from "~/app/_store";
+import { type SelectedNode, useStore } from "~/app/_store";
 
-import locale from "./locale";
+import { clusterExpandToggle } from "~/app/_utils/graph";
+import { api } from "~/trpc/react";
+import JoyrideLocales from "./locale";
 
 import standardTourFactory from "./StandardTour";
 
-const tf = standardTourFactory();
-
-const steps = [
-  tf.create("Welcome", {
-    target: "body",
-    placement: "center",
-    styles: { options: { width: "90vw" } },
-  }),
-  tf.create("SidePanel", { target: ".sdp-sidepanel", placement: "right" }),
-  tf.create("SearchAndFilter", { target: ".sdp-search-filter" }),
-  tf.create("KeywordSearch", { target: ".sdp-hightlight-terms" }, true),
-  tf.create("DatePickerIntro", { target: ".sdp-timetravel" }, true),
-  tf.create("DatePickerDate", { target: ".timeTravelCalendar" }, true),
-  tf.create("FilterViewIntro", { target: ".sdp-count-filter" }, true),
-  tf.create(
-    "FilterViewSelectThreat",
-    { target: ".sdp-threat-sel-list", placement: "left", hideFooter: false },
-    true,
-  ),
-  tf.create(
-    "FilterViewClose",
-    { target: ".sdp-threat-sel", placement: "left" },
-    true,
-  ),
-  tf.create("ClusterGraph", { target: ".sdp-graph-panel", placement: "left" }),
-  tf.create("GraphViews", { target: ".control-buttons" }),
-  tf.create("CollapseAllIntro", { target: ".sdp-refresh-collapse-expand" }),
-  tf.create("CollapseAll", { target: ".sdp-collapse" }, true),
-  tf.create(
-    "ArticleClusters",
-    { target: ".sdp-locate-btn", placement: "right" },
-    true,
-  ),
-  tf.create(
-    "ExpandClusterIntro",
-    { target: ".sdp-graph-panel", placement: "left" },
-    true,
-  ),
-  tf.create("ExpandCluster", { target: ".sdp-graph-panel", placement: "left" }),
-  tf.create("SelectedClusterIntro", {
-    target: ".sdp-sidepanel",
-    placement: "right",
-  }),
-  tf.create("ChatConsole", { target: ".sdp-chat-console" }),
-  tf.create("EndOfTour", { target: "#top-menu" }),
-];
+const tf = standardTourFactory({
+  Welcome: {
+    step: {
+      target: "body",
+      placement: "center",
+      styles: { options: { width: "50vw" } },
+    },
+  },
+  SidePanel: { step: { target: ".sdp-sidepanel", placement: "right" } },
+  SearchAndFilter: { step: { target: ".sdp-search-filter" } },
+  KeywordSearch: { step: { target: ".sdp-hightlight-terms" } },
+  KeywordSearchBoolean: { step: { target: ".sdp-term-boolean" } },
+  DatePicker: { step: { target: ".sdp-timetravel" } },
+  History: { step: { target: ".sdp-history-chooser" } },
+  FilterViewIntro: { step: { target: ".sdp-count-filter" } },
+  FilterViewSelectThreat: {
+    step: {
+      target: ".sdp-threat-sel-list",
+      placement: "left",
+    },
+  },
+  ClusterGraph: { step: { target: ".sdp-graph-panel", placement: "left" } },
+  GraphViews: { step: { target: ".control-buttons" } },
+  CollapseAllIntro: { step: { target: ".sdp-refresh-collapse-expand" } },
+  CollapseAll: { step: { target: ".sdp-collapse" } },
+  ArticleClusters: {
+    step: {
+      target: ".sdp-locate-btn:nth-child(2)",
+      placement: "right",
+      disableScrolling: true,
+    },
+  },
+  ExpandClusterIntro: {
+    step: {
+      target: ".sdp-graph-panel",
+      placement: "left",
+    },
+  },
+  ExpandCluster: { step: { target: ".sdp-graph-panel", placement: "left" } },
+  ClusterGrowth: {
+    step: {
+      target: ".sdp-cluster-growth",
+      placement: "top",
+    },
+  },
+  SelectedClusterIntro: {
+    step: {
+      target: ".sdp-sidepanel",
+      placement: "right",
+    },
+  },
+  ChatConsole: { step: { target: ".sdp-chat-console" } },
+  EndOfTour: { step: { target: "#top-menu" } },
+});
 
 const containedStyle: React.CSSProperties = {
   display: "inline-flex",
@@ -133,172 +149,184 @@ const joyrideStyles: Partial<Styles> = {
 export default function ProductTour() {
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
-  const { threats, setThreats, searchTerms, selectedNode, setSearchTerms } =
-    useStore();
-  const { day } = useParams();
+  const {
+    threats,
+    expandedClusters,
+    toggleExpandedCluster,
+    setLayoutBusy,
+    setLayoutNotBusy,
+    setThreats,
+    selectedNode,
+    setSelectedNode,
+    setSearchTerms,
+    setShowInfoPanel,
+  } = useStore();
+  const { locale } = useParams();
   const t = useTranslations("ProductTour");
+  const router = useRouter();
+  const cluster = api.post.cluster.useMutation();
+
+  const selectedNodeRef = useRef<SelectedNode | null>(null);
+
+  const steps = useMemo(() => tf.steps(), []);
+
+  useEffect(() => {
+    selectedNodeRef.current = selectedNode;
+  }, [selectedNode]);
 
   const label = useMemo(() => t("tour"), [t]);
+
+  const resetTour = useCallback(() => {
+    const l = typeof locale === "string" ? locale : "en-CA";
+    setStepIndex(0);
+    setSelectedNode(null);
+    setShowInfoPanel(true);
+    router.push(`/${l}/1`);
+    setSearchTerms([]);
+    const el = document.querySelector<HTMLButtonElement>(
+      "button[property=geoActive]",
+    );
+    if (el) {
+      el.click();
+    }
+  }, [locale, router, setSearchTerms, setSelectedNode, setShowInfoPanel]);
 
   const handleTourClick = useCallback(
     (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
       evt.preventDefault();
+      resetTour();
       setRun(true);
     },
-    [],
+    [resetTour],
   );
-
-  useEffect(() => {
-    if (run && stepIndex === tf.indexOf("KeywordSearch")) {
-      if (searchTerms.includes("pneumonia")) {
-        setStepIndex(tf.indexOf("DatePickerIntro"));
-      }
-    } else if (
-      run &&
-      stepIndex === tf.indexOf("DatePickerIntro") &&
-      day !== "31"
-    ) {
-      let t: NodeJS.Timeout | null;
-      const watchForPicker = () => {
-        if (document.querySelector(".timeTravelCalendar")) {
-          t = null;
-          setStepIndex(tf.indexOf("DatePickerDate"));
-        } else t = setTimeout(watchForPicker, 150);
-      };
-      watchForPicker();
-      return () => {
-        if (t) clearTimeout(t);
-      };
-    } else if (
-      run &&
-      (stepIndex === tf.indexOf("DatePickerDate") ||
-        stepIndex === tf.indexOf("DatePickerIntro")) &&
-      day === "31"
-    ) {
-      setStepIndex(tf.indexOf("FilterViewIntro"));
-    } else if (run && stepIndex === tf.indexOf("FilterViewIntro")) {
-      let t: NodeJS.Timeout | null;
-      const watchForPicker = () => {
-        if (document.querySelector(".sdp-threat-sel-list")) {
-          t = null;
-          setStepIndex(tf.indexOf("FilterViewSelectThreat"));
-        } else t = setTimeout(watchForPicker, 150);
-      };
-      watchForPicker();
-      return () => {
-        if (t) clearTimeout(t);
-      };
-    } else if (
-      run &&
-      stepIndex === tf.indexOf("FilterViewSelectThreat") &&
-      threats.includes("Unrecognized health risks")
-    ) {
-      setStepIndex(tf.indexOf("FilterViewClose"));
-    } else if (run && stepIndex === tf.indexOf("FilterViewClose")) {
-      let t: NodeJS.Timeout | null;
-      const watchForPicker = () => {
-        if (!document.querySelector(".sdp-threat-sel-list")) {
-          t = null;
-          setStepIndex(tf.indexOf("ClusterGraph"));
-        } else t = setTimeout(watchForPicker, 150);
-      };
-      watchForPicker();
-      return () => {
-        if (t) clearTimeout(t);
-      };
-    } else if (run && stepIndex === tf.indexOf("CollapseAll")) {
-      const clickHandler = () => {
-        setStepIndex(tf.indexOf("ArticleClusters"));
-      };
-      document
-        .querySelector(".sdp-collapse")
-        ?.addEventListener("click", clickHandler);
-      return () => {
-        document
-          .querySelector(".sdp-collapse")
-          ?.removeEventListener("click", clickHandler);
-      };
-    } else if (run && stepIndex === tf.indexOf("ArticleClusters")) {
-      const clickHandler = () => {
-        setStepIndex(tf.indexOf("ExpandClusterIntro"));
-      };
-      document
-        .querySelector(".sdp-locate-btn")
-        ?.addEventListener("click", clickHandler);
-      return () => {
-        document
-          .querySelector(".sdp-locate-btn")
-          ?.removeEventListener("click", clickHandler);
-      };
-    } else if (
-      run &&
-      stepIndex === tf.indexOf("ExpandClusterIntro") &&
-      selectedNode?.node
-    ) {
-      let t: NodeJS.Timeout | null;
-      const watchForPicker = () => {
-        if (
-          selectedNode?.node
-            .getAdjacentNodes()
-            .filter((n) => n.getData("type") === "article").size > 0
-        ) {
-          t = null;
-          setStepIndex(tf.indexOf("ExpandCluster"));
-        } else t = setTimeout(watchForPicker, 150);
-      };
-      watchForPicker();
-      return () => {
-        if (t) clearTimeout(t);
-      };
-    }
-  }, [day, run, stepIndex, searchTerms, threats, selectedNode?.node]);
 
   const handleJoyrideCallback = useCallback(
     (data: CallBackProps) => {
       const { action, index, status, type } = data;
+      const l = typeof locale === "string" ? locale : "en-CA";
 
       if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
         const n = index + (action === ACTIONS.PREV ? -1 : 1);
         setStepIndex(n);
-        if (
-          index === tf.indexOf("KeywordSearch") &&
-          n === index + 1 &&
-          !searchTerms.includes("pneumonia")
-        ) {
-          setSearchTerms(searchTerms.concat(["pneumonia"]));
-        } else if (
-          index === tf.indexOf("FilterViewSelectThreat") &&
-          n === index + 1 &&
-          !threats.includes("Unrecognized health risks")
-        ) {
-          setThreats(threats.concat(["Unrecognized health risks"]));
-        }
+
+        tf.stepMachine(index, action === ACTIONS.PREV ? "backward" : "forward")
+          .into("KeywordSearch", () => setSearchTerms([]))
+          .forwardOutOf("KeywordSearch", () => setSearchTerms(["pneumonia"]))
+          .into("DatePicker", () => router.push(`/${l}/1`))
+          .forwardOutOf("DatePicker", () => router.push(`/${l}/37`))
+          .into("History", () => router.push(`/${l}/37`))
+          .forwardOutOf("History", () => router.push(`/${l}/37/3`))
+          .into("FilterViewSelectThreat", () => {
+            setThreats(
+              threats.filter((t) => t !== "Unrecognized health risks"),
+            );
+            const el = document.querySelector<HTMLButtonElement>(
+              ".sdp-threat-sel > button",
+            );
+            if (el) el.click();
+          })
+          .forwardOutOf("FilterViewSelectThreat", () => {
+            setThreats(threats.concat(["Unrecognized health risks"]));
+          })
+          .into("CollapseAll", () => {
+            const el = document.querySelector<HTMLButtonElement>(".sdp-expand");
+            if (el) el.click();
+          })
+          .forwardOutOf("CollapseAll", () => {
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-collapse");
+            if (el) el.click();
+          })
+          .into("ArticleClusters", () => {
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-refresh");
+            if (el) el.click();
+          })
+          .forwardOutOf("ArticleClusters", () => {
+            const el = document.querySelector<HTMLButtonElement>(
+              ".sdp-locate-btn:nth-child(2)",
+            );
+            if (el) el.click();
+          })
+          .backwardInto("ExpandClusterIntro", () => {
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-collapse");
+            if (el) el.click();
+            setSelectedNode(null);
+          })
+          .forwardOutOf("ExpandClusterIntro", () => {
+            const el = document.querySelectorAll<HTMLButtonElement>(
+              ".sdp-select-node-btn",
+            );
+            if (el[1]) {
+              el[1].click();
+            }
+
+            const waitForSelection = () => {
+              if (selectedNodeRef.current?.node) {
+                clusterExpandToggle(
+                  selectedNodeRef.current.node,
+                  selectedNodeRef.current.ogma,
+                  expandedClusters,
+                  toggleExpandedCluster,
+                  async (id) => {
+                    return await cluster.mutateAsync({ id });
+                  },
+                  setLayoutBusy,
+                  setLayoutNotBusy,
+                );
+                const el =
+                  document.querySelector<HTMLButtonElement>(".sdp-summary-tab");
+                if (el) el.click();
+              } else setTimeout(waitForSelection, 300);
+            };
+            // setStepIndex(n - 1);
+            waitForSelection();
+          });
+
+        // if (tf.isStepInto("ExpandClusterIntro", n)) {
+        // }
       } else if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-        // You need to set our running state to false, so we can restart if we click start again.
         setRun(false);
+        resetTour();
       }
     },
-    [searchTerms, setSearchTerms, setThreats, threats],
+    [
+      cluster,
+      expandedClusters,
+      locale,
+      resetTour,
+      router,
+      setLayoutBusy,
+      setLayoutNotBusy,
+      setSearchTerms,
+      setSelectedNode,
+      setThreats,
+      threats,
+      toggleExpandedCluster,
+    ],
   );
 
   return (
     <li>
       <Link href="#" onClick={handleTourClick}>
         {label}
-        <Joyride
-          continuous
-          locale={locale}
-          callback={handleJoyrideCallback}
-          run={run}
-          stepIndex={stepIndex}
-          scrollToFirstStep
-          hideBackButton
-          showProgress
-          showSkipButton
-          steps={steps}
-          styles={joyrideStyles}
-        />
       </Link>
+      <Joyride
+        continuous
+        locale={JoyrideLocales}
+        callback={handleJoyrideCallback}
+        run={run}
+        stepIndex={stepIndex}
+        scrollToFirstStep
+        disableCloseOnEsc
+        disableOverlayClose
+        hideCloseButton
+        showProgress
+        showSkipButton
+        steps={steps}
+        styles={joyrideStyles}
+      />
     </li>
   );
 }

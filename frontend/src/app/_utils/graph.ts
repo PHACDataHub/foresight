@@ -1,7 +1,7 @@
 "use client";
 
 import type OgmaLib from "@linkurious/ogma";
-import type { NodeList, Node as OgmaNode, RawNode } from "@linkurious/ogma";
+import type { NodeList, Node as OgmaNode, RawGraph, RawNode } from "@linkurious/ogma";
 
 import simpleheat from "simpleheat";
 
@@ -223,6 +223,52 @@ export function heatMap(ogma: OgmaLib) {
   });
   canvas.moveToBottom();
   return canvas;
+}
+
+export function clusterExpandToggle(
+  node: OgmaNode,
+  ogma: OgmaLib,
+  expanded: string[],
+  toggleCallback: (clusterId: string) => void,
+  fetchArticles: (clusterId: string) => Promise<RawGraph>,
+  setLayoutBusy: (layout: LayoutModes) => void,
+  setLayoutNotBusy: (layout: LayoutModes) => void,
+) {
+  const data = getNodeData(node);
+  if (data?.type !== "cluster") return;
+  if (expanded.includes(data.id)) {
+    toggleCallback(data.id);
+  } else {
+    toggleCallback(data.id);
+    ogma.events.once("idle", async () => {
+      // setFocus(null);
+      let lNodes: NodeList<unknown, unknown> | null = null;
+      const l = node
+        .getAdjacentNodes()
+        .filter((n) => n.getData("type") === "article");
+      const neigh = ogma
+        .getNodes()
+        .filter((n) => n === node || l.includes(n));
+      if (neigh.size <= 1) {
+        const articles = await fetchArticles(data.id);
+        const g = await ogma.addGraph(articles);
+        setLayoutBusy("force");
+        lNodes = g.nodes.concat(node as unknown as NodeList);
+      }
+      await ogma.layouts.force({
+        incremental: true,
+        locate: true,
+        margin: 40,
+        nodes: lNodes ?? undefined,
+        gpu: true,
+        duration: 100,
+        onSync: () => setLayoutNotBusy("force"),
+      });
+      ogma.events.once("idle", async () => {
+        await (lNodes ?? neigh).locate({ duration: 300, padding: 135 });
+      });
+    });
+  }
 }
 
 //export function hexToRgbA(hex: string, opacity = 1) {

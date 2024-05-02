@@ -119,6 +119,7 @@ export default function HighlightTerms({
         )}
       />
       <FormControlLabel
+        className="sdp-term-boolean"
         control={<Checkbox value={searchAnd} onClick={handleSearchAndClick} />}
         label={<Typography fontSize={16}>All</Typography>}
       />

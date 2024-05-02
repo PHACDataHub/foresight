@@ -25,31 +25,31 @@
             },
             "KeywordSearch": {
                 "title": "Keyword Search",
-                "content": "For our example, try searching for the term <strong>pneumonia</strong>, and press enter when finished."
+                "content": "If you wanted to search for <strong>pneumonia</strong> for example, you would enter it here.  You can search for multiple keywords simultaneously by pressing enter between them."
             },
-            "DatePickerIntro": {
-                "title": "Date Picker",
-                "content": "To select a date, start by clicking on this button."
+            "KeywordSearchBoolean": {
+                "title": "Keyword Search",
+                "content": "By default clusters or articles containing <strong>any of your search terms</strong> will be highlighted.  If you want to only highlight those matching all the terms, select this box."
             },
-            "DatePickerDate": {
+            "DatePicker": {
                 "title": "Date Picker",
-                "content": "Now choose a date, for this example please select <strong>Dec 31st, 2019</strong>."
+                "content": "You can use this button to select which day you want to work with.  You can travel back in time to see how to news appeared on <strong>January 6th, 2020</strong> for example."
+            },
+            "History": {
+                "title": "Time Span",
+                "content": "Certain dates include the ability to examine the growth of clusters over a period of time.  This prototype includes 3 and 7 day views for January 6th, and a 30 day view for January 29th.  We will choose <strong>3 days</strong> for this example."
             },
             "FilterViewIntro": {
                 "title": "Filter View",
-                "content": "You can see the article count has changed based on our search criteria, however not all health threat categories are currently visible. Lets modify the selected categories by clicking on the <strong>Filter View</strong> button."
+                "content": "You can see the article count has changed based on our search criteria, however not all health threat categories are currently visible. We can modify the selected categories by clicking on the <strong>Filter View</strong> button."
             },
             "FilterViewSelectThreat": {
                 "title": "Filter View",
-                "content": "Here you can see all the relevant public health threats that are being detected. We are interested in only a certain few. Please toggle on <strong>Unrecognized health risks</strong>."
-            },
-            "FilterViewClose": {
-                "title": "Filter View",
-                "content": "Once finished toggling health threats, close the dialog using the <strong>Filter View</strong> button."
+                "content": "Here you can see all the relevant public health threats that are being detected. We are interested in only a certain few. We are going to add <strong>Unrecognized health risks</strong>."
             },
             "ClusterGraph": {
                 "title": "Cluster Graph",
-                "content": "Here we can see the cluster view update based on our search criteria. In this view we can see the relevant articles and how they relate to each other based on our keyword search, the speicified date and the selected health threats.<p>We will explore this graph more in later steps.</p>"
+                "content": "Here we can see the cluster view update based on our search criteria. In this view we can see the relevant articles and how they relate to each other based on our keyword search, the specified date and the selected health threats.<p>We will explore this graph more in later steps.</p>"
             },
             "GraphViews": {
                 "title": "Graph Views",
@@ -61,19 +61,23 @@
             },
             "CollapseAll": {
                 "title": "Graph Views",
-                "content": "By default, all articles are expanded. Try collapsing all the articles by clicking on this button."
+                "content": "By default, all articles are expanded. This button collapses the articles leaving only the clusters, hierarchical clusters and threats visible."
             },
             "ArticleClusters": {
                 "title": "Article Clusters",
-                "content": "On the side menu we can see the clusters sorted by size. For our example we are interested in the <strong>Viral Pneumonia Outbreak in Wuhan</strong> cluster.<p>Click on the <strong>locate</strong> button to bring this cluster into view.</p>"
+                "content": "On the side menu we can see the clusters sorted by size. You can locate any cluster on the graph by using the <strong>locate</strong> button."
             },
             "ExpandClusterIntro": {
                 "title": "Cluster",
-                "content": "<strong>Double click on the cluster node</strong> to expand it's contents."
+                "content": "You can also <strong>double click on cluster nodes</strong> to expand it's contents."
             },
             "ExpandCluster": {
                 "title": "Cluster",
                 "content": "The article within this cluster can now be seen in green."
+            },
+            "ClusterGrowth" : {
+                "title": "Cluster Growth",
+                "content": "Here we can examine the evolution of a cluster over time."
             },
             "SelectedClusterIntro": {
                 "title": "Selected Cluster",

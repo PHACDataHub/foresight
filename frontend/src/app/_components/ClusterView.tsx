@@ -328,7 +328,7 @@ export function ClusterView(
           centered
           variant="fullWidth"
         >
-          <Tab sx={{ fontSize: 14 }} label={t("summary")} />
+          <Tab className="sdp-summary-tab" sx={{ fontSize: 14 }} label={t("summary")} />
           <Tab
             sx={{ fontSize: 14 }}
             label={
