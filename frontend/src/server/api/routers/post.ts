@@ -337,6 +337,10 @@ export interface Cluster {
   title: string;
   topic_id?: string;
   radius: number;
+  confidence?: {
+    count: number;
+    confidence: number;
+  }
 }
 
 export interface ClusterRecord
@@ -880,13 +884,23 @@ export const postRouter = createTRPCRouter({
           EXISTS {
             (c)-[:DETECTED_THREAT]->(t:Threat WHERE t.text IN $threats)
           }
-        WITH c.id as id, article.pub_date as d, count(*) as counts
-          RETURN id, stDev(counts) as std;    
+        WITH c.id as id, article.pub_date as d, count(*) as counts, avg(article.probability) as confidence
+          RETURN id, stDev(counts) as std, confidence, counts;
         `,
           { period, threats: input.threats },
         );
         let stddev_min: number | null = null;
         let stddev_max: number | null = null;
+        const confidence = Object.fromEntries(
+          stddev_query.records.map((r) => [
+            r.get("id") as string,
+            {
+              confidence: r.get("confidence") as number,
+              count: (r.get("counts") as Neo4jInteger).toNumber(),
+            },
+          ]),
+        );
+
         const stddev = Object.fromEntries(
           stddev_query.records.map((r) => {
             stddev_min =
@@ -995,9 +1009,15 @@ export const postRouter = createTRPCRouter({
             if ("type" in o && o.type === "cluster" && "id" in o) {
               const cluster_id = o.id as string;
               const stdev = stddev[cluster_id]!;
+              let ret: object = { ...o };
               if (stdev) {
-                return { ...o, stdev, stddev_min, stddev_max };
+                ret = { ...ret, stdev, stddev_min, stddev_max };
               }
+              const conf = confidence[cluster_id]!;
+              if (conf) {
+                ret = { ...ret, confidence: conf };
+              }
+              return ret;
             }
             return o;
           });

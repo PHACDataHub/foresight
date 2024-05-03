@@ -53,7 +53,7 @@ const tf = standardTourFactory({
   CollapseAll: { step: { target: ".sdp-collapse" } },
   ArticleClusters: {
     step: {
-      target: ".sdp-locate-btn:nth-child(2)",
+      target: ".sdp-locate-btn",
       placement: "right",
       disableScrolling: true,
     },
@@ -250,7 +250,7 @@ export default function ProductTour() {
           })
           .forwardOutOf("ArticleClusters", () => {
             const el = document.querySelector<HTMLButtonElement>(
-              ".sdp-locate-btn:nth-child(2)",
+              ".sdp-locate-btn",
             );
             if (el) el.click();
           })

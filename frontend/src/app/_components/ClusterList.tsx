@@ -26,6 +26,14 @@ export default function ClusterList({
         const ad = getRawNodeData<Cluster>(a);
         const bd = getRawNodeData<Cluster>(b);
         if (!ad || !bd) return 0;
+        console.log("lala");
+        if (ad.confidence && bd.confidence) {
+          console.log(ad.confidence);
+          if (ad.confidence.confidence > bd.confidence.confidence) return -1;
+          if (ad.confidence.confidence < bd.confidence.confidence) return 1;
+          if (ad.confidence.count > bd.confidence.count) return -1;
+          if (ad.confidence.count < bd.confidence.count) return 1;
+        }
         if (ad.nr_articles > bd.nr_articles) return -1;
         if (ad.nr_articles < bd.nr_articles) return 1;
         return 0;
