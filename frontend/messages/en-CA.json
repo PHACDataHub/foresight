@@ -45,11 +45,11 @@
             },
             "FilterViewSelectThreat": {
                 "title": "Filter View",
-                "content": "Here you can see all the relevant public health threats that are being detected. We are interested in only a certain few. We are going to add <strong>Unrecognized health risks</strong>."
+                "content": "Here you can see all the relevant public health threat categories that are being explored. We are interested in only a certain few for this example, and we will now add the <strong>Unrecognized health risks</strong> category."
             },
             "ClusterGraph": {
                 "title": "Cluster Graph",
-                "content": "Here we can see the cluster view update based on our search criteria. In this view we can see the relevant articles and how they relate to each other based on our keyword search, the specified date and the selected health threats.<p>We will explore this graph more in later steps.</p>"
+                "content": "Here we can see the cluster view update based on our search criteria. In this view we can see the relevant articles and how they relate to each other based on our keyword search, the specified date and the selected public health threat categories.<p>We will explore this graph more in later steps.</p>"
             },
             "GraphViews": {
                 "title": "Graph Views",
@@ -73,15 +73,15 @@
             },
             "ExpandCluster": {
                 "title": "Cluster",
-                "content": "Articles within article clusters are always represented by green circles, and light green for outliers."
+                "content": "News articles within clusters are always represented by green circles, and light green for cluster outliers."
             },
             "ClusterGrowth" : {
                 "title": "Cluster Growth",
-                "content": "Here we can examine the evolution of a cluster over time."
+                "content": "Here we can examine the evolution of a cluster over time (only on multi-day views)."
             },
             "SelectedClusterIntro": {
                 "title": "Selected Cluster",
-                "content": "Here you can see the details about the cluster we have selected. A summary about the cluster and pre-determined questions and answers are provided just below the cluster summary."
+                "content": "Here you can see the details about the cluster we have selected. A summary of the cluster, and sample questions and answers are provided just below the summary."
             },
             "ChatConsole": {
                 "title": "Chat Console",
@@ -89,7 +89,7 @@
             },
             "EndOfTour": {
                 "title": "End of tour",
-                "content": "This concludes our tour! If you would like to replay this tour you may do so through the <strong>Tour</strong> here. <p>Check back frequently as features and capability is continously being added to the tool.</p>"
+                "content": "This concludes our tour! If you would like to replay this tour you may do so through the <strong>Tour</strong> here. <p>Check back frequently as features and capability are continously being added to the platform.</p>"
             }
         }
     },
