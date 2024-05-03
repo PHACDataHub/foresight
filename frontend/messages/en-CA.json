@@ -61,7 +61,7 @@
             },
             "CollapseAll": {
                 "title": "Graph Views",
-                "content": "By default, all articles are expanded. This button collapses the articles leaving only the clusters, hierarchical clusters and threats visible."
+                "content": "By default, all articles are expanded. This button collapses the articles leaving only the news article clusters, the hierarchical clusters, and the public threat categories visible."
             },
             "ArticleClusters": {
                 "title": "Article Clusters",
@@ -73,7 +73,7 @@
             },
             "ExpandCluster": {
                 "title": "Cluster",
-                "content": "The article within this cluster can now be seen in green."
+                "content": "Articles within article clusters are always represented by green circles, and light green for outliers."
             },
             "ClusterGrowth" : {
                 "title": "Cluster Growth",
@@ -81,7 +81,7 @@
             },
             "SelectedClusterIntro": {
                 "title": "Selected Cluster",
-                "content": "Here you can see the details about the cluster we have selected. A summary about the cluster and pre-generated questions are provided below."
+                "content": "Here you can see the details about the cluster we have selected. A summary about the cluster and pre-determined questions and answers are provided just below the cluster summary."
             },
             "ChatConsole": {
                 "title": "Chat Console",
@@ -89,7 +89,7 @@
             },
             "EndOfTour": {
                 "title": "End of tour",
-                "content": "This concludes our tour! If you would like to replay this tour you may do so through the <strong>Tour</strong> here."
+                "content": "This concludes our tour! If you would like to replay this tour you may do so through the <strong>Tour</strong> here. <p>Check back frequently as features and capability is continously being added to the tool.</p>"
             }
         }
     },
