@@ -85,7 +85,7 @@ function ArticleList({ articles }: { articles: Article[] }) {
           }
         >
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faAngleDown} />}>
-            <Typography variant="h5">
+            <Typography variant="h5" fontSize={16}>
               <HighlightSearchTerms text={article.title} />
             </Typography>
           </AccordionSummary>
