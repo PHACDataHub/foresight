@@ -196,21 +196,16 @@ export default function PanelInterface() {
     },
   );
 
-
   const clusters = useMemo(() => {
     if (!rawGraph || isFetching) return [];
     return rawGraph.nodes
       .filter((n) => getRawNodeData(n)?.type === "cluster")
-      .map((n) => getRawNodeData<Cluster>(n)).sort((a, b) => {
+      .map((n) => getRawNodeData<Cluster>(n))
+      .sort((a, b) => {
         if (a.nr_articles > b.nr_articles) return -1;
         if (a.nr_articles < b.nr_articles) return 1;
-        if (a.confidence && b.confidence) {
-          if (a.confidence.confidence > b.confidence.confidence) return -1;
-          if (a.confidence.confidence < b.confidence.confidence) return 1;
-        }
         return 0;
       });
-;
   }, [rawGraph, isFetching]);
 
   const clusterEvolutionGraph = useMemo(() => {
