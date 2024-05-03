@@ -69,7 +69,7 @@
             },
             "ExpandClusterIntro": {
                 "title": "Cluster",
-                "content": "You can also <strong>double click on cluster nodes</strong> to expand it's contents."
+                "content": "You can also <strong>double click on cluster nodes</strong> to expand its contents."
             },
             "ExpandCluster": {
                 "title": "Cluster",
