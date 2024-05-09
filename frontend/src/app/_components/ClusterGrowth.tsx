@@ -33,9 +33,7 @@ export default function ClusterGrowth({
     );
   }, [endDate, startDate]);
 
-  const [timeline, setTimeline] = useState(
-    history ? Array.from(new Array(days).keys()) : [],
-  );
+  const [timeline, setTimeline] = useState<number[]>([]);
 
   useEffect(() => {
     setTimeline(Array.from(new Array(days).keys()));
@@ -50,7 +48,6 @@ export default function ClusterGrowth({
       index: number;
     }[] = [];
 
-    // const nums = [0, Number(((history - 1) / 2).toFixed(0)), history - 1];
     for (let x = 0; x < days; x += 1) {
       const date = new Date(startDate.getTime() + x * 86400000);
       const fdate = new Date(startDate.getTime() + (x + 1) * 86400000);

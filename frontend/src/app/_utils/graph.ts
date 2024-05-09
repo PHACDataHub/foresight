@@ -221,7 +221,7 @@ export function heatMap(ogma: OgmaLib) {
     heat.data(data);
     heat.draw();
   });
-  canvas.moveToBottom();
+  canvas.moveToTop();
   return canvas;
 }
 

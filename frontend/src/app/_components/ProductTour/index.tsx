@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "@mui/material/Link";
+import Button from "@mui/material/Button";
 import { useParams, useRouter } from "next/navigation";
 import React, {
   useCallback,
@@ -49,8 +49,14 @@ const tf = standardTourFactory({
   },
   ClusterGraph: { step: { target: ".sdp-graph-panel", placement: "left" } },
   GraphViews: { step: { target: ".control-buttons" } },
-  CollapseAllIntro: { step: { target: ".sdp-refresh-collapse-expand" } },
+  Refresh: { step: { target: ".sdp-refresh" } },
+  HeatMap: { step: { target: ".sdp-heatmap" } },
+  CollapseAllIntro: { step: { target: ".sdp-collapse-expand" } },
   CollapseAll: { step: { target: ".sdp-collapse" } },
+  LayoutAlgorithms: { step: { target: ".sdp-layout-algorithms" } },
+  HierarchicalView: { step: { target: ".sdp-layout-hierarchical" } },
+  GeoMode: { step: { target: ".sdp-geomode" } },
+  FullScreen: { step: { target: ".sdp-fullscreen" } },
   ArticleClusters: {
     step: {
       target: ".sdp-locate-btn",
@@ -108,7 +114,7 @@ const containedStyle: React.CSSProperties = {
   backgroundColor: "#1976d2",
   boxShadow:
     "0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12)",
-  fontSize: 18,
+  fontSize: 14,
 };
 
 const textStyle: React.CSSProperties = {
@@ -136,7 +142,7 @@ const textStyle: React.CSSProperties = {
   transition:
     "background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
   color: "#1976d2",
-  fontSize: 18,
+  fontSize: 14,
 };
 
 const joyrideStyles: Partial<Styles> = {
@@ -213,9 +219,9 @@ export default function ProductTour() {
           .into("KeywordSearch", () => setSearchTerms([]))
           .forwardOutOf("KeywordSearch", () => setSearchTerms(["pneumonia"]))
           .into("DatePicker", () => router.push(`/${l}/1`))
-          .forwardOutOf("DatePicker", () => router.push(`/${l}/37`))
-          .into("History", () => router.push(`/${l}/37`))
-          .forwardOutOf("History", () => router.push(`/${l}/37/3`))
+          .forwardOutOf("DatePicker", () => router.push(`/${l}/39`))
+          .into("History", () => router.push(`/${l}/39`))
+          .forwardOutOf("History", () => router.push(`/${l}/39/3`))
           .into("FilterViewSelectThreat", () => {
             setThreats(
               threats.filter((t) => t !== "Unrecognized health risks"),
@@ -234,6 +240,26 @@ export default function ProductTour() {
             );
             if (el) el.click();
           })
+          .into("HeatMap", () => {
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-heatmap");
+            if (el) el.click();
+          })
+          .outOf("HeatMap", () => {
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-heatmap");
+            if (el) el.click();
+          })
+          .into("HierarchicalView", () => {
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-layout-hierarchical");
+            if (el) el.click();
+          })
+          .outOf("HierarchicalView", () => {
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-layout-force");
+            if (el) el.click();
+          })
           .into("CollapseAll", () => {
             const el = document.querySelector<HTMLButtonElement>(".sdp-expand");
             if (el) el.click();
@@ -249,9 +275,8 @@ export default function ProductTour() {
             if (el) el.click();
           })
           .forwardOutOf("ArticleClusters", () => {
-            const el = document.querySelector<HTMLButtonElement>(
-              ".sdp-locate-btn",
-            );
+            const el =
+              document.querySelector<HTMLButtonElement>(".sdp-locate-btn");
             if (el) el.click();
           })
           .backwardInto("ExpandClusterIntro", () => {
@@ -315,9 +340,9 @@ export default function ProductTour() {
 
   return (
     <li>
-      <Link href="#" onClick={handleTourClick} data-touring={run}>
+      <Button href="#" onClick={handleTourClick} data-touring={run}>
         {label}
-      </Link>
+      </Button>
       <Joyride
         continuous
         locale={JoyrideLocales}

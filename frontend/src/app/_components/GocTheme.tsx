@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "@mui/material/Link";
-
 import Image from "next/image";
+
+import Button from "@mui/material/Button";
+
 import ProductTour from "./ProductTour";
 
 export default function GocTheme({ children }: { children: React.ReactNode }) {
@@ -54,9 +55,7 @@ export default function GocTheme({ children }: { children: React.ReactNode }) {
             <ul className="flex space-x-2">
               {lngLinks.map((lng) => (
                 <li key={`lng_${lng.lang}`}>
-                  <Link lang={lng.lang} href={lng.href}>
-                    {lng.text}
-                  </Link>
+                  <Button href={lng.href}>{lng.text}</Button>
                 </li>
               ))}
             </ul>

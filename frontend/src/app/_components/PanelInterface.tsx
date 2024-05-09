@@ -17,7 +17,7 @@ import {
 } from "react-resizable-panels";
 
 import type OgmaLib from "@linkurious/ogma";
-import { type RawNode } from "@linkurious/ogma";
+import { type RawEdge, type RawNode } from "@linkurious/ogma";
 
 import {
   faGripLines,
@@ -270,7 +270,12 @@ export default function PanelInterface() {
               getRawNodeData<Article>(a.node).pub_date?.toDateString(),
             ),
           ),
-        );
+        ).sort((a, b) => {
+          if (typeof a !== "string" || typeof b !== "string") return 0;
+          const t1 = new Date(a);
+          const t2 = new Date(b);
+          return t1.getTime() - t2.getTime();
+        });
         const new_clusters = dates.map((d) => ({
           ...n,
           id: `${d}-${n.id}`,
@@ -279,7 +284,36 @@ export default function PanelInterface() {
             cluster_date: d,
           },
         }));
-        nodes.splice(x, 1, ...(new_clusters as RawNode[]));
+        const new_articles = articles.reduce(
+          (p, c) => {
+            const d = getRawNodeData<Article>(c.node).pub_date;
+            if (!d || !c.node.data) return p;
+            for (let x = 0; x < dates.length - 1; x += 1) {
+              if (d.getTime() < new Date(dates[x]!).getTime()) {
+                p.push({
+                  node: {
+                    ...c.node,
+                    id: `${d.toDateString()}-${c.node.id}`,
+                    data: { ...c.node.data, cluster_date: d },
+                  },
+                  edge: c.edge,
+                });
+              }
+            }
+            return p;
+          },
+          [] as {
+            node: RawNode<Article> & { data: { cluster_date: Date } };
+            edge: RawEdge;
+          }[],
+        );
+
+        nodes.splice(
+          x,
+          1,
+          ...(new_clusters as RawNode[]),
+          ...new_articles.map((a) => a.node),
+        );
         edges = edges
           .filter((e) => !(e.source === n.id || e.target === n.id))
           .concat(
@@ -290,6 +324,17 @@ export default function PanelInterface() {
               return {
                 ...a.edge,
                 id: `${a.edge.id}-${d}`,
+                target: `${d}-${n.id}`,
+              };
+            }),
+          )
+          .concat(
+            new_articles.map((a) => {
+              const d = a.node.data.cluster_date.toDateString();
+              return {
+                ...a.edge,
+                id: `${a.edge.id}--${d}`,
+                source: `${a.node.id}`,
                 target: `${d}-${n.id}`,
               };
             }),
@@ -375,7 +420,7 @@ export default function PanelInterface() {
             )}
           </Panel>
 
-          {history && rawGraph && clusterId && (
+          {history && history < 10 && rawGraph && clusterId && (
             <>
               {!drawerCollapsed && (
                 <PanelResizeHandle

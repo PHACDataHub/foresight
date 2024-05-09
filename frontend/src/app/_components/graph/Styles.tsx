@@ -147,13 +147,24 @@ const Styles = () => {
       />
       <NodeStyleRule
         selector={(n) =>
-          n.getData("type") === "article" && n.getData("outlier") !== true
+          n.getData("type") === "article" && n.getData("outlier") !== true && !Boolean(n.getData("cluster_date"))
         }
         attributes={{
           text: {
             size: 15,
           },
           color: nodeColours.article,
+        }}
+      />
+      <NodeStyleRule
+        selector={(n) =>
+          n.getData("type") === "article" && n.getData("outlier") !== true && Boolean(n.getData("cluster_date"))
+        }
+        attributes={{
+          text: {
+            size: 15,
+          },
+          color: "red",
         }}
       />
       <NodeStyleRule

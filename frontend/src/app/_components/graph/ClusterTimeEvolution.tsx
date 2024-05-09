@@ -4,8 +4,8 @@ import { useCallback, useEffect } from "react";
 import { getNodeData } from "~/app/_utils/graph";
 import { type Cluster } from "~/server/api/routers/post";
 
-const colDist = 2500;
-const rowDist = 1500;
+const colDist = 750;
+const rowDist = 750;
 
 export default function ClusterTimeEvolution() {
   const ogma = useOgma();
@@ -44,13 +44,20 @@ export default function ClusterTimeEvolution() {
               const nodes = ogma.getNodes(nodeIds);
               const x = (i - arr.length / 2) * colDist;
               xs.push(x);
-              promises.push(nodes.setAttribute("x", x));
+              promises.push(
+                nodes.concat(nodes.getAdjacentNodes()).setAttribute("x", x),
+              );
               promises.push(
                 nodes.setAttribute(
                   "y",
                   nodes.map((n) => rowIndex[n.getData("id") as string] ?? 0),
                 ),
               );
+              nodes.forEach((n) => {
+                const y = rowIndex[n.getData("id") as string] ?? 0;
+                promises.push(n.getAdjacentNodes().setAttribute("y", y));
+              });
+
               return promises;
             },
             [] as Promise<NodeList<unknown, unknown>>[],
@@ -151,12 +158,27 @@ export default function ClusterTimeEvolution() {
     timeLayout(clusters)
       .then(async (c) => {
         cb = c;
-        await clusters.setAttribute("layoutable", false);
-        await ogma.layouts.force({
-          duration: 0,
-          locate: true,
-        });
-        await clusters.setAttribute("layoutable", true);
+        // await clusters.setAttribute("layoutable", false);
+        // await ogma.layouts.force({
+        //   duration: 0,
+        //   locate: true,
+        //   // incremental: true,
+        //   charge: 5,
+        //   gravity: 0,
+        // });
+        // await clusters.setAttribute("layoutable", true);
+
+        for (let x = 0; x < clusters.size; x += 1) {
+          // break;
+          const c = clusters.get(x);
+          void ogma.layouts.force({
+            duration: 0,
+            centralNode: c,
+            nodes: c.getAdjacentNodes().concat(c as unknown as NodeList),
+            // locate: true,
+            gpu: true,
+          });
+        }
       })
       .catch(() => {
         console.log("error caught");
@@ -165,79 +187,5 @@ export default function ClusterTimeEvolution() {
       if (cb) cb();
     };
   }, [ogma, timeLayout]);
-  return (
-    <>
-      {/* <NeighborGeneration
-        enabled={true}
-        selector={(n) => getNodeData(n)?.type === "cluster"}
-        neighborIdFunction={(n) => {
-          const data = getNodeData(n);
-          if (data?.type !== "cluster") return null;
-          return Array.from(
-            new Set(
-              (
-                n
-                  .getAdjacentNodes()
-                  .filter((a) => getNodeData(a)?.type === "article")
-                  .getData("pub_date") as Date[]
-              ).map((d) => `${data.id}-!!---${d.toDateString()}`),
-            ),
-          );
-        }}
-        nodeGenerator={(id, nodes) => {
-          const n = nodes.get(0);
-          if (!n) return {};
-          return {
-            data: {
-              ...(n.getData() as object),
-              cluster_date: new Date(id.substring(id.indexOf("-!!---") + 6)),
-              // type: "cluster",
-            },
-          };
-        }}
-        edgeGenerator={(o, g) => {
-          const d = g.getData("cluster_date") as Date;
-          if (!d) return {};
-          const articles = o.getAdjacentNodes().filter((n) => {
-            const data = getNodeData(n);
-            if (data?.type === "article" && sameDate(data.pub_date, d)) {
-              return true;
-            }
-            return false;
-          });
-          return articles.map((a) => ({
-            id: `${g.getId()}-${d.toDateString()}-${a.getId()}`,
-            attributes: {
-              source: g.getId(),
-              target: a.getId(),
-            },
-          }));
-        }}
-      />
-      <NodeFilter
-        criteria={(n) => n.isVirtual() || n.getData("type") === "article"}
-      />
-
-      <NodeStyleRule
-        selector={(n) => n.isVirtual()}
-        attributes={{
-          radius: (n) => {
-            const data = getNodeData(n);
-            if (!data) return;
-            return getNodeRadius(data);
-          },
-        }}
-      />
-
-      <NodeStyleRule
-        selector={(n) =>
-          n.isVirtual() && n.getData("type") === "cluster_timeseries"
-        }
-        attributes={{
-          radius: 100,
-          color: "red",
-        }}
-      /> */}
-    </>
-  );
+  return <></>;
 }

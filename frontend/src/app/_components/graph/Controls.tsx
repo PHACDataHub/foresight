@@ -426,14 +426,22 @@ export default function Controls() {
         )}
         {!geoMode && (
           <>
-            <ButtonGroup className="sdp-refresh-collapse-expand">
-              <IconButton
-                className="sdp-refresh foresight-graph-btn"
-                title={t("resetLayout")}
-                onClick={handleReset}
-              >
-                <RefreshCcw size={22} />
-              </IconButton>
+            <IconButton
+              className="sdp-refresh foresight-graph-btn"
+              title={t("resetLayout")}
+              onClick={handleReset}
+            >
+              <RefreshCcw size={22} />
+            </IconButton>
+            <IconButton
+              className={`sdp-heatmap foresight-graph-btn${heatMapCanvas ? " active" : ""} ${!Boolean(history) ? " disabled" : ""}`}
+              title="Heatmap"
+              disabled={!Boolean(history)}
+              onClick={handleHeatMap}
+            >
+              <Heater size={22} />
+            </IconButton>
+            <ButtonGroup className="sdp-collapse-expand">
               <IconButton
                 className={`sdp-expand foresight-graph-btn${expanding ? " disabled" : ""}`}
                 disabled={expanding}
@@ -453,19 +461,11 @@ export default function Controls() {
                 <FileX2 size={22} />
               </IconButton>
             </ButtonGroup>
-            <IconButton
-              className={`foresight-graph-btn${heatMapCanvas ? " active" : ""} ${!Boolean(history) ? " disabled" : ""}`}
-              title="Heatmap"
-              disabled={!Boolean(history)}
-              onClick={handleHeatMap}
-            >
-              <Heater size={22} />
-            </IconButton>
-            <ButtonGroup>
+            <ButtonGroup className="sdp-layout-algorithms">
               {layouts.map(([l, icon, enabled]) => (
                 <IconButton
                   key={`layout${l}`}
-                  className={`foresight-graph-btn${layout === l ? " active" : ""}${!enabled ? " disabled" : ""}`}
+                  className={`sdp-layout-${l} foresight-graph-btn${layout === l ? " active" : ""}${!enabled ? " disabled" : ""}`}
                   data-layout={l}
                   disabled={!enabled}
                   onClick={handleLayoutClick}
@@ -491,7 +491,7 @@ export default function Controls() {
           </IconButton>
         )}
         <IconButton
-          className="foresight-graph-btn"
+          className="sdp-geomode foresight-graph-btn"
           property={geoMode ? "geoActive" : "geoInactive"}
           onClick={handleGeoBtnClick}
           title={t("mapView")}
@@ -499,7 +499,7 @@ export default function Controls() {
           <Map size={22} />
         </IconButton>
         <IconButton
-          className="foresight-graph-btn"
+          className="sdp-fullscreen foresight-graph-btn"
           onClick={handleMaximizeClick}
           title={t("fullScreen")}
         >

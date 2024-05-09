@@ -12,8 +12,8 @@
             "next": "Next",
             "skip": "End",
             "Welcome": {
-                "title": "Welcome to Foresight",
-                "content": "With the advent of novel technologies, our approach towards problem-solving is undergoing a paradigm shift, enabling more profound and multifaceted analyses. Our early attempt of NLP-pipeline prototype for GPHIN Next Generation represents an initial foray into leveraging technology for public health surveillance, yet it merely skims the surface of potential applications. Current capabilities extend far beyond, with the capacity to process from seven thousand to millions of articles and billions of data points every day, highlighting the critical need for automation and efficiency enhancement in data processing and analysis."
+                "title": "Welcome to Foresight!",
+                "content": "<p>Foresight is designed to aid analysts identify signals from potentially millions of articles per day.  This proof of concept uses data archived by GPHIN between December 1st 2019 and January 31st 2021, and uses health threat classifications for clustering.</p><p>This tour will guide you through the majority of features that we have implemented up until now.</p>"
             },
             "SidePanel": {
                 "title": "The Side Panel",
@@ -33,11 +33,11 @@
             },
             "DatePicker": {
                 "title": "Date Picker",
-                "content": "You can use this button to select which day you want to work with.  You can travel back in time to see how to news appeared on <strong>January 6th, 2020</strong> for example."
+                "content": "You can use this button to select which day you want to work with.  You can travel back in time to see how to news appeared on <strong>January 8th, 2020</strong> for example."
             },
             "History": {
                 "title": "Time Span",
-                "content": "Certain dates include the ability to examine the growth of clusters over a period of time.  This prototype includes 3 and 7 day views for January 6th, and a 30 day view for January 29th.  We will choose <strong>3 days</strong> for this example."
+                "content": "Certain dates include the ability to examine the growth of clusters over a period of time.  This prototype includes 3 day views between January 1st and January 8th, 7 day view on January 6th, and 30 day view on January 29th.  We will choose <strong>3 days</strong> for this example."
             },
             "FilterViewIntro": {
                 "title": "Filter View",
@@ -52,16 +52,43 @@
                 "content": "Here we can see the cluster view update based on our search criteria. In this view we can see the relevant articles and how they relate to each other based on our keyword search, the specified date and the selected public health threat categories.<p>We will explore this graph more in later steps.</p>"
             },
             "GraphViews": {
-                "title": "Graph Views",
-                "content": "You can change how the graph is displayed using different layouts. A map view is also available which will display the clusters on a world map."
+                "title": "Visualization Controls",
+                "content": "You can use this panel to interact with the visualization.  Let's go through the options."
+            },
+            "HeatMap": {
+                "title": "Heatmap",
+                "content": "When a time span of 3 or 7 days is chosen, you can use the heatmap to identity which clusters have evolved quickly over that period of time."
+            },
+            "LayoutAlgorithms": {
+                "title": "Layout Algorithms",
+                "content": "You can reorganize the visualization using several algorithms.  In addition to the force layout which is the default view, there are also the hierarchical layout, grid layout, and the concentric/radial layouts which are only available if there is a selected node."
+
+            },
+            "HierarchicalView": {
+                "title": "Hierarchical Layout",
+                "content": "The hierarchical layout displays the relationship between clusters, it is best suited when articles are not all expanded. "
+
+            },
+            "GeoMode": {
+                "title": "Map View",
+                "content": "Instead of using the layout algorithms, you can also view the clusters on a map."
+
+            },
+            "FullScreen": {
+                "title": "Full screen",
+                "content": "The full screen display is useful for visually exploring the data.  While in this view article titles are also displayed which facilitates rapid scanning of clusters."
+            },
+            "Refresh": {
+                "title": "Refresh",
+                "content": "Clicking on the refresh button will re-apply the selected layout."
             },
             "CollapseAllIntro": {
-                "title": "Graph Views",
-                "content": "These allow you to re-apply the selected layout, expand all articles and collapse all articles."
+                "title": "Expand and Collapse",
+                "content": "You can expand and collapse individual clusters by double clicking them; however you can use these buttons to expand or collapse all clusters simultaneously."
             },
             "CollapseAll": {
-                "title": "Graph Views",
-                "content": "By default, all articles are expanded. This button collapses the articles leaving only the news article clusters, the hierarchical clusters, and the public threat categories visible."
+                "title": "Collapse",
+                "content": "By default, all clusters are expanded. Let's collapse all clusters now leaving only the news article clusters, the hierarchical clusters, and the public threat categories visible."
             },
             "ArticleClusters": {
                 "title": "Article Clusters",

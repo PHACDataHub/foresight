@@ -5,67 +5,91 @@
     "AppWrapper": {
         "__layout__error__": "Impossible d'appliquer la mise en page.",
         "ProductTour": {
-            "tour": "Tournée",
+            "tour": "Visite guidée",
             "back": "Retour",
             "close": "Fermer",
             "last": "Fin",
             "next": "Suivant",
             "skip": "Fin",
             "Welcome": {
-                "title": "Bienvenue à Sérum",
-                "content": "Avec l'avènement de nouvelles technologies, notre approche de la résolution des problèmes subit un changement de paradigme, permettant des analyses plus profondes et multifacettes. Notre première tentative de prototype de pipeline NLP pour GPHIN Next Generation représente une première incursion dans l'utilisation de la technologie pour la surveillance de la santé publique, mais elle effleure à peine la surface des applications potentielles. Les capacités actuelles vont bien au-delà, avec la capacité de traiter de sept mille à des millions d'articles et de milliards de points de données chaque jour, mettant en évidence le besoin critique d'automatisation et d'amélioration de l'efficacité dans le traitement et l'analyse des données."
+                "title": "Bienvenue dans Sérum !",
+                "content": "<p>Sérum est conçu pour aider les analystes à identifier des signaux à partir de potentiellement des millions d'articles par jour. Ce concept utilise des données archivées par GPHIN entre le 1er décembre 2019 et le 31 janvier 2021, et utilise des classifications de menaces pour la santé pour le regroupement.</p><p>Cette visite guidée vous guidera à travers la majorité des fonctionnalités que nous avons mises en œuvre jusqu'à présent.</p>"
             },
             "SidePanel": {
-                "title": "Le panneau latéral",
-                "content": "Ceci est le panneau latéral où vous pouvez lire et interagir avec des clusters et des articles."
+                "title": "Le Panneau Latéral",
+                "content": "C'est le panneau latéral où vous pouvez lire et interagir avec des clusters et des articles d'actualité. <p>Les articles sont regroupés par similarité tandis que les titres et les résumés des clusters sont générés automatiquement par des modules d'IA.</p><p>Dans ce panneau, vous pouvez choisir un cluster ou le localiser dans le graphe (plus de détails dans les diapositives suivantes).</p>"
             },
             "SearchAndFilter": {
                 "title": "Fonctions de recherche et de filtrage",
                 "content": "Vous pouvez rechercher certains mots-clés et spécifier une période de date et d'heure qui vous intéresse."
             },
             "KeywordSearch": {
-                "title": "Recherche par mot-clé",
-                "content": "Si vous vouliez rechercher <strong>pneumonie</strong> par exemple, vous le saisiriez ici. Vous pouvez rechercher plusieurs mots-clés simultanément en appuyant sur Entrée entre eux."
+                "title": "Recherche par Mot-Clé",
+                "content": "Si vous souhaitez rechercher <strong>la pneumonie</strong> par exemple, vous l'entreriez ici. Vous pouvez rechercher plusieurs mots-clés simultanément en appuyant sur Entrée entre eux."
             },
             "KeywordSearchBoolean": {
-                "title": "Recherche par mot-clé",
-                "content": "Par défaut, les clusters ou les articles contenant <strong>n'importe lequel de vos termes de recherche</strong> seront mis en surbrillance. Si vous souhaitez uniquement mettre en surbrillance ceux qui correspondent à tous les termes, sélectionnez cette case."
+                "title": "Recherche par Mot-Clé",
+                "content": "Par défaut, les clusters ou articles contenant <strong>n'importe lequel de vos termes de recherche</strong> seront mis en évidence. Si vous voulez uniquement mettre en évidence ceux correspondant à tous les termes, sélectionnez cette case."
             },
             "DatePicker": {
-                "title": "Sélecteur de date",
-                "content": "Vous pouvez utiliser ce bouton pour sélectionner le jour sur lequel vous souhaitez travailler. Vous pouvez remonter dans le temps pour voir comment les nouvelles sont apparues le <strong>6 janvier 2020</strong> par exemple."
+                "title": "Sélecteur de Date",
+                "content": "Vous pouvez utiliser ce bouton pour sélectionner le jour avec lequel vous souhaitez travailler. Vous pouvez remonter dans le temps pour voir comment les nouvelles sont apparues le <strong>8 janvier 2020</strong> par exemple."
             },
             "History": {
-                "title": "Période de temps",
-                "content": "Certaines dates incluent la possibilité d'examiner l'évolution des clusters sur une période de temps. Ce prototype inclut des vues sur 3 et 7 jours pour le 6 janvier, et une vue sur 30 jours pour le 29 janvier. Nous choisirons <strong>3 jours</strong> pour cet exemple."
+                "title": "Période de Temps",
+                "content": "Certaines dates incluent la possibilité d'examiner la croissance des clusters sur une période de temps. Ce prototype inclut des vues de 3 jours entre le 1er janvier et le 8 janvier, une vue de 7 jours le 6 janvier, et une vue de 30 jours le 29 janvier. Nous choisirons <strong>3 jours</strong> pour cet exemple."
             },
             "FilterViewIntro": {
-                "title": "Vue du filtre",
-                "content": "Vous pouvez voir que le nombre d'articles a changé en fonction de nos critères de recherche, cependant toutes les catégories de menaces sanitaires ne sont pas actuellement visibles. Nous pouvons modifier les catégories sélectionnées en cliquant sur le bouton <strong>Vue du filtre</strong>."
+                "title": "Vue de Filtrage",
+                "content": "Vous pouvez voir que le nombre d'articles a changé en fonction de nos critères de recherche, cependant, toutes les catégories de menaces pour la santé ne sont pas actuellement visibles. Nous pouvons modifier les catégories sélectionnées en cliquant sur le bouton <strong>Vue de Filtrage</strong>."
             },
             "FilterViewSelectThreat": {
-                "title": "Vue du filtre",
-                "content": "Ici, vous pouvez voir toutes les menaces sanitaires publiques pertinentes qui sont détectées. Nous nous intéressons seulement à certaines d'entre elles. Nous allons ajouter <strong>Risques sanitaires non reconnus</strong>."
+                "title": "Vue de Filtrage",
+                "content": "Ici, vous pouvez voir toutes les catégories de menaces pour la santé pertinentes qui sont explorées. Nous nous intéressons seulement à quelques-unes pour cet exemple, et nous allons maintenant ajouter la catégorie de <strong>Risques sanitaires non reconnus</strong>."
             },
             "ClusterGraph": {
-                "title": "Graphique de cluster",
-                "content": "Ici, nous pouvons voir la mise à jour de la vue en cluster en fonction de nos critères de recherche. Dans cette vue, nous pouvons voir les articles pertinents et comment ils se rapportent les uns aux autres en fonction de notre recherche par mot-clé, de la date spécifiée et des menaces sanitaires sélectionnées.<p>Nous explorerons ce graphique plus en détail dans les étapes suivantes.</p>"
+                "title": "Graphe de Cluster",
+                "content": "Ici, nous pouvons voir la vue en cluster se mettre à jour en fonction de nos critères de recherche. Dans cette vue, nous pouvons voir les articles pertinents et comment ils se rapportent les uns aux autres en fonction de notre recherche par mot-clé, de la date spécifiée et des catégories de menaces pour la santé sélectionnées.<p>Nous explorerons ce graphe plus en détail dans les prochaines étapes.</p>"
             },
             "GraphViews": {
-                "title": "Vues graphiques",
-                "content": "Vous pouvez changer la façon dont le graphique est affiché en utilisant différentes mises en page. Une vue de carte est également disponible, qui affichera les clusters sur une carte du monde."
+                "title": "Contrôles de Visualisation",
+                "content": "Vous pouvez utiliser ce panneau pour interagir avec la visualisation. Explorons les options."
+            },
+            "HeatMap": {
+                "title": "Carte de Chaleur",
+                "content": "Lorsqu'une période de 3 ou 7 jours est choisie, vous pouvez utiliser la carte de chaleur pour identifier quels clusters ont évolué rapidement au cours de cette période de temps."
+            },
+            "LayoutAlgorithms": {
+                "title": "Algorithmes de Disposition",
+                "content": "Vous pouvez réorganiser la visualisation à l'aide de plusieurs algorithmes. En plus de la disposition forcée qui est la vue par défaut, il existe également la disposition hiérarchique, la disposition en grille, et les dispositions concentriques/radiales qui ne sont disponibles que s'il y a un nœud sélectionné."
+            },
+            "HierarchicalView": {
+                "title": "Disposition Hiérarchique",
+                "content": "La disposition hiérarchique affiche la relation entre les clusters, elle est mieux adaptée lorsque les articles ne sont pas tous développés."
+            },
+            "GeoMode": {
+                "title": "Vue Carte",
+                "content": "Au lieu d'utiliser les algorithmes de disposition, vous pouvez également voir les clusters sur une carte."
+            },
+            "FullScreen": {
+                "title": "Plein Écran",
+                "content": "L'affichage en plein écran est utile pour explorer visuellement les données. En mode plein écran, les titres des articles sont également affichés, ce qui facilite le balayage rapide des clusters."
+            },
+            "Refresh": {
+                "title": "Actualiser",
+                "content": "En cliquant sur le bouton actualiser, le mode de disposition sélectionné sera réappliqué."
             },
             "CollapseAllIntro": {
-                "title": "Vues graphiques",
-                "content": "Celles-ci vous permettent de réappliquer la mise en page sélectionnée, d'étendre tous les articles et de réduire tous les articles."
+                "title": "Développer et Réduire",
+                "content": "Vous pouvez développer et réduire des clusters individuels en double-cliquant dessus; cependant, vous pouvez utiliser ces boutons pour développer ou réduire tous les clusters simultanément."
             },
             "CollapseAll": {
-                "title": "Vues graphiques",
-                "content": "Par défaut, tous les articles sont étendus. Ce bouton réduit les articles ne laissant visibles que les clusters, les clusters hiérarchiques et les menaces."
+                "title": "Réduire Tout",
+                "content": "Par défaut, tous les clusters sont développés. Réduisons maintenant tous les clusters, ne laissant visibles que les clusters d'articles d'actualité, les clusters hiérarchiques, et les catégories de menaces publiques."
             },
             "ArticleClusters": {
-                "title": "Clusters d'articles",
-                "content": "Dans le menu latéral, nous pouvons voir les clusters triés par taille. Vous pouvez localiser n'importe quel cluster sur le graphique en utilisant le bouton <strong>localiser</strong>."
+                "title": "Clusters d'Articles",
+                "content": "Dans le menu latéral, nous pouvons voir les clusters triés par taille. Vous pouvez localiser n'importe quel cluster sur le graphe en utilisant le bouton <strong>localiser</strong>."
             },
             "ExpandClusterIntro": {
                 "title": "Cluster",
@@ -73,23 +97,23 @@
             },
             "ExpandCluster": {
                 "title": "Cluster",
-                "content": "L'article de ce cluster peut maintenant être vu en vert."
+                "content": "Les articles d'actualité à l'intérieur des clusters sont toujours représentés par des cercles verts, et en vert clair pour les clusters extérieurs."
             },
             "ClusterGrowth": {
-                "title": "Croissance du cluster",
-                "content": "Ici, nous pouvons examiner l'évolution d'un cluster au fil du temps."
+                "title": "Croissance du Cluster",
+                "content": "Ici, nous pouvons examiner l'évolution d'un cluster dans le temps (uniquement sur les vues de plusieurs jours)."
             },
             "SelectedClusterIntro": {
-                "title": "Cluster sélectionné",
-                "content": "Ici, vous pouvez voir les détails sur le cluster que nous avons sélectionné. Un résumé sur le cluster et des questions pré-générées sont fournies ci-dessous."
+                "title": "Cluster Sélectionné",
+                "content": "Ici, vous pouvez voir les détails sur le cluster que nous avons sélectionné. Un résumé du cluster, et des questions et réponses d'exemple sont fournis juste en dessous du résumé."
             },
             "ChatConsole": {
-                "title": "Console de discussion",
+                "title": "Console de Chat",
                 "content": "Ici, vous pouvez poser vos propres questions pour en savoir plus sur le cluster. Les réponses sont fournies par la compréhension de l'IA du cluster."
             },
             "EndOfTour": {
-                "title": "Fin de la visite",
-                "content": "Ceci conclut notre visite ! Si vous souhaitez rejouer cette visite, vous pouvez le faire via le <strong>bouton</strong> ici."
+                "title": "Fin de la Visite Guidée",
+                "content": "Cela conclut notre visite guidée ! Si vous souhaitez rejouer cette visite guidée, vous pouvez le faire à travers le bouton <strong>Visite guidée</strong> ici. <p>Revenez régulièrement car de nouvelles fonctionnalités et capacités sont continuellement ajoutées à la plateforme.</p>"
             }
         }
     },
