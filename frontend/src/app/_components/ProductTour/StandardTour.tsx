@@ -2,8 +2,15 @@ import { type Step } from "react-joyride";
 import Typography from "@mui/material/Typography";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
+import Image from "next/image";
 
-function StandardTour({ name }: { name: string }) {
+function StandardTour({
+  name,
+  image,
+}: {
+  name: string;
+  image?: { src: string; width: number; height: number };
+}) {
   const t = useTranslations(`ProductTour.${name}`);
   const title = useMemo(() => t("title"), [t]);
   const content = useMemo(
@@ -14,6 +21,7 @@ function StandardTour({ name }: { name: string }) {
       }),
     [t],
   );
+  const image_alt = useMemo(() => (image ? t("image_alt") : ""), [t, image]);
   return (
     <div>
       <Typography variant="h4" className="mb-4">
@@ -22,6 +30,7 @@ function StandardTour({ name }: { name: string }) {
       <Typography variant="body1" className="text-left">
         {content}
       </Typography>
+      {image && <Image alt={image_alt} {...image} />}
     </div>
   );
 }
@@ -31,6 +40,7 @@ export default function standardTourFactory<K extends string>(
     K,
     {
       step: Omit<Step, "content">;
+      image?: { src: string; width: number; height: number };
       interact?: boolean;
     }
   >,
@@ -51,7 +61,7 @@ export default function standardTourFactory<K extends string>(
         return {
           ...i,
           ...s.step,
-          content: <StandardTour name={t} />,
+          content: <StandardTour name={t} image={s.image} />,
         } as Step;
       });
     },

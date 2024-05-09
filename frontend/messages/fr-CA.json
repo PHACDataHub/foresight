@@ -39,6 +39,10 @@
                 "title": "Période de Temps",
                 "content": "Certaines dates incluent la possibilité d'examiner la croissance des clusters sur une période de temps. Ce prototype inclut des vues de 3 jours entre le 1er janvier et le 8 janvier, une vue de 7 jours le 6 janvier, et une vue de 30 jours le 29 janvier. Nous choisirons <strong>3 jours</strong> pour cet exemple."
             },
+            "TotalArticleAndRelevantItems": {
+                "title": "Nombre d'articles",
+                "content": "Le décompte des articles disponibles pour la journée, ainsi que le nombre d'articles et de clusters contenant nos termes de recherche, est affiché ici."
+            },
             "FilterViewIntro": {
                 "title": "Vue de Filtrage",
                 "content": "Vous pouvez voir que le nombre d'articles a changé en fonction de nos critères de recherche, cependant, toutes les catégories de menaces pour la santé ne sont pas actuellement visibles. Nous pouvons modifier les catégories sélectionnées en cliquant sur le bouton <strong>Vue de Filtrage</strong>."
@@ -49,7 +53,8 @@
             },
             "ClusterGraph": {
                 "title": "Graphe de Cluster",
-                "content": "Ici, nous pouvons voir la vue en cluster se mettre à jour en fonction de nos critères de recherche. Dans cette vue, nous pouvons voir les articles pertinents et comment ils se rapportent les uns aux autres en fonction de notre recherche par mot-clé, de la date spécifiée et des catégories de menaces pour la santé sélectionnées.<p>Nous explorerons ce graphe plus en détail dans les prochaines étapes.</p>"
+                "content": "Ici, nous pouvons voir que la visualisation a été mise à jour en fonction de nos critères de recherche. Nous pouvons voir les articles pertinents et comment ils sont liés les uns aux autres en fonction de notre recherche par mot-clé, de la date spécifiée et des catégories de menaces pour la santé sélectionnées.<p>Nous explorerons davantage ce graphe dans les prochaines étapes, mais d'abord, vous pouvez vous familiariser avec les différentes couleurs et concepts utilisés dans le graphe.</p>",
+                "image_alt": "Les menaces pour la santé publiques sont en rouge, les clusters hiérarchiques sont en bleu, les clusters d'articles sont en orange, les articles sont en vert et les articles outliers sont en vert clair."
             },
             "GraphViews": {
                 "title": "Contrôles de Visualisation",

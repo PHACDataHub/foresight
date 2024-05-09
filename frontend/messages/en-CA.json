@@ -39,9 +39,13 @@
                 "title": "Time Span",
                 "content": "Certain dates include the ability to examine the growth of clusters over a period of time.  This prototype includes 3 day views between January 1st and January 8th, 7 day view on January 6th, and 30 day view on January 29th.  We will choose <strong>3 days</strong> for this example."
             },
+            "TotalArticleAndRelevantItems": {
+                "title": "Number of items",
+                "content": "The count of articles available for the day, along with the number of articles and clusters containing our search terms, is displayed here."
+            },
             "FilterViewIntro": {
                 "title": "Filter View",
-                "content": "You can see the article count has changed based on our search criteria, however not all health threat categories are currently visible. We can modify the selected categories by clicking on the <strong>Filter View</strong> button."
+                "content": "Not all health threat categories are currently visible. We can modify the selected categories by clicking on the <strong>Filter View</strong> button."
             },
             "FilterViewSelectThreat": {
                 "title": "Filter View",
@@ -49,7 +53,8 @@
             },
             "ClusterGraph": {
                 "title": "Cluster Graph",
-                "content": "Here we can see the cluster view update based on our search criteria. In this view we can see the relevant articles and how they relate to each other based on our keyword search, the specified date and the selected public health threat categories.<p>We will explore this graph more in later steps.</p>"
+                "content": "Here we can see the visualization has updated based on our search criteria. We can see relevant articles and how they relate to each other based on our keyword search, the specified date and the selected public health threat categories.<p>We will explore this graph more in later steps, but first you can familiarize yourself with the various colours and concepts used within the graph.</p>",
+                "image_alt": "Public health threats are red, hierarchical clusters are blue, article clusters are orange, articles are green and article outliers are light green."
             },
             "GraphViews": {
                 "title": "Visualization Controls",

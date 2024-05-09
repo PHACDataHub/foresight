@@ -26,6 +26,37 @@ import JoyrideLocales from "./locale";
 
 import standardTourFactory from "./StandardTour";
 
+function getCookie(name: string) {
+  const cookies = document.cookie.split(";").reduce(
+    (acc, cookieString) => {
+      const [key, value] = cookieString.split("=").map((s) => s.trim());
+      if (key && value) {
+        acc[key] = decodeURIComponent(value);
+      }
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+  return name ? cookies[name] ?? "" : cookies;
+}
+
+function setCookie(
+  name: string,
+  value: string,
+  options: Record<string, string> = {},
+) {
+  document.cookie = `${name}=${encodeURIComponent(value)}${Object.keys(
+    options,
+  ).reduce((acc, key) => {
+    return (
+      acc +
+      `;${key.replace(/([A-Z])/g, ($1) => "-" + $1.toLowerCase())}=${
+        options[key]
+      }`
+    );
+  }, "")}`;
+}
+
 const tf = standardTourFactory({
   Welcome: {
     step: {
@@ -40,14 +71,18 @@ const tf = standardTourFactory({
   KeywordSearchBoolean: { step: { target: ".sdp-term-boolean" } },
   DatePicker: { step: { target: ".sdp-timetravel" } },
   History: { step: { target: ".sdp-history-chooser" } },
-  FilterViewIntro: { step: { target: ".sdp-count-filter" } },
+  TotalArticleAndRelevantItems: { step: { target: ".sdp-count-filter" } },
+  FilterViewIntro: { step: { target: ".sdp-threat-sel" } },
   FilterViewSelectThreat: {
     step: {
       target: ".sdp-threat-sel-list",
       placement: "left",
     },
   },
-  ClusterGraph: { step: { target: ".sdp-graph-panel", placement: "left" } },
+  ClusterGraph: {
+    step: { target: ".sdp-graph-panel", styles: { tooltip: { width: 900}} },
+    image: { src: "/node_colours.png", height: 605, width: 1366 },
+  },
   GraphViews: { step: { target: ".control-buttons" } },
   Refresh: { step: { target: ".sdp-refresh" } },
   HeatMap: { step: { target: ".sdp-heatmap" } },
@@ -180,6 +215,15 @@ export default function ProductTour() {
     selectedNodeRef.current = selectedNode;
   }, [selectedNode]);
 
+  useEffect(() => {
+    const visited = getCookie("visited");
+    if (!visited) {
+      setRun(true);
+      setStepIndex(0);
+      setCookie("visited", "yes");
+    }
+  }, []);
+
   const label = useMemo(() => t("tour"), [t]);
 
   const resetTour = useCallback(() => {
@@ -251,8 +295,9 @@ export default function ProductTour() {
             if (el) el.click();
           })
           .into("HierarchicalView", () => {
-            const el =
-              document.querySelector<HTMLButtonElement>(".sdp-layout-hierarchical");
+            const el = document.querySelector<HTMLButtonElement>(
+              ".sdp-layout-hierarchical",
+            );
             if (el) el.click();
           })
           .outOf("HierarchicalView", () => {
