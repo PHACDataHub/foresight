@@ -2827,7 +2827,26 @@
             "schema": []
           }
         ]
-      }
+      },
+      {
+        "title": "Feedback",
+        "reports": [
+          {
+            "id": "327925bd-736e-487a-8052-fd1385ed9dbb",
+            "title": "Product Feedback",
+            "query": "match (f:ProductFeedback) return f.email as email, f.feedback as feedback, f.created as created;",
+            "width": 22,
+            "height": 6,
+            "x": 0,
+            "y": 0,
+            "type": "table",
+            "selection": {},
+            "settings": {
+              "allowDownload": true
+            }
+          }
+        ]
+      }      
     ],
     "parameters": {},
     "extensions": {

@@ -4,6 +4,19 @@
     },
     "AppWrapper": {
         "__layout__error__": "Impossible d'appliquer la mise en page.",
+        "Feedback": {
+            "button": "Retour d'information",
+            "thankyou_title": "Merci !",
+            "thankyou_text": "Votre retour d'information a été soumis avec succès.",
+            "thankyou_close": "Fermer",
+            "title": "Nous apprécions vos retours !",
+            "text": "Aidez-nous à améliorer votre expérience. Partagez vos commentaires, préoccupations, demandes de fonctionnalités ou signalez les bogues que vous avez rencontrés. Nous apprécions vos contributions et nous efforçons d'améliorer notre plateforme.",
+            "email_label": "Adresse e-mail (Facultatif)",
+            "feedback_label": "Retour d'information",
+            "cancel_button": "Annuler",
+            "submit_button": "Soumettre",
+            "generic_error": "Une erreur inconnue s'est produite."
+        },
         "ProductTour": {
             "tour": "Visite guidée",
             "back": "Retour",

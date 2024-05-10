@@ -586,6 +586,33 @@ export const postRouter = createTRPCRouter({
     }
   }),
 
+  feedback: publicProcedure
+    .input(z.object({ email: z.string().optional(), feedback: z.string() }))
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      console.log({
+        email: input.email,
+        feedback: input.feedback,
+        created: new Date(),
+      });
+      try {
+        const r = await session.run(
+          `
+        CREATE (feedback:ProductFeedback {
+          email: $email,
+          feedback: $feedback,
+          created: datetime()
+        })
+        `,
+          { email: input.email, feedback: input.feedback },
+        );
+        if (r) return true;
+      } finally {
+        await session.close();
+      }
+      return false;
+    }),
+
   cluster: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {

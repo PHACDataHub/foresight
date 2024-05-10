@@ -174,6 +174,11 @@ export default function Controls() {
     }
   }, [day, history, locale, router, selectedNode]);
 
+  const handleResetTour = useCallback(() => {
+    localStorage.removeItem("visited");
+    alert("Done.");
+  }, []);
+
   const handleEverythingChange = useCallback(() => {
     setEverything(!everything);
   }, [everything, setEverything]);
@@ -347,6 +352,9 @@ export default function Controls() {
             <FormLabel sx={{ fontWeight: "bold", fontSize: 16 }}>
               Rod Mode
             </FormLabel>
+            <Button variant="contained" onClick={handleResetTour}>
+              Reset Tour First Visit
+            </Button>
             <FormControlLabel
               control={
                 <Checkbox

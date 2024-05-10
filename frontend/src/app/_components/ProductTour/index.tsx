@@ -26,37 +26,6 @@ import JoyrideLocales from "./locale";
 
 import standardTourFactory from "./StandardTour";
 
-function getCookie(name: string) {
-  const cookies = document.cookie.split(";").reduce(
-    (acc, cookieString) => {
-      const [key, value] = cookieString.split("=").map((s) => s.trim());
-      if (key && value) {
-        acc[key] = decodeURIComponent(value);
-      }
-      return acc;
-    },
-    {} as Record<string, string>,
-  );
-  return name ? cookies[name] ?? "" : cookies;
-}
-
-function setCookie(
-  name: string,
-  value: string,
-  options: Record<string, string> = {},
-) {
-  document.cookie = `${name}=${encodeURIComponent(value)}${Object.keys(
-    options,
-  ).reduce((acc, key) => {
-    return (
-      acc +
-      `;${key.replace(/([A-Z])/g, ($1) => "-" + $1.toLowerCase())}=${
-        options[key]
-      }`
-    );
-  }, "")}`;
-}
-
 const tf = standardTourFactory({
   Welcome: {
     step: {
@@ -80,7 +49,7 @@ const tf = standardTourFactory({
     },
   },
   ClusterGraph: {
-    step: { target: ".sdp-graph-panel", styles: { tooltip: { width: 900}} },
+    step: { target: ".sdp-graph-panel", styles: { tooltip: { width: 900 } } },
     image: { src: "/node_colours.png", height: 605, width: 1366 },
   },
   GraphViews: { step: { target: ".control-buttons" } },
@@ -119,7 +88,8 @@ const tf = standardTourFactory({
     },
   },
   ChatConsole: { step: { target: ".sdp-chat-console" } },
-  EndOfTour: { step: { target: "#top-menu" } },
+  Feedback: { step: { target: ".product-feedback" } },
+  EndOfTour: { step: { target: ".product-tour" } },
 });
 
 const containedStyle: React.CSSProperties = {
@@ -216,11 +186,11 @@ export default function ProductTour() {
   }, [selectedNode]);
 
   useEffect(() => {
-    const visited = getCookie("visited");
+    const visited = localStorage.getItem("visited");
     if (!visited) {
       setRun(true);
       setStepIndex(0);
-      setCookie("visited", "yes");
+      localStorage.setItem("visited", "yes");
     }
   }, []);
 
@@ -384,7 +354,7 @@ export default function ProductTour() {
   );
 
   return (
-    <li>
+    <li className="product-tour">
       <Button href="#" onClick={handleTourClick} data-touring={run}>
         {label}
       </Button>

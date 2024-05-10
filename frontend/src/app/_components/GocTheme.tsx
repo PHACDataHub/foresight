@@ -5,11 +5,12 @@ import Image from "next/image";
 import Button from "@mui/material/Button";
 
 import ProductTour from "./ProductTour";
+import Feedback from "./Feedback";
 
 export default function GocTheme({ children }: { children: React.ReactNode }) {
   const { locale } = useParams();
   const [clientSide, setClientSide] = useState(false);
-
+<Feedback />
   useEffect(() => {
     setClientSide(true);
   }, []);
@@ -51,8 +52,7 @@ export default function GocTheme({ children }: { children: React.ReactNode }) {
             <h2 className="wb-inv">Application Menus</h2>
             <ul id="top-menu" className="flex space-x-2">
               {clientSide && <ProductTour />}
-            </ul>
-            <ul className="flex space-x-2">
+              <Feedback />
               {lngLinks.map((lng) => (
                 <li key={`lng_${lng.lang}`}>
                   <Button href={lng.href}>{lng.text}</Button>

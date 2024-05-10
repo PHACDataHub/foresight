@@ -4,6 +4,19 @@
     },
     "AppWrapper": {
         "__layout__error__": "Unable to apply layout.",
+        "Feedback": {
+            "button": "Feedback",
+            "thankyou_title": "Thank you!",
+            "thankyou_text": "Your feedback has been successfully submitted.",
+            "thankyou_close": "Close",
+            "title": "We value your feedback!",
+            "text": "Help us improve your experience. Share your comments, concerns, feature requests, or report any bugs you've encountered. We appreciate your input and strive to make our platform better.",
+            "email_label": "Email Address (Optional)",
+            "feedback_label": "Feedback",
+            "cancel_button": "Cancel",
+            "submit_button": "Submit",
+            "generic_error": "An unknown error has occurred."
+        },
         "ProductTour": {
             "tour": "Tour",
             "back": "Back",
@@ -67,17 +80,14 @@
             "LayoutAlgorithms": {
                 "title": "Layout Algorithms",
                 "content": "You can reorganize the visualization using several algorithms.  In addition to the force layout which is the default view, there are also the hierarchical layout, grid layout, and the concentric/radial layouts which are only available if there is a selected node."
-
             },
             "HierarchicalView": {
                 "title": "Hierarchical Layout",
                 "content": "The hierarchical layout displays the relationship between clusters, it is best suited when articles are not all expanded. "
-
             },
             "GeoMode": {
                 "title": "Map View",
                 "content": "Instead of using the layout algorithms, you can also view the clusters on a map."
-
             },
             "FullScreen": {
                 "title": "Full screen",
@@ -107,7 +117,7 @@
                 "title": "Cluster",
                 "content": "News articles within clusters are always represented by green circles, and light green for cluster outliers."
             },
-            "ClusterGrowth" : {
+            "ClusterGrowth": {
                 "title": "Cluster Growth",
                 "content": "Here we can examine the evolution of a cluster over time (only on multi-day views)."
             },
@@ -118,6 +128,10 @@
             "ChatConsole": {
                 "title": "Chat Console",
                 "content": "Here you can ask your own questions to learn more about the cluster. The answers are provided by AI's understanding of the cluster."
+            },
+            "Feedback": {
+                "title": "Feedback",
+                "content": "We would love to hear from you!  If you have any feedback you can use this button to get in touch!</p>"
             },
             "EndOfTour": {
                 "title": "End of tour",
