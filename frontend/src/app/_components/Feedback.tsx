@@ -13,8 +13,8 @@ import { useTranslations } from "next-intl";
 import { api } from "~/trpc/react";
 
 export default function Feedback() {
-  const [open, setOpen] = useState(true);
-  const [thankYou, setThankYou] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [thankYou, setThankYou] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const submitFeedback = api.post.feedback.useMutation();
