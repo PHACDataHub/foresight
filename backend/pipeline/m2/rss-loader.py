@@ -115,9 +115,9 @@ def filter_url_work(url_list, n_workers, timeout, out_file_path, failed_url_file
     batch_size = nr_urls // n_workers
     
     sub_lists = []
-    for i in range(0, n_workers-1):
+    for i in range(0, n_workers):
         sub_lists.append(url_list[i * batch_size: (i+1) * batch_size])
-    sub_lists.append(url_list[(n_workers - 1) * batch_size:])
+    sub_lists.append(url_list[n_workers * batch_size:])
 
     workers = []
     for i in range(0, n_workers):
@@ -133,7 +133,7 @@ def filter_url_work(url_list, n_workers, timeout, out_file_path, failed_url_file
 def load_feed_task(worker_id, timeout, sub_list, queue):
     count = 0
     urls = []
-    for url in sub_list:
+    for url, sources in sub_list:
         count += 1
         s_time = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
         try:
@@ -149,7 +149,7 @@ def load_feed_task(worker_id, timeout, sub_list, queue):
                     urls.extend([entry.link for entry in feed.entries])
                     print(f">>> [{worker_id}] [{count:3d}/{len(sub_list):3d}] --- {s_time} --- [{url}] --- [{len(feed.entries)}]", flush=True)
         except Exception as e:
-            print(f"--- [{worker_id}] [{count:3d}/{len(sub_list):3d}] --- {s_time} --- [{url}] --- [{e}]", flush=True)
+            print(f"--- [{worker_id}] [{count:3d}/{len(sub_list):3d}] --- {s_time} --- [{url} {sources}] --- [{e}]", flush=True)
 
     queue.put(urls)
     print(f"Quit {worker_id}.", flush=True)
@@ -161,9 +161,9 @@ def load_feed_work(url_list, n_workers, timeout):
     batch_size = nr_urls // n_workers
     
     sub_lists = []
-    for i in range(0, n_workers-1):
+    for i in range(0, n_workers):
         sub_lists.append(url_list[i * batch_size: (i+1) * batch_size])
-    sub_lists.append(url_list[(n_workers - 1) * batch_size:])
+    sub_lists.append(url_list[n_workers * batch_size:])
 
     output_queue = Queue()
     workers = []
@@ -190,68 +190,77 @@ def load_feed_work(url_list, n_workers, timeout):
     return output_urls
 
 
-def load_article_work(url_list, batch_size, n_workers, timeout, out_file_path):
+def load_article_task(worker_id, timeout, sub_list, out_file_path):
+    user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     config = Config()
+    config.browser_user_agent = user_agent
     config.request_timeout = timeout
+
+    url_file_name = f"{out_file_path}/articles-{worker_id}.jsonl"
+    with open(url_file_name, 'wt') as url_out_file:
+        for url in sub_list:
+            print(f"Downloading {url} ...")
+            article = Article(url, config=config)
+            try:
+                article.download()
+                article.parse()
+                article.nlp()
+                publish_date = getattr(article, "publish_date", "")
+                if isinstance(publish_date, datetime):
+                    publish_date = publish_date.strftime('%Y-%m-%dT%H-%M-%S')
+                else:
+                    publish_date = str(publish_date)
+                    
+                metadata = {
+                    "title": getattr(article, "title", ""),
+                    "link": getattr(article, "url", getattr(article, "canonical_link", "")),
+                    "authors": getattr(article, "authors", []),
+                    "language": getattr(article, "meta_lang", ""),
+                    "description": getattr(article, "meta_description", ""),
+                    "publish_date": publish_date,
+                    "keywords": getattr(article, "keywords", []),
+                    "summary": getattr(article, "summary", ""),
+                }
+                document = {
+                    "metadata": metadata,
+                    "page_content": article.text
+                }
+                url_out_file.write(f"{json.dumps(document)}\n")
+                url_out_file.flush()
+            except Exception as e:
+                print(f"ERR [{e}]", flush=True)
+
+    print(f"Quit {worker_id}.", flush=True)
     
-    article_list = [Article(url) for url in url_list]
 
-    start_index = 0
-    nr_items = batch_size * n_workers
-    while True:
-        end_index = start_index + nr_items
-        if end_index > len(article_list):
-            end_index = len(article_list)
-        sub_list = article_list[start_index:end_index]
+def load_article_work(url_list, n_workers, timeout, out_file_path):
+    random.shuffle(url_list)
+    nr_urls = len(url_list)
+    batch_size = nr_urls // n_workers
+    
+    sub_lists = []
+    for i in range(0, n_workers):
+        sub_lists.append(url_list[i*batch_size: (i+1) * batch_size])
+    sub_lists.append(url_list[n_workers*batch_size:])
 
-        news_pool.set(sub_list, override_threads=n_workers)
-        news_pool.join()
-
-        s_time = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-        url_file_name = f"{out_file_path}/articles-{s_time}.jsonl"
-        with open(url_file_name, 'wt') as url_out_file:
-            for article in sub_list:
-                try:
-                    article.parse()
-                    article.nlp()
-                    publish_date = getattr(article, "publish_date", "")
-                    if isinstance(publish_date, datetime):
-                        publish_date = publish_date.strftime('%Y-%m-%dT%H-%M-%S')
-                    else:
-                        publish_date = str(publish_date)
-                        
-                    metadata = {
-                        "title": getattr(article, "title", ""),
-                        "link": getattr(article, "url", getattr(article, "canonical_link", "")),
-                        "authors": getattr(article, "authors", []),
-                        "language": getattr(article, "meta_lang", ""),
-                        "description": getattr(article, "meta_description", ""),
-                        "publish_date": publish_date,
-                        "keywords": getattr(article, "keywords", []),
-                        "summary": getattr(article, "summary", ""),
-                    }
-                    document = {
-                        "metadata": metadata,
-                        "page_content": article.text
-                    }
-                    url_out_file.write(f"{json.dumps(document)}\n")
-                except Exception as e:
-                    print(f"ERR [{e}]", flush=True)
-
-        print(f"{url_file_name} done.")
-        if end_index == len(article_list):
-            break
-        start_index = end_index
+    workers = []
+    for i in range(0, n_workers):
+        workers.append(Thread(target=load_article_task, args=(i, timeout, sub_lists[i], out_file_path,)))
+        
+    for i in range(0, n_workers):
+        workers[i].start()
+    
+    for i in range(0, n_workers):
+        workers[i].join()
 
 
 if __name__ == '__main__':
     config_file_name = sys.argv[1]
-    batch_size = int(sys.argv[2])
-    n_workers = int(sys.argv[3])
+    n_workers = int(sys.argv[2])
+    out_file_path = sys.argv[3]
 
     config = load_config(config_file_name)
     timeout = int(config['output']['timeout'])
-    out_file_path = config['output']['path']
 
     start_time = datetime.now()
 
@@ -260,27 +269,21 @@ if __name__ == '__main__':
     load_meta_config(config['meta'], url_list)
     load_plenaryapp_config(config['plenaryapp'], url_list)
     load_gphin_config(config['gphin'], url_list)
-    filter_url_work(url_list, n_workers, timeout, out_file_path, 'failed-urls.txt')
-    # failed_urls = load_failed_urls(config['output'])
+    # filter_url_work(url_list, n_workers, timeout, out_file_path, 'failed-urls.txt')
+    failed_urls = load_failed_urls(config['output'])
     
     url_dict = defaultdict(set)
     for url, source in url_list:
-        # if url not in failed_urls:
-        url_dict[url].add(source)
+        if url not in failed_urls:
+            url_dict[url].add(source)
     url_list = [[url, '-'.join(sorted(sources))] for url, sources in url_dict.items()]
     print(f"Total {len(url_list)} GOOD urls.")
-
     
-    # url_list = list(set(url_list).difference(set(failed_url_list)))
-    # random.shuffle(url_list)
+    article_urls = load_feed_work(url_list, n_workers, timeout)
+    print(f"Total {len(article_urls)} articles.")
     
-    
-    # article_urls = load_feed_work(url_list, n_workers, timeout)
-    # random.shuffle(article_urls)
-    # print(f"Total {len(article_urls)} articles.")
-    
-    # load_article_work(article_urls, batch_size, n_workers, timeout, out_file_path)
+    load_article_work(article_urls, n_workers, timeout, out_file_path)
    
-    # end_time = datetime.now()
-    # seconds = (end_time - start_time).total_seconds()
-    # print(f"Executed in {seconds} secs.", flush=True)
+    end_time = datetime.now()
+    seconds = (end_time - start_time).total_seconds()
+    print(f"Executed in {seconds} secs.", flush=True)
