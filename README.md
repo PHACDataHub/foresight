@@ -1,8 +1,8 @@
-# FORESIGHT<sup>PHAC</sup>
+# Signal Detection Platform
 
 ## I. The Next Frontier in Public Health Intelligence
 
-With the advent of novel technologies, our approach towards problem-solving is undergoing a paradigm shift, enabling more profound and multifaceted analyses. Our early attempt of NLP-pipeline prototype for GPHIN Next Generation represents an initial foray into leveraging technology for public health surveillance, yet it merely skims the surface of potential applications. Current capabilities extend far beyond, with the capacity to process from seven thousand to millions of articles and billions of data points every day, highlighting *the critical need for automation and efficiency enhancement in data processing and analysis*.
+With the advent of novel technologies, our approach towards problem-solving is undergoing a paradigm shift, enabling more profound and multifaceted analyses. Our early attempt of NLP-pipeline represents an initial foray into leveraging technology for news analysis, yet it merely skims the surface of potential applications. Current capabilities extend far beyond, with the capacity to process from seven thousand to millions of articles and billions of data points every day, highlighting *the critical need for automation and efficiency enhancement in data processing and analysis*.
 
 Our previous work to enhance and expand the NLP-pipeline prototype - a `Data Mesh Reference Implementation` (DMRI) - provided great insights, demonstrating that *the design patterns and methodologies developed are versatile and applicable across a spectrum of domains*, including climate change amongst other public health arenas. This versatility underscores the potential to shift our focus towards the construction of dynamically built knowledge graphs, moving away from the confines of traditional taxonomy searches.
 
@@ -10,7 +10,7 @@ In the broader context, news article processing is depicted as a small component
 
 The DMRI does highlight the imperative for a more expansive and impactful approach. First and foremost, there is a pressing need to refine our detection, understanding, and response mechanisms across 64 surveillance pipelines to address present challenges more effectively. Additionally, we must intensify our support for clinical and preventive care activities across 13 participating jurisdictions, ultimately benefiting 40 million citizens.
 
-It is now crucial to establish *a robust framework for addressing an array of emerging threats, including the impacts of climate change, disparities in healthcare access, the rise of resistant diseases, financial challenges in healthcare, and the deterioration of mental health*. Addressing these facets is paramount for elevating the overall impact of the Agency.
+It is now crucial to establish *a robust framework for addressing an array of emerging threats, including the impacts of climate change, disparities in healthcare access, the rise of resistant diseases, financial challenges in healthcare, and the deterioration of mental health*. Addressing these facets is paramount for elevating the overall impact.
 
 The scope of information sources for public health surveillance should extend well beyond news articles. We must tap into thousands of verifiable documents originating from diverse entities such as governments, NGOs, corporations, and academic institutions, all of which contribute real-time data. Analytical outcomes from a myriad or sources should be integrated to bolster our capabilities in both detection and comprehension of public health issues. Leveraging population-level data from participating territories (PTs) is also imperative, as it enables the accumulation of substantial data masses to reveal emerging issues, spread patterns, and prevailing trends.
 
@@ -51,7 +51,7 @@ Initiating Small-Scale Projects:
 2. **Empowering User Ownership**: Ensure that users, be they experts or stakeholders, retain control and ownership over the initiatives and functionalities they wish to implement and experiment with.
 3. **Stewardship of the Platform**: Emphasize our role as custodians of the platform, facilitating the execution of user-driven initiatives and ensuring a supportive environment for innovation.
 4. **User-Driven Success**: Acknowledge that the platform's success is predominantly contingent upon the contributions and engagement of the users, rather than solely on the proficiency of our development efforts. This platform would serve as an innovative hub for domain experts, facilitating the proposal of ideas, experiments, and tests. Moreover, it would empower these professionals to execute their plans with a degree of automation, optimizing the storytelling potential for the constantly evolving Minimum Viable Product (MVP).
-5. **From Success to Scalability**: Leverage successful small-scale implementations as a springboard to develop a GPHIN-like platforms, all while maintaining our integral role and connection within the community.
+5. **From Success to Scalability**: Leverage successful small-scale implementations as a springboard, all while maintaining our integral role and connection within the community.
 
 ## IV. [Defining a Full Prototype for the Playground](#iv-defining-a-full-prototype-for-the-playground)
 
@@ -61,7 +61,7 @@ Initiating Small-Scale Projects:
         - Ingest News Provider articles (e.g., Factiva, RSS).
         - Ingest RSS, Public Health Documents and Videos (related to health and public health).
             - For Videos, leverage AI to understand what the video is about and produce text description
-        - Harvest and Ingest HC and PHAC standards and policies for establishing ground truths.
+        - Harvest and Ingest health care standards and policies for establishing ground truths.
 2. **Enhanced Visualization for At-a-Glance Detection of Events**
     - Integrate the detected information with our existing knowledge base, employing visualization tools to depict relationships and contexts, aiding in a more intuitive understanding of the data.
     - Web-based interfaces leveraging modern data infrastructures.
@@ -77,7 +77,7 @@ Initiating Small-Scale Projects:
     - Automate the processes of collection, organization, and analysis, utilizing domain-specific knowledge to decode and comprehend the detected information efficiently.
     - *Specific Outputs*:
         - Identify a few machine-readable ontologies.
-        - Fully standards compliant, pluggable to other PHAC systems.
+        - Fully standards compliant, pluggable to other systems.
 4. **Dynamic Analysis of Information Flow**
     - Monitor and analyze shifts, patterns, and trends within the information mass, gaining insights into its nature, properties, and potential implications. Note. David B suggests building uses cases for both static and dynamic analysis.
     - *Specific Outputs*:

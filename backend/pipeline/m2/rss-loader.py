@@ -191,14 +191,15 @@ def load_feed_work(url_list, n_workers, timeout):
 
 
 def load_article_task(worker_id, timeout, sub_list, out_file_path):
+    user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     config = Config()
+    config.browser_user_agent = user_agent
     config.request_timeout = timeout
 
     url_file_name = f"{out_file_path}/articles-{worker_id}.jsonl"
-    print(f"Started {url_file_name} ...")
-
     with open(url_file_name, 'wt') as url_out_file:
         for url in sub_list:
+            print(f"Downloading {url} ...")
             article = Article(url, config=config)
             try:
                 article.download()
