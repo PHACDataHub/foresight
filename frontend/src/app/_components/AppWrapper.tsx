@@ -8,7 +8,7 @@ import Alert from "@mui/material/Alert";
 import { useTranslations } from "next-intl";
 
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useStore } from "~/app/_store";
 import GocTheme from "./GocTheme";
 
@@ -39,6 +39,10 @@ export default function AppWrapper({
     if (typeof locale === "string")
       document.querySelector("html")?.setAttribute("lang", locale);
   }, [locale]);
+
+  useEffect(() => {
+    if (session.status === "unauthenticated") void signIn();
+  }, [session]);
 
   if (session.status !== "authenticated") return false;
 
