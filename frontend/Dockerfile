@@ -48,7 +48,7 @@ RUN \
 
 ##### RUNNER
 
-FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12:debug AS runner
 WORKDIR /app
 
 ARG NEO4J_URL
