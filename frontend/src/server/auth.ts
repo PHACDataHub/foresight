@@ -10,7 +10,7 @@ import GithubProvider from "next-auth/providers/github";
 import { env } from "~/env";
 import { db } from "~/server/db";
 
-const allowed_users = env.GITHUB_ALLOWED_USERS.split(",");
+const allowed_users = env.GITHUB_ALLOWED_USERS?.split(",") || [];
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
