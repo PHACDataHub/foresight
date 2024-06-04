@@ -46,6 +46,8 @@ RUN \
     else echo "Lockfile not found." && exit 1; \
     fi
 
+ENV DATABASE_URL file:/tmp/db.sqlite
+RUN npm run db:push
 ##### RUNNER
 
 FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12:debug AS runner
@@ -84,6 +86,8 @@ COPY --from=builder /app/package.json ./package.json
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+
+COPY --from=builder /tmp/db.sqlite /tmp/db.sqlite
 
 EXPOSE 3000
 ENV PORT 3000
