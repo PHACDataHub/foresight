@@ -101,6 +101,12 @@ jobs:
             NEO4J_URL=${{ secrets.NEO4J_URL }}
             QA_SERVICE_URL=${{ secrets.QA_SERVICE_URL }}
             NEXT_PUBLIC_GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            GITHUB_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}
+            GITHUB_CLIENT_SECRET=${{ secrets.GH_CLIENT_SECRET }}
+            GITHUB_ALLOWED_USERS=${{ secrets.GH_ALLOWED_USERS }}
+            NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+            NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v0.4.0

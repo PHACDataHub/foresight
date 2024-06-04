@@ -127,8 +127,6 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
 
 const groupByOptions = [
   "",
-  "gphin_state",
-  "gphin_score",
   "pub_name",
   "pub_time",
   "pub_date",
@@ -268,25 +266,10 @@ export function ClusterView(
     [cluster.locations, ogma],
   );
 
-  const trashed_published = useMemo(() => {
-    return articles.reduce(
-      (p, c) => ({
-        trashed: p.trashed + (c.gphin_state === "TRASHED" ? 1 : 0),
-        published: p.published + (c.gphin_state === "PUBLISHED" ? 1 : 0),
-      }),
-      {
-        trashed: 0,
-        published: 0,
-      },
-    );
-  }, [articles]);
-
   const groupedArticles = useMemo(() => {
     if (groupArticlesBy !== "" && feature_GroupArticleBy) {
       return d3.group(
         d3.sort(articles, (a, b) => {
-          if (groupArticlesBy === "gphin_score")
-            return d3.descending(a.gphin_score, b.gphin_score);
           if (groupArticlesBy === "pub_time")
             return (
               d3.ascending(a.pub_time?.getTime(), b.pub_time?.getTime()) ||
@@ -458,13 +441,6 @@ export function ClusterView(
         {tab === 1 && (
           <div className="h-0 flex-auto flex-col space-y-[8px] overflow-y-scroll pl-[30px] pr-[12px] pt-[12px]">
             <div className="flex flex-col space-y-[12px]">
-              <div className="flex flex-col items-center">
-                <Typography variant="body1" fontSize={14}>
-                  GPHIN: <b>{t("published")}</b> ({trashed_published.published}){" "}
-                  <b>{t("trashed")}</b> ({trashed_published.trashed})
-                </Typography>
-              </div>
-
               {feature_GroupArticleBy && (
                 <div>
                   <FormControl sx={{ minWidth: 120 }} fullWidth>
@@ -492,12 +468,6 @@ export function ClusterView(
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 14 }} value="pub_date">
                         {t("pubDate")}
-                      </MenuItem>
-                      <MenuItem sx={{ fontSize: 14 }} value="gphin_state">
-                        {t("state")}
-                      </MenuItem>
-                      <MenuItem sx={{ fontSize: 14 }} value="gphin_score">
-                        {t("score")}
                       </MenuItem>
                     </Select>
                   </FormControl>

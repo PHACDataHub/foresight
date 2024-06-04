@@ -1,9 +1,12 @@
 {
     "App": {
-        "title": "Foresight"
+        "title": "Signals"
     },
     "AppWrapper": {
         "__layout__error__": "Unable to apply layout.",
+        "SignOut": {
+            "button": "Logout"
+        },
         "Feedback": {
             "button": "Feedback",
             "thankyou_title": "Thank you!",
@@ -25,8 +28,8 @@
             "next": "Next",
             "skip": "End",
             "Welcome": {
-                "title": "Welcome to Foresight!",
-                "content": "<p>Foresight is designed to aid analysts identify signals from potentially millions of articles per day.  This proof of concept uses data archived by GPHIN between December 1st 2019 and January 31st 2021, and uses health threat classifications for clustering.</p><p>This tour will guide you through the majority of features that we have implemented up until now.</p>"
+                "title": "Welcome to Signals!",
+                "content": "<p>Signals is designed to aid analysts identify signals from potentially millions of articles per day.  This proof of concept uses data archived by PHAC between December 1st 2019 and January 31st 2021, and uses health threat classifications for clustering.</p><p>This tour will guide you through the majority of features that we have implemented up until now.</p>"
             },
             "SidePanel": {
                 "title": "The Side Panel",
@@ -175,6 +178,7 @@
         "resetLayout": "Reset Layout",
         "expandArticles": "Expand {type, select, hierarchicalcluster {articles along path} other {all articles}}",
         "collapseArticles": "Collapse expanded articles",
+        "toggleAutoExpand": "Toggle automatically expanding articles",
         "layoutNodes": "Layout nodes using the \"{layout}\" algorithm",
         "satelliteToggle": "Toggle between satellite and terrain view",
         "mapView": "Toggle between map and graph view",
@@ -205,16 +209,12 @@
             "noGrouping": "No Grouping",
             "publication": "Publication",
             "pubTime": "Pub Time",
-            "pubDate": "Pub Date",
-            "state": "GPHIN State",
-            "score": "GPHIN Score"
+            "pubDate": "Pub Date"
         },
         "ArticleComponent": {
             "publication": "Publication:",
             "pubTime": "Pub Time:",
             "pubDate": "Pub Date:",
-            "state": "GPHIN State:",
-            "score": "GPHIN Score:",
             "outlier": "Outlier"
         },
         "Title": {

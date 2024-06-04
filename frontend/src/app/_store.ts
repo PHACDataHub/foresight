@@ -82,6 +82,8 @@ export interface ForesightStore {
   setShowInfoPanel: (showInfoPanel: boolean) => void;
   panelWasToggled: boolean;
   setPanelWasToggled: (panelWasToggled: boolean) => void;
+  include_articles: boolean;
+  setIncludeArticles: (include_articles: boolean) => void;
   everything: boolean;
   setEverything: (everything: boolean) => void;
   refreshObserver: number;
@@ -203,6 +205,8 @@ export const useStore = create<ForesightStore>((set) => ({
   setShowInfoPanel: (showInfoPanel) => set({ showInfoPanel }),
   panelWasToggled: false,
   setPanelWasToggled: (panelWasToggled) => set({ panelWasToggled }),
+  include_articles: false,
+  setIncludeArticles: (include_articles) => set({ include_articles }),
   everything: false,
   setEverything: (everything) => set({ everything }),
   refreshObserver: 0,

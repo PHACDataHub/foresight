@@ -114,44 +114,6 @@ export default function ArticleComponent({
                 </Typography>
               </div>
             </div>
-            <div
-              className={`flex flex-col space-y-[8px]${loading ? " flex-1" : ""}`}
-            >
-              <div className="flex space-x-1">
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? <Skeleton /> : t("state")}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  fontWeight={500}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? <Skeleton /> : article.gphin_state}
-                </Typography>
-              </div>
-              <div className="flex space-x-1">
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? <Skeleton /> : t("score")}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  fontWeight={500}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? <Skeleton /> : article.gphin_score}
-                </Typography>
-              </div>
-            </div>
           </div>
           {article.outlier && (
             <div className="flex space-x-1">

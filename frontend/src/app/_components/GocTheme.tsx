@@ -6,15 +6,16 @@ import Button from "@mui/material/Button";
 
 import ProductTour from "./ProductTour";
 import Feedback from "./Feedback";
+import SignOut from "./SignOut";
 
 export default function GocTheme({ children }: { children: React.ReactNode }) {
   const { locale } = useParams();
   const [clientSide, setClientSide] = useState(false);
-<Feedback />
+  <Feedback />;
   useEffect(() => {
     setClientSide(true);
   }, []);
-  
+
   const lngLinks = useMemo(() => {
     if (locale === "en-CA")
       return [{ text: "Français", href: "/fr-CA/1", lang: "fr" }];
@@ -53,6 +54,7 @@ export default function GocTheme({ children }: { children: React.ReactNode }) {
             <ul id="top-menu" className="flex space-x-2">
               {clientSide && <ProductTour />}
               <Feedback />
+              <SignOut />
               {lngLinks.map((lng) => (
                 <li key={`lng_${lng.lang}`}>
                   <Button href={lng.href}>{lng.text}</Button>

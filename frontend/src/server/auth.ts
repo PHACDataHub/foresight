@@ -3,11 +3,14 @@ import {
   type DefaultSession,
   getServerSession,
   type NextAuthOptions,
+  type User,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import GithubProvider from "next-auth/providers/github";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+
+const allowed_users = env.GITHUB_ALLOWED_USERS.split(",");
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -37,6 +40,13 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
+    async signIn({ user }) {
+      if (
+        allowed_users.includes((user as User & { username: string }).username)
+      )
+        return true;
+      return false;
+    },
     session: ({ session, user }) => ({
       ...session,
       user: {
@@ -47,9 +57,24 @@ export const authOptions: NextAuthOptions = {
   },
   adapter: PrismaAdapter(db),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    GithubProvider({
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+      profile(profile: {
+        id: number;
+        name: string | null;
+        login: string;
+        email: string | null;
+        avatar_url: string;
+      }) {
+        return {
+          id: profile.id.toString(),
+          name: profile.name ?? profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+          username: profile.login,
+        };
+      },
     }),
     /**
      * ...add more providers here.

@@ -9,8 +9,8 @@ export default function SplashScreen() {
       <body className="h-full">
         <WithWet>
           <SplashTemplate
-            nameEng="Foresight"
-            nameFra="Sérum"
+            nameEng="Signals"
+            nameFra="Signaux"
             indexEng="/en-CA/1"
             indexFra="/fr-CA/1"
           />
