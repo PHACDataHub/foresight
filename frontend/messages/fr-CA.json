@@ -4,6 +4,9 @@
     },
     "AppWrapper": {
         "__layout__error__": "Impossible d'appliquer la mise en page.",
+        "SignOut": {
+            "button": "Se déconnecter"
+        },
         "Feedback": {
             "button": "Retour d'information",
             "thankyou_title": "Merci !",

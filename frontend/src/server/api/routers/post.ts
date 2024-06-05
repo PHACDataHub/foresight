@@ -8,7 +8,11 @@ import { z } from "zod";
 
 import { env } from "~/env";
 
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 const debug = false;
 
@@ -498,7 +502,10 @@ const getArticles = async (opts: { clusters: string[] }) => {
 };
 
 export const postRouter = createTRPCRouter({
-  hello: protectedProcedure
+  hello: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {
       return {
@@ -506,7 +513,10 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  nodesWithTerms: protectedProcedure
+  nodesWithTerms: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(
       z.object({
         terms: z.array(z.string()),
@@ -563,7 +573,10 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  threats: protectedProcedure.query(async () => {
+  threats: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  ).query(async () => {
     const session = driver.session();
     try {
       const result = await session.run(
@@ -586,7 +599,10 @@ export const postRouter = createTRPCRouter({
     }
   }),
 
-  feedback: protectedProcedure
+  feedback: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(z.object({ email: z.string().optional(), feedback: z.string() }))
     .mutation(async ({ input }) => {
       const session = driver.session();
@@ -613,7 +629,10 @@ export const postRouter = createTRPCRouter({
       return false;
     }),
 
-  cluster: protectedProcedure
+  cluster: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       const session = driver.session();
@@ -702,7 +721,10 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  getArticle: protectedProcedure
+  getArticle: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(
       z.object({
         article_id: z.number(),
@@ -752,7 +774,10 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  getArticles: protectedProcedure
+  getArticles: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(
       z.object({
         clusters: z.array(z.string()),
@@ -762,7 +787,10 @@ export const postRouter = createTRPCRouter({
       return await getArticles({ clusters: input.clusters });
     }),
 
-  question: protectedProcedure
+  question: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(
       z.object({
         cluster_id: z.string(),
@@ -795,7 +823,10 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  hierarchicalClustersArticleCount: protectedProcedure
+  hierarchicalClustersArticleCount: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(
       z.object({
         day: z.number().gte(1).lte(62),
@@ -829,7 +860,10 @@ export const postRouter = createTRPCRouter({
         await session.close();
       }
     }),
-  hierarchicalClusters: protectedProcedure
+  hierarchicalClusters: (process.env.NODE_ENV === "production"
+    ? protectedProcedure
+    : publicProcedure
+  )
     .input(
       z.object({
         day: z.number().gte(1).lte(62),
