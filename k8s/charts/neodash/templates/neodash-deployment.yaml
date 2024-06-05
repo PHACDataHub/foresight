@@ -26,7 +26,7 @@ spec:
             - name: standaloneProtocol
               value: "{{ .Values.env.standaloneProtocol }}"
             - name: standaloneHost
-              value: "neo4j.foresight-serum.phac-aspc.alpha.canada.ca"
+              value: "neo4j.signals-signaux.alpha.phac-aspc.gc.ca"
             - name: standalonePort
               value: "{{ .Values.env.standalonePort }}"
             - name: standaloneDatabase

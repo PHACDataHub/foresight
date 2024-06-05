@@ -4,8 +4,8 @@ metadata:
   name: ingress-cert
 spec:
   dnsNames:
-    - "foresight-serum.phac-aspc.alpha.canada.ca"
-    - "*.foresight-serum.phac-aspc.alpha.canada.ca"
+    - "signals-signaux.alpha.phac-aspc.gc.ca"
+    - "*.signals-signaux.alpha.phac-aspc.gc.ca"
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-{{ .Values.envSetting }}
@@ -25,10 +25,10 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - "foresight-serum.phac-aspc.alpha.canada.ca"
-        - "neo4j.foresight-serum.phac-aspc.alpha.canada.ca"
-        - "neodash.foresight-serum.phac-aspc.alpha.canada.ca"
-        - "neodash-designer.foresight-serum.phac-aspc.alpha.canada.ca"
+        - "signals-signaux.alpha.phac-aspc.gc.ca"
+        - "neo4j.signals-signaux.alpha.phac-aspc.gc.ca"
+        - "neodash.signals-signaux.alpha.phac-aspc.gc.ca"
+        - "neodash-designer.signals-signaux.alpha.phac-aspc.gc.ca"
       tls:
         httpsRedirect: true
     - port:
@@ -36,10 +36,10 @@ spec:
         name: https
         protocol: HTTPS
       hosts:
-        - "foresight-serum.phac-aspc.alpha.canada.ca"
-        - "neo4j.foresight-serum.phac-aspc.alpha.canada.ca"
-        - "neodash.foresight-serum.phac-aspc.alpha.canada.ca"
-        - "neodash-designer.foresight-serum.phac-aspc.alpha.canada.ca"    
+        - "signals-signaux.alpha.phac-aspc.gc.ca"
+        - "neo4j.signals-signaux.alpha.phac-aspc.gc.ca"
+        - "neodash.signals-signaux.alpha.phac-aspc.gc.ca"
+        - "neodash-designer.signals-signaux.alpha.phac-aspc.gc.ca"    
       tls:
         mode: SIMPLE
         credentialName: wildcard-ssl-{{ .Values.envSetting }}
