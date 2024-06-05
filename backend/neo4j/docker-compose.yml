@@ -110,10 +110,10 @@ services:
       - $PWD/deployment/neo4j/data:/data
       - $PWD/deployment/neo4j/logs:/logs
       - $PWD/deployment/neo4j/plugins:/plugins
-      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/cert1.pem:/ssl/cert.pem
-      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/privkey1.pem:/ssl/privkey.pem
-      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/chain1.pem:/ssl/chain.pem
-      - /etc/letsencrypt/archive/neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca/fullchain1.pem:/ssl/fullchain.pem
+      - /etc/letsencrypt/archive/neo4j.llm.signals-signaux.alpha.phac-aspc.gc.ca/cert1.pem:/ssl/cert.pem
+      - /etc/letsencrypt/archive/neo4j.llm.signals-signaux.alpha.phac-aspc.gc.ca/privkey1.pem:/ssl/privkey.pem
+      - /etc/letsencrypt/archive/neo4j.llm.signals-signaux.alpha.phac-aspc.gc.ca/chain1.pem:/ssl/chain.pem
+      - /etc/letsencrypt/archive/neo4j.llm.signals-signaux.alpha.phac-aspc.gc.ca/fullchain1.pem:/ssl/fullchain.pem
     restart: always
 
   ####################
@@ -134,7 +134,7 @@ services:
       - ssoDiscoveryUrl=
       - standalone=true
       - standaloneProtocol=bolt
-      - standaloneHost=neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca
+      - standaloneHost=neo4j.llm.signals-signaux.alpha.phac-aspc.gc.ca
       - standalonePort=7688
       - standaloneUsername=${NEO4J_USERNAME}
       - standaloneDatabase=neo4j
