@@ -63,6 +63,7 @@ export default async function RootLayout({
   return (
     <TRPCReactProvider>
       <html className="no-js h-full">
+        <head><title>{t("title")}</title></head>
         <body className="h-full">
           <NextIntlClientProvider
             messages={
