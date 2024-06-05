@@ -4,7 +4,7 @@ metadata:
   name: frontend-service
 spec:
   hosts:
-  - "foresight-serum.phac-aspc.alpha.canada.ca"
+  - "signals-signaux.alpha.phac-aspc.gc.ca"
   gateways:
   - "foresight-gateway"
   http:
@@ -23,7 +23,7 @@ metadata:
   name: neo4j-service
 spec:
   hosts:
-  - "neo4j.foresight-serum.phac-aspc.alpha.canada.ca"
+  - "neo4j.signals-signaux.alpha.phac-aspc.gc.ca"
   gateways:
   - "foresight-gateway"
   http:
@@ -50,7 +50,7 @@ metadata:
   name: neodash-service
 spec:
   hosts:
-  - "neodash.foresight-serum.phac-aspc.alpha.canada.ca"
+  - "neodash.signals-signaux.alpha.phac-aspc.gc.ca"
   gateways:
   - "foresight-gateway"
   http:
@@ -69,7 +69,7 @@ metadata:
   name: neodash-designer-service
 spec:
   hosts:
-  - "neodash-designer.foresight-serum.phac-aspc.alpha.canada.ca"
+  - "neodash-designer.signals-signaux.alpha.phac-aspc.gc.ca"
   gateways:
   - "foresight-gateway"
   http:
