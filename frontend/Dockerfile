@@ -50,7 +50,7 @@ ENV DATABASE_URL file:/tmp/db.sqlite
 RUN npm run db:push
 ##### RUNNER
 
-FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12:debug AS runner
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner
 WORKDIR /app
 
 ARG NEO4J_URL
