@@ -84,7 +84,7 @@ function TimeTravelComponent({
         date.getFullYear(),
         date.getMonth(),
         date.getDate() - 1,
-        8,
+        date.getHours(),
       );
       if (onChange) {
         onChange(newDate, evt);
@@ -104,7 +104,7 @@ function TimeTravelComponent({
         date.getFullYear(),
         date.getMonth(),
         date.getDate() + 1,
-        8,
+        date.getHours(),
       );
       if (onChange) {
         onChange(newDate, evt);
@@ -164,34 +164,9 @@ function TimeTravelComponent({
     return !(d === 31 && m === 0 && y === 2020);
   }, [date]);
 
-  // const nextDay = useMemo(() => {
-  //   if (typeof locale !== "string") return "#";
-  //   const newDate = new Date(
-  //     date.getFullYear(),
-  //     date.getMonth(),
-  //     date.getDate() + 1,
-  //     8,
-  //   );
-  //   const d = (newDate.getTime() - startDate.getTime()) / 86400000;
-  //   return `/${locale}/${d + 1}`;
-  // }, [date, locale, startDate]);
-
-  // const prevDay = useMemo(() => {
-  //   if (typeof locale !== "string") return "#";
-  //   const newDate = new Date(
-  //     date.getFullYear(),
-  //     date.getMonth(),
-  //     date.getDate() - 1,
-  //     8,
-  //   );
-  //   const d = (newDate.getTime() - startDate.getTime()) / 86400000;
-  //   return `/${locale}/${d + 1}`;
-  // }, [date, locale, startDate]);
-
   return (
     <nav className="sdp-timetravel mb-3 mt-3 flex space-x-2 whitespace-nowrap">
       <IconButton
-        // href={prevDay}
         href=""
         disabled={!hasPrev}
         onClick={handlePrevDayClick}
@@ -228,7 +203,6 @@ function TimeTravelComponent({
         calendarClassName="timeTravelCalendar"
       />
       <IconButton
-        // href={nextDay}
         href=""
         onClick={handleNextDayClick}
         disabled={!hasNext}
