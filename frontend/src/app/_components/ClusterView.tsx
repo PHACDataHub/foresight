@@ -125,12 +125,7 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
   );
 }
 
-const groupByOptions = [
-  "",
-  "pub_name",
-  "pub_time",
-  "pub_date",
-] as const;
+const groupByOptions = ["", "pub_name", "pub_time", "pub_date"] as const;
 
 type GroupByOptions = (typeof groupByOptions)[number];
 
@@ -155,6 +150,13 @@ export function ClusterView(
   const endOfQARef = useRef<HTMLSpanElement | null>(null);
   const [groupArticlesBy, setGroupArticlesBy] = useState<GroupByOptions>("");
   const [tab, setTab] = useState(0);
+  const [showLocate, setShowLocate] = useState(
+    Boolean(
+      Boolean(ogma && !ogma.geo.enabled()) ||
+        (cluster?.locations &&
+          cluster.locations.filter((l) => isLocationValid(l)).length > 0),
+    ),
+  );
 
   const t = useTranslations("ClusterView");
 
@@ -162,6 +164,25 @@ export function ClusterView(
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [isFetching, setIsFetching] = useState(false);
+
+  useEffect(() => {
+    if (ogma) {
+      const geoEvent = () => {
+        setShowLocate(
+          Boolean(
+            !ogma.geo.enabled() ||
+              (cluster?.locations &&
+                cluster.locations.filter((l) => isLocationValid(l)).length > 0),
+          ),
+        );
+      };
+      ogma.events.on(["geoDisabled", "geoEnabled"], geoEvent);
+      geoEvent();
+      return () => {
+        ogma.events.off(geoEvent);
+      };
+    }
+  }, [cluster?.locations, ogma]);
 
   useEffect(() => {
     if (activeTab === false || activeTab === "summary") {
@@ -257,15 +278,6 @@ export function ClusterView(
     [],
   );
 
-  const showLocate = useMemo(
-    () =>
-      Boolean(ogma && 
-        cluster?.locations &&
-          cluster.locations.filter((l) => isLocationValid(l)).length > 0,
-      ),
-    [cluster.locations, ogma],
-  );
-
   const groupedArticles = useMemo(() => {
     if (groupArticlesBy !== "" && feature_GroupArticleBy) {
       return d3.group(
@@ -311,7 +323,11 @@ export function ClusterView(
           centered
           variant="fullWidth"
         >
-          <Tab className="sdp-summary-tab" sx={{ fontSize: 14 }} label={t("summary")} />
+          <Tab
+            className="sdp-summary-tab"
+            sx={{ fontSize: 14 }}
+            label={t("summary")}
+          />
           <Tab
             sx={{ fontSize: 14 }}
             label={
