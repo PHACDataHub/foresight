@@ -39,7 +39,7 @@ export default function ClusterList({
           key={`clusterList_${i}`}
           style={
             c && searchMatches.includes(getDataId(c))
-              ? { padding: 4, backgroundColor: "rgba(255,255,0,0.2)" }
+              ? { padding: 4, backgroundColor: "rgba(255,238,176,0.5)" }
               : {}
           }
         >
