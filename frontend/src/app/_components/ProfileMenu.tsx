@@ -1,6 +1,5 @@
 "use client";
 
-import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
 import Badge from "@mui/material/Badge";
 import Avatar from "@mui/material/Avatar";
@@ -11,17 +10,16 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import Tooltip from "@mui/material/Tooltip";
 
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
-import { api } from "~/trpc/react";
-import { useStore } from "~/app/_store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { Stack } from "@mui/material";
 import { LogOutIcon } from "lucide-react";
+import { useStore } from "~/app/_store";
+import { api } from "~/trpc/react";
 
 const SmallAvatar = styled(Avatar)(({ theme }) => ({
   width: 22,
@@ -30,7 +28,7 @@ const SmallAvatar = styled(Avatar)(({ theme }) => ({
 }));
 
 export default function SignOut() {
-  const t = useTranslations("SignOut");
+  const t = useTranslations("ProfileMenu");
   const session = useSession();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -130,7 +128,7 @@ export default function SignOut() {
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
         <Typography variant="caption" sx={{ paddingLeft: 2 }}>
-          Personas
+          {t("personas")}
         </Typography>
         {personas?.map((p) => (
           <MenuItem
@@ -145,7 +143,7 @@ export default function SignOut() {
         ))}
         <Divider />
         <Typography variant="caption" sx={{ paddingLeft: 2 }}>
-          Logged in as:
+          {t("loggedInAs")}:
         </Typography>
         <Stack
           alignItems="center"
@@ -162,7 +160,7 @@ export default function SignOut() {
           <ListItemIcon>
             <LogOutIcon />
           </ListItemIcon>
-          {t("button")}
+          {t("logout")}
         </MenuItem>
       </Menu>
     </li>

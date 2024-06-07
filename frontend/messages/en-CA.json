@@ -4,8 +4,10 @@
     },
     "AppWrapper": {
         "__layout__error__": "Unable to apply layout.",
-        "SignOut": {
-            "button": "Logout"
+        "ProfileMenu": {
+            "personas": "Personas",
+            "loggedInAs": "Logged in as",
+            "logout": "Logout"
         },
         "Feedback": {
             "button": "Feedback",
