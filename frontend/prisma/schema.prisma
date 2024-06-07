@@ -75,3 +75,10 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+model Persona {
+    id              String @id @default(cuid())
+    name            String
+    image           String
+    description     String?
+}

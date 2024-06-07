@@ -47,7 +47,7 @@ RUN \
     fi
 
 ENV DATABASE_URL file:/tmp/db.sqlite
-RUN npm run db:push
+RUN npm run db:push && npm run db:seed
 ##### RUNNER
 
 FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner

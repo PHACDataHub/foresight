@@ -42,6 +42,9 @@ export interface ForesightStore {
   feature_Timeline: boolean;
   setFeature_Timeline: (feature_Timeline: boolean) => void;
 
+  persona: string;
+  setPersona: (persona: string) => void;
+
   layoutBusy: LayoutModes[];
   setLayoutBusy: (layout: LayoutModes) => void;
   setLayoutNotBusy: (layout: LayoutModes) => void;
@@ -141,6 +144,8 @@ export interface ForesightStore {
 }
 
 export const useStore = create<ForesightStore>((set) => ({
+  persona: "alice",
+  setPersona: (persona) => set({ persona }),
   layoutBusy: [],
   setLayoutBusy: (layout) =>
     set({

@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 
 import ProductTour from "./ProductTour";
 import Feedback from "./Feedback";
-import SignOut from "./SignOut";
+import ProfileMenu from "./ProfileMenu";
 
 export default function GocTheme({ children }: { children: React.ReactNode }) {
   const { locale } = useParams();
@@ -51,15 +51,15 @@ export default function GocTheme({ children }: { children: React.ReactNode }) {
 
           <section className="flex space-x-2" style={{ fontSize: 18 }}>
             <h2 className="wb-inv">Application Menus</h2>
-            <ul id="top-menu" className="flex space-x-2">
+            <ul id="top-menu" className="flex items-center space-x-2">
               {clientSide && <ProductTour />}
               <Feedback />
-              <SignOut />
               {lngLinks.map((lng) => (
                 <li key={`lng_${lng.lang}`}>
                   <Button href={lng.href}>{lng.text}</Button>
                 </li>
               ))}
+              <ProfileMenu />
             </ul>
           </section>
         </header>

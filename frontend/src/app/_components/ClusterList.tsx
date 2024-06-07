@@ -39,11 +39,19 @@ export default function ClusterList({
           key={`clusterList_${i}`}
           style={
             c && searchMatches.includes(getDataId(c))
-              ? { padding: 4, backgroundColor: "rgba(255,238,176,0.5)" }
+              ? { borderLeft: "12px solid yellow" }
               : {}
           }
         >
-          <ClusterView cluster={c} ogma={ogma} />
+          <div
+            style={
+              c && searchMatches.includes(getDataId(c))
+                ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
+                : {}
+            }
+          >
+            <ClusterView cluster={c} ogma={ogma} />
+          </div>
         </div>
       ))}
     </div>

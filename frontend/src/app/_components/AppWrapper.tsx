@@ -41,18 +41,10 @@ export default function AppWrapper({
   }, [locale]);
 
   useEffect(() => {
-    if (
-      process.env.NODE_ENV === "production" &&
-      session.status === "unauthenticated"
-    )
-      void signIn();
+    if (session.status === "unauthenticated") void signIn();
   }, [session]);
 
-  if (
-    process.env.NODE_ENV === "production" &&
-    session.status !== "authenticated"
-  )
-    return false;
+  if (session.status !== "authenticated") return false;
 
   return (
     <div className="flex h-full max-h-[100%] min-h-[100%] flex-col">
