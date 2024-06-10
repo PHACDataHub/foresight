@@ -76,23 +76,33 @@ function ArticleList({ articles }: { articles: Article[] }) {
   return (
     <>
       {articles.map((article) => (
-        <Accordion
+        <div
           key={article.id}
-          sx={
+          style={
             searchMatches.includes(`${article.id}`)
-              ? { backgroundColor: "rgba(255,255,0,0.2)" }
+              ? { borderLeft: "12px solid yellow", margin: "7px 0 7px 0" }
               : undefined
           }
         >
-          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faAngleDown} />}>
-            <Typography variant="h5" fontSize={16}>
-              <HighlightSearchTerms text={article.title} />
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <ArticleComponent article={article} />
-          </AccordionDetails>
-        </Accordion>
+          <Accordion
+            sx={
+              searchMatches.includes(`${article.id}`)
+                ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
+                : undefined
+            }
+          >
+            <AccordionSummary
+              expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
+            >
+              <Typography variant="h5" fontSize={16}>
+                <HighlightSearchTerms text={article.title} />
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <ArticleComponent article={article} />
+            </AccordionDetails>
+          </Accordion>
+        </div>
       ))}
     </>
   );
