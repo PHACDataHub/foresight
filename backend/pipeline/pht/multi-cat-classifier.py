@@ -105,10 +105,10 @@ def classify_text(llm_chain, text, topics):
 def top_down_classification(model_name, llm_chain, v1_threats, v2_threats, output):
     text = output['text']
     
-    cls_v1_threats = output['full_text_top_down_v1_threats']
-    l1_threats = classify_text(llm_chain, text, list(v1_threats.keys()))
-    for l1_threat in l1_threats:
-        cls_v1_threats[l1_threat] = classify_text(llm_chain, text, v1_threats[l1_threat])
+    # cls_v1_threats = output['full_text_top_down_v1_threats']
+    # l1_threats = classify_text(llm_chain, text, list(v1_threats.keys()))
+    # for l1_threat in l1_threats:
+    #     cls_v1_threats[l1_threat] = classify_text(llm_chain, text, v1_threats[l1_threat])
     
     cls_v2_threats = output['full_text_top_down_v2_threats']
     l1_threats = classify_text(llm_chain, text, list(v2_threats.keys()))
@@ -121,14 +121,15 @@ def top_down_classification(model_name, llm_chain, v1_threats, v2_threats, outpu
         else:
             cls_v2_threats[l1_threat] = classify_text(llm_chain, text, v2_threats[l1_threat])
 
-    print(f"[{model_name} FT TD] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
+    # print(f"[{model_name} FT TD] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
+    print(f"[{model_name} FT TD] --- {output['url']} \n\t--- {cls_v2_threats}\n")
 
     text = output['sum']
     
-    cls_v1_threats = output['summary_top_down_v1_threats']
-    l1_threats = classify_text(llm_chain, text, list(v1_threats.keys()))
-    for l1_threat in l1_threats:
-        cls_v1_threats[l1_threat] = classify_text(llm_chain, text, v1_threats[l1_threat])
+    # cls_v1_threats = output['summary_top_down_v1_threats']
+    # l1_threats = classify_text(llm_chain, text, list(v1_threats.keys()))
+    # for l1_threat in l1_threats:
+    #     cls_v1_threats[l1_threat] = classify_text(llm_chain, text, v1_threats[l1_threat])
     
     cls_v2_threats = output['summary_top_down_v2_threats']
     l1_threats = classify_text(llm_chain, text, list(v2_threats.keys()))
@@ -141,24 +142,25 @@ def top_down_classification(model_name, llm_chain, v1_threats, v2_threats, outpu
         else:
             cls_v2_threats[l1_threat] = classify_text(llm_chain, text, v2_threats[l1_threat])
     
-    print(f"[{model_name} SM TD] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
+    # print(f"[{model_name} SM TD] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
+    print(f"[{model_name} SM TD] --- {output['url']} \n\t--- {cls_v2_threats}\n")
     return output
 
 
 def bottom_up_classification(model_name, llm_chain, v1_threats, v2_threats, output):
     text = output['text']
     
-    threats = []
-    for _, v in v1_threats.items():
-        threats.extend(v)
-    l2_threats = classify_text(llm_chain, text, threats)
-    l2_set = set(l2_threats)
+    # threats = []
+    # for _, v in v1_threats.items():
+    #     threats.extend(v)
+    # l2_threats = classify_text(llm_chain, text, threats)
+    # l2_set = set(l2_threats)
     
-    cls_v1_threats = output['full_text_bottom_up_v1_threats']
-    for k, v in v1_threats.items():
-        i =  set(v).intersection(l2_set)
-        if i:
-            cls_v1_threats[k] = list(i)
+    # cls_v1_threats = output['full_text_bottom_up_v1_threats']
+    # for k, v in v1_threats.items():
+    #     i =  set(v).intersection(l2_set)
+    #     if i:
+    #         cls_v1_threats[k] = list(i)
 
     threats = []
     for k, e in v2_threats.items():
@@ -184,21 +186,22 @@ def bottom_up_classification(model_name, llm_chain, v1_threats, v2_threats, outp
             if i:
                 cls_v2_threats[k] = list(i)
     
-    print(f"[{model_name} FT BU] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
+    # print(f"[{model_name} FT BU] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
+    print(f"[{model_name} FT BU] --- {output['url']}\n\t--- {cls_v2_threats}\n")
     
     text = output['sum']
     
-    threats = []
-    for _, v in v1_threats.items():
-        threats.extend(v)
-    l2_threats = classify_text(llm_chain, text, threats)
-    l2_set = set(l2_threats)
+    # threats = []
+    # for _, v in v1_threats.items():
+    #     threats.extend(v)
+    # l2_threats = classify_text(llm_chain, text, threats)
+    # l2_set = set(l2_threats)
     
-    cls_v1_threats = output['summary_bottom_up_v1_threats']
-    for k, v in v1_threats.items():
-        i =  set(v).intersection(l2_set)
-        if i:
-            cls_v1_threats[k] = list(i)
+    # cls_v1_threats = output['summary_bottom_up_v1_threats']
+    # for k, v in v1_threats.items():
+    #     i =  set(v).intersection(l2_set)
+    #     if i:
+    #         cls_v1_threats[k] = list(i)
 
     threats = []
     for k, e in v2_threats.items():
@@ -224,7 +227,8 @@ def bottom_up_classification(model_name, llm_chain, v1_threats, v2_threats, outp
             if i:
                 cls_v2_threats[k] = list(i)
 
-    print(f"[{model_name} SM BU] --- {output['url']} \n\t--- {cls_v1_threats} \n\t--- {cls_v2_threats}\n")
+    # print(f"[{model_name} SM BU] --- {output['url']} \n\t--- {cls_v1_threats} \n\t--- {cls_v2_threats}\n")
+    print(f"[{model_name} SM BU] --- {output['url']}\n\t--- {cls_v2_threats}\n")
     return output
 
 
@@ -255,15 +259,16 @@ if __name__ == '__main__':
             continue
         
         output = {
-            'title': input['Title'], 
-            'text': input['Text Input'],
+            # 'title': input['Title'], 
+            # 'text': input['Text Input'],
+            'text': input['Text'],
             'url': input['URL'],
-            'src': input['Type of source'],
+            # 'src': input['Type of source'],
             'sum': '',
-            'full_text_top_down_v1_threats': dict(),
-            'full_text_bottom_up_v1_threats': dict(),
-            'summary_top_down_v1_threats': dict(),
-            'summary_bottom_up_v1_threats': dict(),
+            # 'full_text_top_down_v1_threats': dict(),
+            # 'full_text_bottom_up_v1_threats': dict(),
+            # 'summary_top_down_v1_threats': dict(),
+            # 'summary_bottom_up_v1Input_threats': dict(),
             'full_text_top_down_v2_threats': dict(),
             'full_text_bottom_up_v2_threats': dict(),
             'summary_top_down_v2_threats': dict(),
