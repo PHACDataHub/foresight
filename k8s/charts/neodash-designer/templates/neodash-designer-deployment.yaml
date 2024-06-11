@@ -20,5 +20,5 @@ spec:
         - containerPort: 5005
         env:
           - name: standaloneHost
-            value: "bolt.neo4j.foresight-serum.phac-aspc.alpha.canada.ca"
+            value: "bolt.neo4j.signals-signaux.alpha.phac-aspc.gc.ca"
       restartPolicy: Always

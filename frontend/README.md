@@ -1,4 +1,4 @@
-# Foresight Proof of Concept
+# Signal Detection Platform - Frontend Proof of Concept
 
 This proof of concept is a showcase of tools to aid humans detect potential health
 threats by leveraging the data innovation team's proposed architecture.

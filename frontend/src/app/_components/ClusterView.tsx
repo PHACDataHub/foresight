@@ -76,23 +76,33 @@ function ArticleList({ articles }: { articles: Article[] }) {
   return (
     <>
       {articles.map((article) => (
-        <Accordion
+        <div
           key={article.id}
-          sx={
+          style={
             searchMatches.includes(`${article.id}`)
-              ? { backgroundColor: "rgba(255,255,0,0.2)" }
+              ? { borderLeft: "12px solid yellow", margin: "7px 0 7px 0" }
               : undefined
           }
         >
-          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faAngleDown} />}>
-            <Typography variant="h5" fontSize={16}>
-              <HighlightSearchTerms text={article.title} />
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <ArticleComponent article={article} />
-          </AccordionDetails>
-        </Accordion>
+          <Accordion
+            sx={
+              searchMatches.includes(`${article.id}`)
+                ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
+                : undefined
+            }
+          >
+            <AccordionSummary
+              expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
+            >
+              <Typography variant="h5" fontSize={16}>
+                <HighlightSearchTerms text={article.title} />
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <ArticleComponent article={article} />
+            </AccordionDetails>
+          </Accordion>
+        </div>
       ))}
     </>
   );
@@ -125,14 +135,7 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
   );
 }
 
-const groupByOptions = [
-  "",
-  "gphin_state",
-  "gphin_score",
-  "pub_name",
-  "pub_time",
-  "pub_date",
-] as const;
+const groupByOptions = ["", "pub_name", "pub_time", "pub_date"] as const;
 
 type GroupByOptions = (typeof groupByOptions)[number];
 
@@ -157,6 +160,13 @@ export function ClusterView(
   const endOfQARef = useRef<HTMLSpanElement | null>(null);
   const [groupArticlesBy, setGroupArticlesBy] = useState<GroupByOptions>("");
   const [tab, setTab] = useState(0);
+  const [showLocate, setShowLocate] = useState(
+    Boolean(
+      Boolean(ogma && !ogma.geo.enabled()) ||
+        (cluster?.locations &&
+          cluster.locations.filter((l) => isLocationValid(l)).length > 0),
+    ),
+  );
 
   const t = useTranslations("ClusterView");
 
@@ -164,6 +174,25 @@ export function ClusterView(
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [isFetching, setIsFetching] = useState(false);
+
+  useEffect(() => {
+    if (ogma) {
+      const geoEvent = () => {
+        setShowLocate(
+          Boolean(
+            !ogma.geo.enabled() ||
+              (cluster?.locations &&
+                cluster.locations.filter((l) => isLocationValid(l)).length > 0),
+          ),
+        );
+      };
+      ogma.events.on(["geoDisabled", "geoEnabled"], geoEvent);
+      geoEvent();
+      return () => {
+        ogma.events.off(geoEvent);
+      };
+    }
+  }, [cluster?.locations, ogma]);
 
   useEffect(() => {
     if (activeTab === false || activeTab === "summary") {
@@ -259,34 +288,10 @@ export function ClusterView(
     [],
   );
 
-  const showLocate = useMemo(
-    () =>
-      Boolean(ogma && 
-        cluster?.locations &&
-          cluster.locations.filter((l) => isLocationValid(l)).length > 0,
-      ),
-    [cluster.locations, ogma],
-  );
-
-  const trashed_published = useMemo(() => {
-    return articles.reduce(
-      (p, c) => ({
-        trashed: p.trashed + (c.gphin_state === "TRASHED" ? 1 : 0),
-        published: p.published + (c.gphin_state === "PUBLISHED" ? 1 : 0),
-      }),
-      {
-        trashed: 0,
-        published: 0,
-      },
-    );
-  }, [articles]);
-
   const groupedArticles = useMemo(() => {
     if (groupArticlesBy !== "" && feature_GroupArticleBy) {
       return d3.group(
         d3.sort(articles, (a, b) => {
-          if (groupArticlesBy === "gphin_score")
-            return d3.descending(a.gphin_score, b.gphin_score);
           if (groupArticlesBy === "pub_time")
             return (
               d3.ascending(a.pub_time?.getTime(), b.pub_time?.getTime()) ||
@@ -328,7 +333,11 @@ export function ClusterView(
           centered
           variant="fullWidth"
         >
-          <Tab className="sdp-summary-tab" sx={{ fontSize: 14 }} label={t("summary")} />
+          <Tab
+            className="sdp-summary-tab"
+            sx={{ fontSize: 14 }}
+            label={t("summary")}
+          />
           <Tab
             sx={{ fontSize: 14 }}
             label={
@@ -458,13 +467,6 @@ export function ClusterView(
         {tab === 1 && (
           <div className="h-0 flex-auto flex-col space-y-[8px] overflow-y-scroll pl-[30px] pr-[12px] pt-[12px]">
             <div className="flex flex-col space-y-[12px]">
-              <div className="flex flex-col items-center">
-                <Typography variant="body1" fontSize={14}>
-                  GPHIN: <b>{t("published")}</b> ({trashed_published.published}){" "}
-                  <b>{t("trashed")}</b> ({trashed_published.trashed})
-                </Typography>
-              </div>
-
               {feature_GroupArticleBy && (
                 <div>
                   <FormControl sx={{ minWidth: 120 }} fullWidth>
@@ -492,12 +494,6 @@ export function ClusterView(
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 14 }} value="pub_date">
                         {t("pubDate")}
-                      </MenuItem>
-                      <MenuItem sx={{ fontSize: 14 }} value="gphin_state">
-                        {t("state")}
-                      </MenuItem>
-                      <MenuItem sx={{ fontSize: 14 }} value="gphin_score">
-                        {t("score")}
                       </MenuItem>
                     </Select>
                   </FormControl>

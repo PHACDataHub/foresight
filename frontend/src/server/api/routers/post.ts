@@ -8,7 +8,7 @@ import { z } from "zod";
 
 import { env } from "~/env";
 
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 const debug = false;
 
@@ -498,15 +498,12 @@ const getArticles = async (opts: { clusters: string[] }) => {
 };
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
+  personas: protectedProcedure.query(async ({ctx}) => {
+    const result = await ctx.db.persona.findMany();
+    return result;
+  }),
 
-  nodesWithTerms: publicProcedure
+  nodesWithTerms: protectedProcedure
     .input(
       z.object({
         terms: z.array(z.string()),
@@ -563,7 +560,7 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  threats: publicProcedure.query(async () => {
+  threats: protectedProcedure.query(async () => {
     const session = driver.session();
     try {
       const result = await session.run(
@@ -586,7 +583,7 @@ export const postRouter = createTRPCRouter({
     }
   }),
 
-  feedback: publicProcedure
+  feedback: protectedProcedure
     .input(z.object({ email: z.string().optional(), feedback: z.string() }))
     .mutation(async ({ input }) => {
       const session = driver.session();
@@ -613,7 +610,7 @@ export const postRouter = createTRPCRouter({
       return false;
     }),
 
-  cluster: publicProcedure
+  cluster: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       const session = driver.session();
@@ -702,7 +699,7 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  getArticle: publicProcedure
+  getArticle: protectedProcedure
     .input(
       z.object({
         article_id: z.number(),
@@ -752,7 +749,7 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  getArticles: publicProcedure
+  getArticles: protectedProcedure
     .input(
       z.object({
         clusters: z.array(z.string()),
@@ -762,7 +759,7 @@ export const postRouter = createTRPCRouter({
       return await getArticles({ clusters: input.clusters });
     }),
 
-  question: publicProcedure
+  question: protectedProcedure
     .input(
       z.object({
         cluster_id: z.string(),
@@ -795,7 +792,7 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  hierarchicalClustersArticleCount: publicProcedure
+  hierarchicalClustersArticleCount: protectedProcedure
     .input(
       z.object({
         day: z.number().gte(1).lte(62),
@@ -829,13 +826,14 @@ export const postRouter = createTRPCRouter({
         await session.close();
       }
     }),
-  hierarchicalClusters: publicProcedure
+  hierarchicalClusters: protectedProcedure
     .input(
       z.object({
         day: z.number().gte(1).lte(62),
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
         everything: z.boolean().optional(),
         threats: z.array(z.string()),
+        include_articles: z.boolean().default(true),
       }),
     )
     .query(async ({ input }) => {
@@ -1029,7 +1027,6 @@ export const postRouter = createTRPCRouter({
             return o;
           });
         });
-        const articles = await getArticles({ clusters });
 
         threats.records.forEach((record) => {
           const data = record.get("threat") as Neo4JTransferRecord;
@@ -1037,6 +1034,8 @@ export const postRouter = createTRPCRouter({
         });
         t.measure("Graph translation complete.");
         t.end();
+        if (!input.include_articles) return rawGraph.get();
+        const articles = await getArticles({ clusters });
         return rawGraph.get(articles);
       } finally {
         await session.close();

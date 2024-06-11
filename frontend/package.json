@@ -7,6 +7,7 @@
     "build": "next build",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
     "dev": "next dev",
     "postinstall": "node env-dependencies.js && prisma generate",
     "check-types": "tsc --noemit",
@@ -15,6 +16,9 @@
     "test": "jest",
     "test:watch": "jest --watch"
   },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
+  },  
   "engines": {
     "npm": ">=9.0.0",
     "node": ">=18.0.0"

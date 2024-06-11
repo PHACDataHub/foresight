@@ -8,6 +8,7 @@ import Alert from "@mui/material/Alert";
 import { useTranslations } from "next-intl";
 
 import { useParams } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
 import { useStore } from "~/app/_store";
 import GocTheme from "./GocTheme";
 
@@ -25,6 +26,7 @@ export default function AppWrapper({
   const { appError, registerError } = useStore();
   const { locale } = useParams();
   const t = useTranslations();
+  const session = useSession();
 
   const displayAppError = useMemo(() => Boolean(appError), [appError]);
   const appErrorText = useMemo(() => appError && t(appError), [t, appError]);
@@ -37,6 +39,12 @@ export default function AppWrapper({
     if (typeof locale === "string")
       document.querySelector("html")?.setAttribute("lang", locale);
   }, [locale]);
+
+  useEffect(() => {
+    if (session.status === "unauthenticated") void signIn();
+  }, [session]);
+
+  if (session.status !== "authenticated") return false;
 
   return (
     <div className="flex h-full max-h-[100%] min-h-[100%] flex-col">

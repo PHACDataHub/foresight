@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Environment variables for server names
-export NEO4J_BACKEND_DOMAIN="neo4j.llm.foresight-serum.phac-aspc.alpha.canada.ca"
-export BACKEND_DOMAIN="llm.foresight-serum.phac-aspc.alpha.canada.ca"
-export DEV_BACKEND_DOMAIN="dev.llm.foresight-serum.phac-aspc.alpha.canada.ca"
+export NEO4J_BACKEND_DOMAIN="neo4j.llm.signals-signaux.alpha.phac-aspc.gc.ca"
+export BACKEND_DOMAIN="llm.signals-signaux.alpha.phac-aspc.gc.ca"
+export DEV_BACKEND_DOMAIN="dev.llm.signals-signaux.alpha.phac-aspc.gc.ca"
 export NEO4J_BOLT_PORT=7687
 
 # Email for Let's Encrypt registration

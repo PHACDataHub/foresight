@@ -1,0 +1,21 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: signal-detection-cluster
+spec:
+  instances: 1
+  startDelay: 900
+  stopDelay: 900
+
+  postgresql:
+    pg_hba:
+      - host all all all md5
+
+  bootstrap:
+    initdb:
+      database: signal-detection_db
+      owner: signal-detection_user
+
+  storage:
+    storageClass: standard
+    size: 2Gi

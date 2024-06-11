@@ -27,6 +27,7 @@ import {
   Minimize2,
   RefreshCcw,
   Satellite,
+  ScanSearch,
   Waypoints,
   Workflow,
 } from "lucide-react";
@@ -45,6 +46,7 @@ import {
   getNodeData,
   heatMap,
 } from "~/app/_utils/graph";
+
 import { type LayoutModes, useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
 
@@ -64,6 +66,8 @@ export default function Controls() {
     setFocus,
     setMapMode,
     refresh,
+    include_articles,
+    setIncludeArticles,
   } = useStore();
 
   const { day, locale } = useParams();
@@ -83,6 +87,11 @@ export default function Controls() {
   const [heatMapCanvas, setHeatMapCanvas] = useState<CanvasLayer | null>(null);
 
   const ogma = useOgma();
+
+  useEffect(() => {
+    const auto_expand = localStorage.getItem("include_articles");
+    setIncludeArticles(auto_expand === "true");
+  }, [setIncludeArticles]);
 
   useEffect(() => {
     const handleSelectNode = (evt: NodesEvent<unknown, unknown>) => {
@@ -268,6 +277,11 @@ export default function Controls() {
       await ogma.geo.disable();
     }
   }, [ogma.geo]);
+
+  const handleToggleAutoExpand = useCallback(() => {
+    setIncludeArticles(!include_articles);
+    localStorage.setItem("include_articles", JSON.stringify(!include_articles));
+  }, [include_articles, setIncludeArticles]);
 
   const handleCollapseAllClick = useCallback(async () => {
     await ogma.removeNodes(
@@ -467,6 +481,13 @@ export default function Controls() {
                 title={t("collapseArticles")}
               >
                 <FileX2 size={22} />
+              </IconButton>
+              <IconButton
+                className={`foresight-graph-btn ${include_articles ? " active " : ""}`}
+                onClick={handleToggleAutoExpand}
+                title={t("toggleAutoExpand")}
+              >
+                <ScanSearch size={22} />
               </IconButton>
             </ButtonGroup>
             <ButtonGroup className="sdp-layout-algorithms">

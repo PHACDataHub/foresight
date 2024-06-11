@@ -42,6 +42,9 @@ export interface ForesightStore {
   feature_Timeline: boolean;
   setFeature_Timeline: (feature_Timeline: boolean) => void;
 
+  persona: string;
+  setPersona: (persona: string) => void;
+
   layoutBusy: LayoutModes[];
   setLayoutBusy: (layout: LayoutModes) => void;
   setLayoutNotBusy: (layout: LayoutModes) => void;
@@ -82,6 +85,8 @@ export interface ForesightStore {
   setShowInfoPanel: (showInfoPanel: boolean) => void;
   panelWasToggled: boolean;
   setPanelWasToggled: (panelWasToggled: boolean) => void;
+  include_articles: boolean;
+  setIncludeArticles: (include_articles: boolean) => void;
   everything: boolean;
   setEverything: (everything: boolean) => void;
   refreshObserver: number;
@@ -139,6 +144,8 @@ export interface ForesightStore {
 }
 
 export const useStore = create<ForesightStore>((set) => ({
+  persona: "alice",
+  setPersona: (persona) => set({ persona }),
   layoutBusy: [],
   setLayoutBusy: (layout) =>
     set({
@@ -203,6 +210,8 @@ export const useStore = create<ForesightStore>((set) => ({
   setShowInfoPanel: (showInfoPanel) => set({ showInfoPanel }),
   panelWasToggled: false,
   setPanelWasToggled: (panelWasToggled) => set({ panelWasToggled }),
+  include_articles: false,
+  setIncludeArticles: (include_articles) => set({ include_articles }),
   everything: false,
   setEverything: (everything) => set({ everything }),
   refreshObserver: 0,

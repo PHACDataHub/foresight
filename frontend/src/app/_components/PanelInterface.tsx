@@ -34,7 +34,10 @@ import SidePanel from "~/app/_components/SidePanel";
 import { api } from "~/trpc/react";
 import { getRawNodeData } from "~/app/_utils/graph";
 
-import { type Article, type Cluster } from "~/server/api/routers/post";
+import {
+  type Article,
+  type Cluster,
+} from "~/server/api/routers/post";
 import Graph from "./graph";
 import ClusterGrowth from "./ClusterGrowth";
 // import TimeLineBar from "./TimeLineBar";
@@ -63,6 +66,7 @@ export default function PanelInterface() {
     selectedNode,
     setSelectedNode,
     feature_Timeline,
+    include_articles,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -189,7 +193,13 @@ export default function PanelInterface() {
   }, [drawerCollapsed, restoreDrawerLayout]);
 
   const { isFetching, data: rawGraph } = api.post.hierarchicalClusters.useQuery(
-    { day: parseInt(day as string), history, everything, threats },
+    {
+      day: parseInt(day as string),
+      history,
+      everything,
+      threats,
+      include_articles,
+    },
     {
       refetchOnWindowFocus: false,
       enabled: typeof day === "string",

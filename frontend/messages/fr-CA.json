@@ -1,9 +1,14 @@
 {
     "App": {
-        "title": "Sérum"
+        "title": "Signaux"
     },
     "AppWrapper": {
         "__layout__error__": "Impossible d'appliquer la mise en page.",
+        "ProfileMenu": {
+            "personas": "Personnages",
+            "loggedInAs": "Connecté en tant que",
+            "logout": "Se déconnecter"
+        },
         "Feedback": {
             "button": "Retour d'information",
             "thankyou_title": "Merci !",
@@ -25,8 +30,8 @@
             "next": "Suivant",
             "skip": "Fin",
             "Welcome": {
-                "title": "Bienvenue dans Sérum !",
-                "content": "<p>Sérum est conçu pour aider les analystes à identifier des signaux à partir de potentiellement des millions d'articles par jour. Ce concept utilise des données archivées par GPHIN entre le 1er décembre 2019 et le 31 janvier 2021, et utilise des classifications de menaces pour la santé pour le regroupement.</p><p>Cette visite guidée vous guidera à travers la majorité des fonctionnalités que nous avons mises en œuvre jusqu'à présent.</p>"
+                "title": "Bienvenue dans Signaux !",
+                "content": "<p>Signaux est conçu pour aider les analystes à identifier des signaux à partir de potentiellement des millions d'articles par jour. Ce concept utilise des données archivées par ASPC entre le 1er décembre 2019 et le 31 janvier 2021, et utilise des classifications de menaces pour la santé pour le regroupement.</p><p>Cette visite guidée vous guidera à travers la majorité des fonctionnalités que nous avons mises en œuvre jusqu'à présent.</p>"
             },
             "SidePanel": {
                 "title": "Le Panneau Latéral",
@@ -171,6 +176,7 @@
         "resetLayout": "Réinitialiser",
         "expandArticles": "Développer {type, select, hierarchicalcluster {les articles le long du chemin} other {tous les articles}}",
         "collapseArticles": "Réduire les articles développés",
+        "toggleAutoExpand": "Activer/désactiver l'expansion automatique des articles",
         "layoutNodes": "Mise en page utilisant l'algorithme \"{layout}\"",
         "satelliteToggle": "Basculer entre la vue satellite et la vue terrain",
         "mapView": "Basculer entre la vue cartographique et graphique",
@@ -201,16 +207,12 @@
             "noGrouping": "Aucun regroupement",
             "publication": "Publication",
             "pubTime": "Heure de publication",
-            "pubDate": "Date de publication",
-            "state": "État GPHIN",
-            "score": "Note GPHIN"
+            "pubDate": "Date de publication"
         },
         "ArticleComponent": {
             "publication": "Publication:",
             "pubTime": "Heure de publication:",
             "pubDate": "Date de publication:",
-            "state": "État GPHIN:",
-            "score": "Note GPHIN:",
             "outlier": "Valeur aberrante"
         },
         "Title": {
