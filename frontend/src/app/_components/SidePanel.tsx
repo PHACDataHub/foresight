@@ -1,5 +1,6 @@
-import { type CSSProperties, useCallback, useMemo } from "react";
+import { type CSSProperties, useCallback, useMemo, useState } from "react";
 import type OgmaLib from "@linkurious/ogma";
+import { type RawNode } from "@linkurious/ogma";
 
 import {
   faAngleLeft,
@@ -11,8 +12,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 
 import { useTranslations } from "next-intl";
+import { Button } from "@mui/material";
 import { useStore } from "~/app/_store";
 
 import ClusterList from "~/app/_components/ClusterList";
@@ -24,9 +28,11 @@ import {
   getNodeData,
   getNodeId,
 } from "~/app/_utils/graph";
-import { type Cluster } from "~/server/api/routers/post";
+import { type Cluster, type Event } from "~/server/api/routers/post";
+import { api } from "~/trpc/react";
 import ArticleComponent from "./graph/Article";
 import { ClusterView } from "./ClusterView";
+import PersonaAvatar from "./PersonaAvatar";
 
 export default function SidePanel({
   clusters,
@@ -35,8 +41,15 @@ export default function SidePanel({
   clusters: Cluster[];
   ogma?: OgmaLib | null;
 }) {
-  const { showInfoPanel, setPanelWasToggled, setShowInfoPanel, selectedNode } =
-    useStore();
+  const {
+    showInfoPanel,
+    setPanelWasToggled,
+    setShowInfoPanel,
+    setShowWorkbenchPanel,
+    selectedNode,
+    persona,
+    feature_workbench,
+  } = useStore();
 
   const t = useTranslations("SidePanel");
 
@@ -49,6 +62,74 @@ export default function SidePanel({
     if (selectedNode?.node) return getNodeData(selectedNode.node);
     return null;
   }, [selectedNode?.node]);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const existingEventOpen = useMemo(() => Boolean(anchorEl), [anchorEl]);
+  const createEvent = api.post.createEvent.useMutation();
+  const addToEvent = api.post.addToEvent.useMutation();
+  const eventQuery = api.post.listEvents.useQuery(undefined, {
+    enabled: false,
+  });
+
+  const handleAddToExistingEventClick = (
+    event: React.MouseEvent<HTMLElement>,
+  ) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleExistingEventClose = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+  const handleExistingEventClick = useCallback(
+    (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+      setAnchorEl(null);
+      const event_id = evt.currentTarget.getAttribute("data-value");
+      const submitAddEvent = async () => {
+        try {
+          if (
+            (selectedData?.type === "article" ||
+              selectedData?.type === "cluster") &&
+            typeof event_id === "string"
+          ) {
+            await addToEvent.mutateAsync({
+              event_id,
+              persona,
+              nodes: [{ type: selectedData.type, id: `${selectedData.id}` }],
+            });
+            void eventQuery.refetch();
+            setShowWorkbenchPanel(true);
+          } else alert("error condition");
+        } catch (e) {
+          alert(
+            `Unable to create event.  ${(e as { message: string }).message}`,
+          );
+          console.error(e);
+        }
+      };
+      void submitAddEvent();
+    },
+    [addToEvent, eventQuery, persona, selectedData, setShowWorkbenchPanel],
+  );
+
+  const handleCreateEventClick = useCallback(() => {
+    if (selectedData?.type === "article" || selectedData?.type === "cluster") {
+      const submitCreateEvent = async () => {
+        try {
+          await createEvent.mutateAsync({
+            persona,
+            nodes: [{ type: selectedData.type, id: `${selectedData.id}` }],
+          });
+          void eventQuery.refetch();
+          setShowWorkbenchPanel(true);
+        } catch (e) {
+          alert(
+            `Unable to create event.  ${(e as { message: string }).message}`,
+          );
+          console.error(e);
+        }
+      };
+      void submitCreateEvent();
+    } else alert("error condition");
+  }, [createEvent, eventQuery, persona, selectedData, setShowWorkbenchPanel]);
 
   const filteredClusters = useMemo(() => {
     if (!clusters || !selectedData || !selectedNode?.node) return clusters;
@@ -188,6 +269,78 @@ export default function SidePanel({
           />
         </IconButton>
       </div>
+      {feature_workbench &&
+        showInfoPanel &&
+        selectedData &&
+        (selectedData.type === "article" ||
+          selectedData.type === "cluster") && (
+          <div className="mt-3 flex justify-center space-x-3">
+            <Button onClick={handleCreateEventClick} variant="contained">
+              Create new event
+            </Button>
+            <Button
+              onClick={handleAddToExistingEventClick}
+              disabled={!eventQuery.data || eventQuery.data?.nodes.length === 0}
+              variant="contained"
+              aria-controls={existingEventOpen ? "existing-events" : undefined}
+              aria-haspopup="true"
+              aria-expanded={existingEventOpen ? "true" : undefined}
+            >
+              Add to existing event
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              id="existing-events"
+              open={existingEventOpen}
+              onClose={handleExistingEventClose}
+              onClick={handleExistingEventClose}
+              slotProps={{
+                paper: {
+                  elevation: 0,
+                  sx: {
+                    overflow: "visible",
+                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    minWidth: 300,
+                    mt: 1.5,
+                    "& .MuiAvatar-root": {
+                      width: 32,
+                      height: 32,
+                      ml: -0.5,
+                      mr: 1,
+                    },
+                    "&::before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
+                  },
+                },
+              }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            >
+              {eventQuery.data?.nodes.map((p: RawNode<Event>) => (
+                <MenuItem
+                  key={p.id}
+                  href=""
+                  onClick={handleExistingEventClick}
+                  data-value={p.data?.id}
+                >
+                  <PersonaAvatar persona={p.data?.persona ?? ""} size="small" />
+                  {p.data?.title}
+                </MenuItem>
+              ))}
+            </Menu>
+          </div>
+        )}
+
       <div className={clusterListClassNames}>
         {selectedData?.type === "hierarchicalcluster" && (
           <div className="overflow-auto">

@@ -80,14 +80,14 @@ function ArticleList({ articles }: { articles: Article[] }) {
           key={article.id}
           style={
             searchMatches.includes(`${article.id}`)
-              ? { borderLeft: "12px solid yellow", margin: "7px 0 7px 0" }
+              ? { borderLeft: "12px solid yellow" }
               : undefined
           }
         >
           <Accordion
             sx={
               searchMatches.includes(`${article.id}`)
-                ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
+                ? { borderLeft: "1px solid #bbb" }
                 : undefined
             }
           >

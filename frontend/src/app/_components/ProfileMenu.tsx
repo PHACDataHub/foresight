@@ -1,7 +1,5 @@
 "use client";
 
-import { styled } from "@mui/material/styles";
-import Badge from "@mui/material/Badge";
 import Avatar from "@mui/material/Avatar";
 
 import Menu from "@mui/material/Menu";
@@ -14,18 +12,11 @@ import Typography from "@mui/material/Typography";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { Stack } from "@mui/material";
 import { LogOutIcon } from "lucide-react";
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
-
-const SmallAvatar = styled(Avatar)(({ theme }) => ({
-  width: 22,
-  height: 22,
-  border: `2px solid ${theme.palette.background.paper}`,
-}));
+import PersonaAvatar from "./PersonaAvatar";
 
 export default function SignOut() {
   const t = useTranslations("ProfileMenu");
@@ -57,11 +48,6 @@ export default function SignOut() {
     [setPersona],
   );
 
-  const activePersona = useMemo(() => {
-    if (!personas) return undefined;
-    return personas.find((p) => p.id === persona);
-  }, [persona, personas]);
-
   if (session.status !== "authenticated") return;
   return (
     <li className="profile">
@@ -73,21 +59,7 @@ export default function SignOut() {
         aria-haspopup="true"
         aria-expanded={open ? "true" : undefined}
       >
-        <Badge
-          overlap="circular"
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          badgeContent={
-            <SmallAvatar
-              alt={session.data.user.name ?? "User"}
-              src={session.data.user.image ?? ""}
-            />
-          }
-        >
-          {!personas && <FontAwesomeIcon icon={faSpinner} spin fontSize={35} />}
-          {personas && activePersona && (
-            <Avatar alt={activePersona.name} src={activePersona.image} />
-          )}
-        </Badge>
+        <PersonaAvatar persona={persona} showAccount />
       </IconButton>
       <Menu
         anchorEl={anchorEl}

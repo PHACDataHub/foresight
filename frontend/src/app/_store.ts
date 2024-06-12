@@ -41,6 +41,8 @@ export interface ForesightStore {
   setFeature_GroupArticleBy: (feature_GroupArticleBy: boolean) => void;
   feature_Timeline: boolean;
   setFeature_Timeline: (feature_Timeline: boolean) => void;
+  feature_workbench: boolean;
+  setFeature_Workbench: (feature_workbench: boolean) => void;
 
   persona: string;
   setPersona: (persona: string) => void;
@@ -83,6 +85,8 @@ export interface ForesightStore {
   setArticleCount: (articleCount: number) => void;
   showInfoPanel: boolean;
   setShowInfoPanel: (showInfoPanel: boolean) => void;
+  showWorkbenchPanel: boolean;
+  setShowWorkbenchPanel: (showInfoPanel: boolean) => void;
   panelWasToggled: boolean;
   setPanelWasToggled: (panelWasToggled: boolean) => void;
   include_articles: boolean;
@@ -163,6 +167,9 @@ export const useStore = create<ForesightStore>((set) => ({
   feature_Timeline: false,
   setFeature_Timeline: (feature_Timeline) => set({ feature_Timeline }),
 
+  feature_workbench: false,
+  setFeature_Workbench: (feature_workbench) => set({ feature_workbench }),
+
   rodMode: false,
   mapMode: "roadmap",
   setMapMode: (mapMode) => set({ mapMode }),
@@ -208,6 +215,8 @@ export const useStore = create<ForesightStore>((set) => ({
 
   showInfoPanel: true,
   setShowInfoPanel: (showInfoPanel) => set({ showInfoPanel }),
+  showWorkbenchPanel: false,
+  setShowWorkbenchPanel: (showWorkbenchPanel) => set({ showWorkbenchPanel }),
   panelWasToggled: false,
   setPanelWasToggled: (panelWasToggled) => set({ panelWasToggled }),
   include_articles: false,

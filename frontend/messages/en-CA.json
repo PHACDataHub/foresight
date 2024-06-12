@@ -225,6 +225,9 @@
         "DataLoader": {
             "downloading": "Downloading",
             "rendering": "Rendering"
+        },
+        "Workbench": {
+            "panelTitle": "Workbench"
         }
     }
 }

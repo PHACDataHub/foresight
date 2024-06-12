@@ -68,6 +68,8 @@ export default function Controls() {
     refresh,
     include_articles,
     setIncludeArticles,
+    feature_workbench,
+    setFeature_Workbench,
   } = useStore();
 
   const { day, locale } = useParams();
@@ -191,6 +193,10 @@ export default function Controls() {
   const handleEverythingChange = useCallback(() => {
     setEverything(!everything);
   }, [everything, setEverything]);
+
+  const handleWorkbenchChange = useCallback(() => {
+    setFeature_Workbench(!feature_workbench);
+  }, [feature_workbench, setFeature_Workbench]);
 
   const handleGroupByFeatureClick = useCallback(() => {
     setFeature_GroupArticleBy(!feature_GroupArticleBy);
@@ -369,6 +375,17 @@ export default function Controls() {
             <Button variant="contained" onClick={handleResetTour}>
               Reset Tour First Visit
             </Button>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="large"
+                  checked={feature_workbench}
+                  onChange={handleWorkbenchChange}
+                />
+              }
+              label={<span style={{ fontSize: 14 }}>Workbench</span>}
+            />
+
             <FormControlLabel
               control={
                 <Checkbox

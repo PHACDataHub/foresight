@@ -305,6 +305,23 @@ export interface Threat {
   radius: number;
 }
 
+export interface Event {
+  type: "event";
+  title: string;
+  id: string;
+  age: number;
+  persona: string;
+  radius: number;
+  nodes: {
+    elementId: string;
+    id: string | number;
+    type: "article" | "cluster" | "article_outlier";
+    title: string;
+    persona: string;
+    r_id: string;
+  }[];
+}
+
 export interface ThreatRecord extends Omit<Threat, "title"> {
   text: string;
 }
@@ -404,10 +421,16 @@ export type AllRecordTypes =
   | ClusterRecord
   | HierarchicalClusterRecord
   | ArticleRecord;
-export type AllDataTypes = Threat | Cluster | HierarchicalCluster | Article;
+export type AllDataTypes =
+  | Event
+  | Threat
+  | Cluster
+  | HierarchicalCluster
+  | Article;
 
 export type AllDataTypeProperties =
   | "threat"
+  | "event"
   | "cluster"
   | "hierarchicalcluster"
   | "article";
@@ -422,6 +445,9 @@ const convertNeo4jTypes = (obj: Neo4JTransferRecord) => {
           return [key, value.toStandardDate()];
         if (key === "pub_time" && typeof value === "string")
           return [key, new Date(value)];
+        if (neo4j.isDuration(value)) {
+          return [key, value.seconds.toString()];
+        }
         return [key, value];
       }),
   );
@@ -498,7 +524,7 @@ const getArticles = async (opts: { clusters: string[] }) => {
 };
 
 export const postRouter = createTRPCRouter({
-  personas: protectedProcedure.query(async ({ctx}) => {
+  personas: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.persona.findMany();
     return result;
   }),
@@ -583,6 +609,216 @@ export const postRouter = createTRPCRouter({
     }
   }),
 
+  listEvents: protectedProcedure.query(async () => {
+    const session = driver.session();
+    try {
+      const t = funcTimer("listEvents");
+      const events = await session.run(`
+        MATCH (event:Event)
+        return event {
+          nodeid: id(event),
+          type: "event",
+          radius: 1,
+          age: duration.between(event.created, datetime()),
+          .id,
+          .persona,
+          .title,
+          nodes: [(event)-[r:LINKED_TO]->(n) | n {
+              nodeid: id(n),
+              .id,
+              type: CASE n:Article WHEN True THEN
+                CASE n:Outlier WHEN TRUE THEN "article_outlier" ELSE "article" END
+                ELSE "cluster" END,
+              persona: r.persona,
+              .title,
+              r_id: elementId(r)
+          }]
+        }
+      `);
+      t.measure("Neo4J query completed", true);
+      const rawGraph = createGraph();
+      events.records.forEach((record) => {
+        const data = record.get("event") as Neo4JTransferRecord;
+        parseData(data, rawGraph, false, (n) => {
+          if ("nodes" in n && Array.isArray(n.nodes)) {
+            return {
+              ...n,
+              nodes: n.nodes.map((c: Neo4JTransferRecord) =>
+                convertNeo4jTypes(c),
+              ),
+            };
+          }
+          return n;
+        });
+      });
+      t.measure("Graph translation complete.");
+      t.end();
+      return rawGraph;
+    } finally {
+      await session.close();
+    }
+  }),
+
+  addToEvent: protectedProcedure
+    .input(
+      z.object({
+        event_id: z.string(),
+        persona: z.string(),
+        nodes: z.array(
+          z.object({
+            type: z.enum(["article", "cluster"]),
+            id: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      try {
+        const first = input.nodes.at(0);
+        if (!first)
+          throw new Error("Unable to create event, invalid first node.");
+
+        for (const n of input.nodes) {
+          await session.run(
+            `
+          MATCH (n:${n.type === "article" ? "Article" : "Cluster"} {id: $id}), (event:Event {id: $event_id}) CREATE (event)-[:LINKED_TO { persona: $persona }]->(n);
+        `,
+            {
+              event_id: input.event_id,
+              id: first.type === "article" ? Number(n.id) : n.id,
+              persona: input.persona,
+            },
+          );
+        }
+        return true;
+      } finally {
+        await session.close();
+      }
+    }),
+  createEvent: protectedProcedure
+    .input(
+      z.object({
+        persona: z.string(),
+        nodes: z.array(
+          z.object({
+            type: z.enum(["article", "cluster"]),
+            id: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      try {
+        const first = input.nodes.at(0);
+        if (!first)
+          throw new Error("Unable to create event, invalid first node.");
+        const firstNode = await session.run(
+          `
+          MATCH (n { id: $id }) WHERE $nodeType IN labels(n) return n;
+        `,
+          {
+            id: first.type === "article" ? Number(first.id) : first.id,
+            nodeType: first.type === "article" ? "Article" : "Cluster",
+          },
+        );
+        const ret = firstNode.records.at(0);
+        if (!ret) {
+          throw new Error(
+            "Unable to create event, unable to locate first node.",
+          );
+        }
+        const title = (ret.get("n") as { properties: { title: string } })
+          .properties.title;
+
+        const evtNode = await session.run(
+          `
+        CREATE (event:Event {
+          id: $id + "_" + toString(datetime()),
+          title: $title,
+          persona: $persona,
+          created: datetime()
+        }) return event;
+        `,
+          {
+            id: first.type === "article" ? Number(first.id) : first.id,
+            title,
+            persona: input.persona,
+          },
+        );
+        const evt = evtNode.records.at(0);
+        if (!evt) throw new Error("An error occurred created the event.");
+        const event_id = (evt.get("event") as { properties: { id: string } })
+          .properties.id;
+        for (const n of input.nodes) {
+          await session.run(
+            `
+            MATCH (n:${n.type === "article" ? "Article" : "Cluster"} {id: $id}), (event:Event {id: $event_id}) CREATE (event)-[:LINKED_TO { persona: $persona }]->(n);
+          `,
+            {
+              event_id,
+              id: first.type === "article" ? Number(n.id) : n.id,
+              persona: input.persona,
+            },
+          );
+        }
+        return event_id;
+      } finally {
+        await session.close();
+      }
+    }),
+
+  deleteEvent: protectedProcedure
+    .input(
+      z.object({
+        event_id: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      try {
+        await session.run(
+          `
+          MATCH (event:Event { id: $event_id }) DETACH DELETE event;
+          `,
+          {
+            event_id: input.event_id,
+          },
+        );
+        return true;
+      } finally {
+        await session.close();
+      }
+    }),
+
+  unlinkNodeFromEvent: protectedProcedure
+    .input(
+      z.object({
+        event_id: z.string(),
+        node_id: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const session = driver.session();
+      try {
+        console.log(input);
+        await session.run(
+          `
+          MATCH (event:Event { id: $event_id })-[r:LINKED_TO]->()
+            WHERE elementId(r) = $node_id 
+          DELETE r;
+          `,
+          {
+            event_id: input.event_id,
+            node_id: input.node_id,
+          },
+        );
+        return true;
+      } finally {
+        await session.close();
+      }
+    }),
   feedback: protectedProcedure
     .input(z.object({ email: z.string().optional(), feedback: z.string() }))
     .mutation(async ({ input }) => {
@@ -1032,6 +1268,7 @@ export const postRouter = createTRPCRouter({
           const data = record.get("threat") as Neo4JTransferRecord;
           parseData(data, rawGraph, input.everything);
         });
+
         t.measure("Graph translation complete.");
         t.end();
         if (!input.include_articles) return rawGraph.get();

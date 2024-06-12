@@ -221,6 +221,9 @@
         "DataLoader": {
             "downloading": "Téléchargement",
             "rendering": "Rendu en cours"
+        },
+        "Workbench": {
+            "panelTitle": "Table de travail"
         }
     }
 }

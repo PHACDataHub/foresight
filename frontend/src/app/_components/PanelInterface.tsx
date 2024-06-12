@@ -11,6 +11,7 @@ import React, {
 
 import {
   type ImperativePanelGroupHandle,
+  type ImperativePanelHandle,
   Panel,
   PanelGroup,
   PanelResizeHandle,
@@ -34,12 +35,10 @@ import SidePanel from "~/app/_components/SidePanel";
 import { api } from "~/trpc/react";
 import { getRawNodeData } from "~/app/_utils/graph";
 
-import {
-  type Article,
-  type Cluster,
-} from "~/server/api/routers/post";
+import { type Article, type Cluster } from "~/server/api/routers/post";
 import Graph from "./graph";
 import ClusterGrowth from "./ClusterGrowth";
+import Workbench from "./Workbench";
 // import TimeLineBar from "./TimeLineBar";
 
 export interface Country {
@@ -52,6 +51,8 @@ export interface Country {
 export default function PanelInterface() {
   const panelRef = useRef<ImperativePanelGroupHandle>(null);
   const panelDrawerRef = useRef<ImperativePanelGroupHandle>(null);
+  const sidePanelRef = useRef<ImperativePanelHandle>(null);
+  const workbenchPanelRef = useRef<ImperativePanelHandle>(null);
   const ogmaRef = useRef<OgmaLib>(null);
   // const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -59,6 +60,9 @@ export default function PanelInterface() {
 
   const {
     showInfoPanel,
+    setShowInfoPanel,
+    showWorkbenchPanel,
+    setShowWorkbenchPanel,
     toggleRodMode,
     everything,
     threats,
@@ -67,6 +71,7 @@ export default function PanelInterface() {
     setSelectedNode,
     feature_Timeline,
     include_articles,
+    feature_workbench,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -82,11 +87,30 @@ export default function PanelInterface() {
   const [minSizeDrawer, setMinSizeDrawer] = useState(10);
   const [collpasedSizeDrawer, setCollapsedSizeDrawer] = useState(10);
 
-  const [restoreLayout, setRestoreLayout] = useState<number[]>([]);
   const [restoreDrawerLayout, setRestoreDrawerLayout] = useState<number[]>([]);
 
   const rodModeTracker = useRef<string>("");
   const rodModeTrackerTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSidePanelCollapse = useCallback(() => {
+    console.log("handleSidePanelCollapse");
+    setShowInfoPanel(false);
+  }, [setShowInfoPanel]);
+
+  const handleSidePanelExpand = useCallback(() => {
+    console.log("handleSidePanelExpand");
+    setShowInfoPanel(true);
+  }, [setShowInfoPanel]);
+
+  const handleWorkbenchPanelCollapse = useCallback(() => {
+    console.log("handleWorkbenchPanelCollapse");
+    setShowWorkbenchPanel(false);
+  }, [setShowWorkbenchPanel]);
+
+  const handleWorkbenchPanelExpand = useCallback(() => {
+    console.log("handleWorkbenchPanelExpand");
+    setShowWorkbenchPanel(true);
+  }, [setShowWorkbenchPanel]);
 
   useEffect(() => {
     setSelectedNode(null);
@@ -117,8 +141,9 @@ export default function PanelInterface() {
       '[data-panel-group-id="drawer"]',
     );
 
-    const resizeHandles =
-      document.querySelectorAll<HTMLDivElement>("#group-handle");
+    const resizeHandles = document.querySelectorAll<HTMLDivElement>(
+      ".vertical-resize-handle",
+    );
     if (!panelGroup || !panelGroupDrawer) return;
     const observer = new ResizeObserver(() => {
       let width = panelGroup.offsetWidth;
@@ -132,6 +157,7 @@ export default function PanelInterface() {
     resizeHandles.forEach((resizeHandle) => {
       observer.observe(resizeHandle);
     });
+
     const resizeHandlesDrawer =
       document.querySelectorAll<HTMLDivElement>("#drawer-handle");
     const observerDrawer = new ResizeObserver(() => {
@@ -154,22 +180,12 @@ export default function PanelInterface() {
   }, []);
 
   useLayoutEffect(() => {
-    if (!panelRef.current) return;
-    if (!showInfoPanel) {
-      setRestoreLayout(panelRef.current.getLayout());
-      panelRef.current.setLayout([collpasedSize, 100 - collpasedSize]);
-    }
-  }, [collpasedSize, showInfoPanel]);
-
-  useLayoutEffect(() => {
-    if (!panelRef.current) return;
-    if (showInfoPanel) {
-      if (restoreLayout.length > 0) {
-        setRestoreLayout([]);
-        panelRef.current.setLayout(restoreLayout);
-      }
-    }
-  }, [restoreLayout, showInfoPanel]);
+    if (!sidePanelRef.current || !workbenchPanelRef.current) return;
+    !showInfoPanel && sidePanelRef.current.collapse();
+    showInfoPanel && sidePanelRef.current.expand();
+    !showWorkbenchPanel && workbenchPanelRef.current.collapse();
+    showWorkbenchPanel && workbenchPanelRef.current.expand();
+  }, [showInfoPanel, showWorkbenchPanel]);
 
   useLayoutEffect(() => {
     if (!panelDrawerRef.current) return;
@@ -389,32 +405,53 @@ export default function PanelInterface() {
   return (
     <PanelGroup
       ref={panelRef}
-      autoSaveId="example"
+      // autoSaveId="verticalPanels"
       direction="horizontal"
       id="group"
     >
       <Panel
+        ref={sidePanelRef}
         defaultSize={25}
-        minSize={showInfoPanel ? minSize : collpasedSize}
-        className={`sdp-sidepanel flex ${showInfoPanel ? "border-r" : ""}`}
+        collapsible
+        collapsedSize={collpasedSize}
+        minSize={minSize}
+        className="sdp-sidepanel flex"
         style={{ transition: "flex 0.1s" }}
         order={1}
+        onCollapse={handleSidePanelCollapse}
+        onExpand={handleSidePanelExpand}
       >
         <SidePanel clusters={clusters} ogma={ogmaRef.current} />
       </Panel>
-      {showInfoPanel && (
-        <PanelResizeHandle
-          className="ml-2 mr-5 flex items-center"
-          id="group-handle"
-        >
-          <FontAwesomeIcon icon={faGripLinesVertical} />
-        </PanelResizeHandle>
+      <PanelResizeHandle className="vertical-resize-handle ml-2 mr-5 flex items-center">
+        <FontAwesomeIcon icon={faGripLinesVertical} />
+      </PanelResizeHandle>
+      {feature_workbench && (
+        <>
+          <Panel
+            ref={workbenchPanelRef}
+            defaultSize={25}
+            collapsible
+            collapsedSize={collpasedSize}
+            minSize={minSize}
+            className="sdp-sidepanel flex"
+            style={{ transition: "flex 0.1s" }}
+            order={2}
+            onCollapse={handleWorkbenchPanelCollapse}
+            onExpand={handleWorkbenchPanelExpand}
+          >
+            <Workbench />
+          </Panel>
+          <PanelResizeHandle className="vertical-resize-handle ml-2 mr-5 flex items-center">
+            <FontAwesomeIcon icon={faGripLinesVertical} />
+          </PanelResizeHandle>
+        </>
       )}
-      <Panel className="flex flex-col " order={2} defaultSize={75}>
+      <Panel className="flex flex-col " order={3} defaultSize={75}>
         <PanelGroup ref={panelDrawerRef} direction="vertical" id="drawer">
           <Panel
             className="sdp-graph-panel flex flex-col"
-            order={3}
+            order={4}
             defaultSize={100 - minSizeDrawer}
           >
             {isFetching && (
@@ -463,7 +500,7 @@ export default function PanelInterface() {
                   overflow: "auto",
                   transition: "flex 0.1s",
                 }}
-                order={4}
+                order={5}
                 defaultSize={minSizeDrawer}
                 minSize={drawerCollapsed ? collpasedSizeDrawer : minSizeDrawer}
               >

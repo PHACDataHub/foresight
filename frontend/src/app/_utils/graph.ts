@@ -21,6 +21,7 @@ export const nodeColours: Record<
   threat: "#DA484A",
   article: "#92A771",
   article_outlier: "#00CF99",
+  event: "pink",
   other: "#D6DAE5",
 };
 
