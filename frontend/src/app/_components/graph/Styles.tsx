@@ -196,7 +196,7 @@ const Styles = () => {
             const content = d?.neo4jType ?? "";
             return {
               size: 15,
-              content,
+              content: content.replaceAll("_", " "),
             };
           },
         }}

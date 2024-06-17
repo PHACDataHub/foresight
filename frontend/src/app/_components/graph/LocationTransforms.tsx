@@ -86,7 +86,12 @@ export default function LocationTransforms() {
     const handleGeoReady = () => {
       if (mapMode === "open") return;
       const map = ogma.geo.getMap();
-      if (map) tiles.addTo(map);
+      if (map) {
+        tiles.addTo(map);
+        map.options.zoomSnap = 0.1;
+        
+        // console.log(map.set);
+      }
     };
 
     ogma.events.on("geoReady", handleGeoReady);

@@ -30,6 +30,8 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
     toggleExpandedCluster,
     setLayoutBusy,
     setLayoutNotBusy,
+    include_articles,
+    history,
   } = useStore();
 
   const selectedPath = useMemo(() => {
@@ -204,6 +206,17 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
   ]);
 
   return (
-    <>{hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}</>
+    <>
+      {hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}
+
+      {!include_articles && typeof history === "number" && (
+        <NodeFilter
+          enabled
+          criteria={(n) => {
+            return getNodeData(n)?.type !== "article";
+          }}
+        />
+      )}
+    </>
   );
 }

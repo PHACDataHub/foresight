@@ -214,7 +214,7 @@ export default function PanelInterface() {
       history,
       everything,
       threats,
-      include_articles,
+      include_articles: typeof history === "number" || include_articles,
     },
     {
       refetchOnWindowFocus: false,

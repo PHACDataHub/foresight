@@ -278,6 +278,7 @@ export default function Controls() {
         minZoomLevel: 2,
         maxZoomLevel: 10,
         sizeRatio: 0.8,
+        
       });
     } else {
       await ogma.geo.disable();
@@ -287,7 +288,8 @@ export default function Controls() {
   const handleToggleAutoExpand = useCallback(() => {
     setIncludeArticles(!include_articles);
     localStorage.setItem("include_articles", JSON.stringify(!include_articles));
-  }, [include_articles, setIncludeArticles]);
+    refresh();
+  }, [include_articles, refresh, setIncludeArticles]);
 
   const handleCollapseAllClick = useCallback(async () => {
     await ogma.removeNodes(
