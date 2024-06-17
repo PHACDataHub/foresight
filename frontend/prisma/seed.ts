@@ -56,11 +56,11 @@ async function main() {
 
   const tom = await prisma.persona.upsert({
     where: { id: "tom" },
-    update: {},
+    update: { image: "/Tom.png"},
     create: {
       id: "tom",
       name: "Tom",
-      image: "/Tom.jpg",
+      image: "/Tom.png",
       description: "",
     },
   });
