@@ -32,8 +32,6 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
     setLayoutNotBusy,
     include_articles,
     history,
-    persona,
-    threats,
   } = useStore();
 
   const selectedPath = useMemo(() => {

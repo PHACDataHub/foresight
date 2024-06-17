@@ -145,7 +145,7 @@ function ClusterKeywords({ cluster }: { cluster: Cluster }) {
   return (
     <section className="mt-2">
       <Typography variant="h3" fontSize={15}>
-        Keywords
+        {t("keywords")}
       </Typography>
       <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap border-t">
         {kbi.map((l, i) => (
