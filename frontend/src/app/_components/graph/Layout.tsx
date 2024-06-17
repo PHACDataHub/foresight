@@ -32,6 +32,8 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
     setLayoutNotBusy,
     include_articles,
     history,
+    persona,
+    threats,
   } = useStore();
 
   const selectedPath = useMemo(() => {
@@ -208,7 +210,6 @@ export default function LayoutService({ hover }: { hover?: boolean }) {
   return (
     <>
       {hover && <NodeFilter enabled criteria={(n) => !n.isVirtual()} />}
-
       {!include_articles && typeof history === "number" && (
         <NodeFilter
           enabled

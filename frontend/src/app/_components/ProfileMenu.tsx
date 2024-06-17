@@ -30,6 +30,8 @@ export default function SignOut() {
 
   const { persona, setPersona } = useStore();
 
+  const updateUserPersona = api.post.updateUserPersona.useMutation();
+
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -43,8 +45,11 @@ export default function SignOut() {
   const handlePersonaClick = useCallback(
     (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
       setAnchorEl(null);
-      setPersona(evt.currentTarget.getAttribute("data-value") ?? "alice");
+      const p = evt.currentTarget.getAttribute("data-value") ?? "alice";
+      setPersona(p);
+      updateUserPersona.mutate({ persona: p });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setPersona],
   );
 

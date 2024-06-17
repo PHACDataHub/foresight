@@ -23,7 +23,7 @@ export default function AppWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  const { appError, registerError } = useStore();
+  const { appError, registerError, setPersona } = useStore();
   const { locale } = useParams();
   const t = useTranslations();
   const session = useSession();
@@ -34,6 +34,15 @@ export default function AppWrapper({
   const handleErrorClose = useCallback(() => {
     registerError("");
   }, [registerError]);
+
+  useEffect(() => {
+    if (session.status === "authenticated") {
+      const u = session.data.user;
+      if ("persona" in u && typeof u.persona === "string") {
+        setPersona(u.persona || "alice");
+      }
+    }
+  }, [session, setPersona])
 
   useEffect(() => {
     if (typeof locale === "string")

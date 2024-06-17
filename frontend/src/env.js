@@ -33,6 +33,7 @@ export const env = createEnv({
     NEO4J_USERNAME: z.string(),
     NEO4J_PASSWORD: z.string(),
     NEO4J_URL: z.string(),
+    DFO_NEO4J_URL: z.string(),
     QA_SERVICE_URL: z.string(),
   },
 
@@ -61,6 +62,7 @@ export const env = createEnv({
     NEO4J_USERNAME: process.env.NEO4J_USERNAME,
     NEO4J_PASSWORD: process.env.NEO4J_PASSWORD,
     NEO4J_URL: process.env.NEO4J_URL ?? "",
+    DFO_NEO4J_URL: process.env.DFO_NEO4J_URL ?? "",
     QA_SERVICE_URL: process.env.QA_SERVICE_URL ?? "",
     NEXT_PUBLIC_GOOGLE_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? "",
   },

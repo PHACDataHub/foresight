@@ -23,11 +23,14 @@ import { api } from "~/trpc/react";
 
 function ThreatSelectorComponent() {
   const [open, setOpen] = useState(false);
-  const { threats: selected, setThreats } = useStore();
+  const { threats: selected, setThreats, persona } = useStore();
   const t = useTranslations();
-  const { data: threats } = api.post.threats.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-  });
+  const { data: threats } = api.post.threats.useQuery(
+    { persona },
+    {
+      refetchOnWindowFocus: false,
+    },
+  );
 
   useEffect(() => {
     if (open) {
@@ -35,7 +38,7 @@ function ThreatSelectorComponent() {
         const el = document.querySelector("a[data-touring=true]");
         if (el) return;
         setOpen(false);
-      }
+      };
       setTimeout(() => {
         window.addEventListener("click", onClose);
       }, 100);
@@ -80,6 +83,8 @@ function ThreatSelectorComponent() {
     if (!threats || threats.length !== selected.length) return t("selectall");
     return t("selectnone");
   }, [t, selected.length, threats]);
+
+  if (persona === "tom") return <></>;
 
   return (
     <div className="sdp-threat-sel relative" onClick={preventPropagation}>

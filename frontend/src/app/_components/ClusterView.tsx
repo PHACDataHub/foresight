@@ -75,9 +75,9 @@ function ArticleList({ articles }: { articles: Article[] }) {
   const { searchMatches } = useStore();
   return (
     <>
-      {articles.map((article) => (
+      {articles.map((article, idx) => (
         <div
-          key={article.id}
+          key={`${idx}--${article.id}`}
           style={
             searchMatches.includes(`${article.id}`)
               ? { borderLeft: "12px solid yellow" }
@@ -135,6 +135,34 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
   );
 }
 
+function ClusterKeywords({ cluster }: { cluster: Cluster }) {
+  const t = useTranslations("ClusterKeywords");
+  const kbi =
+    "kbi_keywords" in cluster ? (cluster.kbi_keywords as string[]) : [];
+  const mmr =
+    "mmr_keywords" in cluster ? (cluster.mmr_keywords as string[]) : [];
+  if (kbi.length + mmr.length === 0) return;
+  return (
+    <section className="mt-2">
+      <Typography variant="h3" fontSize={15}>
+        Keywords
+      </Typography>
+      <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap border-t">
+        {kbi.map((l, i) => (
+          <li key={`loc_${i}`} className="m-[2px] border border-black p-[2px]">
+            {l}
+          </li>
+        ))}
+        {mmr.map((l, i) => (
+          <li key={`loc_${i}`} className="m-[2px] border border-gray-300 bg-gray-100 p-[2px]">
+            {l}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 const groupByOptions = ["", "pub_name", "pub_time", "pub_date"] as const;
 
 type GroupByOptions = (typeof groupByOptions)[number];
@@ -170,7 +198,8 @@ export function ClusterView(
 
   const t = useTranslations("ClusterView");
 
-  const { qa, addQA, feature_GroupArticleBy, searchMatches } = useStore();
+  const { qa, addQA, feature_GroupArticleBy, searchMatches, persona } =
+    useStore();
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [isFetching, setIsFetching] = useState(false);
@@ -209,6 +238,7 @@ export function ClusterView(
         setIsFetching(true);
         const d = await clusterQuery.mutateAsync({
           id: getDataId(cluster),
+          persona,
         });
         setArticles(
           d.nodes
@@ -233,7 +263,7 @@ export function ClusterView(
     };
     void fetchCluster();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cluster, details]);
+  }, [cluster, details, persona]);
 
   const handleGroupArticleByChange = useCallback(
     (evt: SelectChangeEvent<string>) => {
@@ -363,105 +393,114 @@ export function ClusterView(
               <div className="flex flex-1 flex-col">
                 <div className="h-0 flex-auto overflow-auto pr-[12px]">
                   <ClusterLocations cluster={cluster} />
+                  {persona === "tom" && (
+                    <section>
+                      <ClusterKeywords cluster={cluster} />
+                    </section>
+                  )}
                   <section>
                     <Typography variant="body1" fontSize={14}>
                       <HighlightSearchTerms text={cluster.summary ?? ""} />
                     </Typography>
                   </section>
-                  <section className="mt-[10px] border-t pt-[10px]">
-                    <Typography variant="h5" fontSize={16} fontWeight={500}>
-                      {t("questions")}
-                    </Typography>
-                    <ul className="mt-[10px]">
-                      {Object.entries(cluster.answers ?? []).map(
-                        ([question, answer], i) => (
-                          <li key={`${cluster.id}_question_${i}`}>
+                  {persona !== "tom" && (
+                    <section className="mt-[10px] border-t pt-[10px]">
+                      <Typography variant="h5" fontSize={16} fontWeight={500}>
+                        {t("questions")}
+                      </Typography>
+                      <ul className="mt-[10px]">
+                        {Object.entries(cluster.answers ?? []).map(
+                          ([question, answer], i) => (
+                            <li key={`${cluster.id}_question_${i}`}>
+                              <Typography
+                                className="flex items-center space-x-2"
+                                fontWeight={500}
+                                variant="body1"
+                                fontSize={14}
+                              >
+                                <Dot size={16} />
+                                <span>{question}</span>
+                              </Typography>
+
+                              <ul className="ml-10 pb-[8px]">
+                                <li className="flex items-start space-x-4">
+                                  <FontAwesomeIcon
+                                    className="mt-[4px]"
+                                    icon={faMessage}
+                                    fontSize={10}
+                                  />
+                                  <Typography fontSize={14} variant="body1">
+                                    {answer}
+                                  </Typography>
+                                </li>
+                              </ul>
+                            </li>
+                          ),
+                        )}
+                        {qa[cluster.id]?.map(({ question, answer }, i) => (
+                          <li key={`qes_${cluster.id}_${i}`}>
                             <Typography
                               className="flex items-center space-x-2"
                               fontWeight={500}
+                              color="primary"
                               variant="body1"
                               fontSize={14}
                             >
                               <Dot size={16} />
                               <span>{question}</span>
                             </Typography>
-
-                            <ul className="ml-10 pb-[8px]">
-                              <li className="flex items-start space-x-4">
+                            <ul className="ml-10">
+                              <li className="flex items-start space-x-4 whitespace-pre-wrap">
                                 <FontAwesomeIcon
                                   className="mt-[4px]"
                                   icon={faMessage}
                                   fontSize={10}
                                 />
-                                <Typography fontSize={14} variant="body1">
-                                  {answer}
-                                </Typography>
+
+                                {typeof answer === "undefined" && (
+                                  <FontAwesomeIcon spin icon={faSpinner} />
+                                )}
+                                <div>
+                                  {answer?.map((a, i) => (
+                                    <Typography
+                                      variant="body1"
+                                      color="secondary"
+                                      className="pb-2"
+                                      fontSize={14}
+                                      key={`cluster_${cluster.id}-a-${i}`}
+                                    >
+                                      {a}
+                                    </Typography>
+                                  ))}
+                                </div>
                               </li>
                             </ul>
                           </li>
-                        ),
-                      )}
-                      {qa[cluster.id]?.map(({ question, answer }, i) => (
-                        <li key={`qes_${cluster.id}_${i}`}>
-                          <Typography
-                            className="flex items-center space-x-2"
-                            fontWeight={500}
-                            color="primary"
-                            variant="body1"
-                            fontSize={14}
-                          >
-                            <Dot size={16} />
-                            <span>{question}</span>
-                          </Typography>
-                          <ul className="ml-10">
-                            <li className="flex items-start space-x-4 whitespace-pre-wrap">
-                              <FontAwesomeIcon
-                                className="mt-[4px]"
-                                icon={faMessage}
-                                fontSize={10}
-                              />
-
-                              {typeof answer === "undefined" && (
-                                <FontAwesomeIcon spin icon={faSpinner} />
-                              )}
-                              <div>
-                                {answer?.map((a, i) => (
-                                  <Typography
-                                    variant="body1"
-                                    color="secondary"
-                                    className="pb-2"
-                                    fontSize={14}
-                                    key={`cluster_${cluster.id}-a-${i}`}
-                                  >
-                                    {a}
-                                  </Typography>
-                                ))}
-                              </div>
-                            </li>
-                          </ul>
-                        </li>
-                      ))}
-                    </ul>
-                    <span ref={endOfQARef} />
-                  </section>
+                        ))}
+                      </ul>
+                      <span ref={endOfQARef} />
+                    </section>
+                  )}
                 </div>
               </div>
             </div>
-            <div className="sdp-chat-console flex flex-col border-t pb-[12px] pl-[30px] pr-[10px] pt-[16px]">
-              <TextField
-                InputLabelProps={{ sx: { fontSize: 16 } }}
-                variant="outlined"
-                label={t("chat.label")}
-                placeholder={t("chat.placeholder")}
-                onKeyUp={handleQuestion}
-                onChange={handleQuestionChange}
-                value={question}
-                InputProps={{
-                  sx: { fontSize: 16 },
-                  startAdornment: <InputAdornment position="start" />,
-                }}
-              />
-            </div>
+            {persona !== "tom" && (
+              <div className="sdp-chat-console flex flex-col border-t pb-[12px] pl-[30px] pr-[10px] pt-[16px]">
+                <TextField
+                  InputLabelProps={{ sx: { fontSize: 16 } }}
+                  variant="outlined"
+                  label={t("chat.label")}
+                  placeholder={t("chat.placeholder")}
+                  onKeyUp={handleQuestion}
+                  onChange={handleQuestionChange}
+                  value={question}
+                  InputProps={{
+                    sx: { fontSize: 16 },
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                />
+              </div>
+            )}
           </>
         )}
         {tab === 1 && (

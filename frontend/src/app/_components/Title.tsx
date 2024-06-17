@@ -74,6 +74,7 @@ export function Title(
     if ("title" in opts) return opts.title;
     if (!data) return "";
     if (data.type === "hierarchicalcluster") return data.name ?? "";
+    if ("label" in data) return data.label as string ?? "";
     return data.title ?? "";
   }, [data, opts]);
 

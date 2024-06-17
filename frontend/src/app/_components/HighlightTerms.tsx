@@ -30,6 +30,7 @@ export default function HighlightTerms({
     history,
     threats,
     setSearchMatches,
+    persona,
   } = useStore();
   const { day } = useParams();
   const terms = useSearchTerms();
@@ -43,6 +44,7 @@ export default function HighlightTerms({
       threats,
       terms,
       and: searchAnd,
+      persona,
     },
     {
       refetchOnWindowFocus: false,

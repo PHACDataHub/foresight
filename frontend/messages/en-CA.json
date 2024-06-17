@@ -192,6 +192,9 @@
             "title": "Title:",
             "score": "Score:"
         },
+        "ClusterKeywords": {
+            "keywords": "Keywords"
+        },
         "ClusterLocations": {
             "noLocation": "No Location",
             "noLocationTitle": "No location data is available",
@@ -217,7 +220,8 @@
             "publication": "Publication:",
             "pubTime": "Pub Time:",
             "pubDate": "Pub Date:",
-            "outlier": "Outlier"
+            "outlier": "Outlier",
+            "link": "Link"
         },
         "Title": {
             "openTitle": "{clear, select, true {Articles in this cluster} other {Clear selection}}"

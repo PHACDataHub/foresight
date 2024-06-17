@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
       ...session,
       user: {
         ...session.user,
+        persona: ("persona" in user && user.persona as string) ?? "",
         id: user.id,
       },
     }),

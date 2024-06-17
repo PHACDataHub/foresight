@@ -188,6 +188,9 @@
             "title": "Titre:",
             "score": "Note:"
         },
+        "ClusterKeywords": {
+            "keywords": "Keywords"
+        },
         "ClusterLocations": {
             "noLocation": "Aucun emplacement",
             "noLocationTitle": "Aucune donnée de localisation n'est disponible",
@@ -213,7 +216,8 @@
             "publication": "Publication:",
             "pubTime": "Heure de publication:",
             "pubDate": "Date de publication:",
-            "outlier": "Valeur aberrante"
+            "outlier": "Valeur aberrante",
+            "link": "Lien"
         },
         "Title": {
             "openTitle": "{clear, select, true {Articles dans ce cluster} other {Effacer la sélection}}"

@@ -21,6 +21,16 @@ const defaultThreats = [
   "Anomalous disease clusters",
 ];
 
+const defaultDfoThreats = [
+  "Atlantic Salmon Farms and Expiring Leases",
+  "Underwater Noise Pollution and its Impact on Marine Life",
+  "Climate Change and Polar Bear Extinction Risk",
+  "Atlantic Salmon Conservation in the Bay of Fundy",
+  "Aquaculture and Wild Salmon Populations",
+  "Biodiversity Loss and Climate Change Solutions in Canada",
+  "Salt Marshes and Climate Change Impacts",
+];
+
 export type ClusterNodeSection = "summary" | "articles";
 export type SelectedNode = {
   node: OgmaNode;
@@ -149,7 +159,11 @@ export interface ForesightStore {
 
 export const useStore = create<ForesightStore>((set) => ({
   persona: "alice",
-  setPersona: (persona) => set({ persona }),
+  setPersona: (persona) =>
+    set({
+      persona,
+      threats: persona === "tom" ? defaultDfoThreats : defaultThreats,
+    }),
   layoutBusy: [],
   setLayoutBusy: (layout) =>
     set({
@@ -280,7 +294,10 @@ export const useStore = create<ForesightStore>((set) => ({
   threats: defaultThreats,
   setThreats: (threats) => {
     if (!threats) {
-      set({ threats: defaultThreats, selectedNode: null });
+      set((state) => ({
+        threats: state.persona === "tom" ? defaultDfoThreats : defaultThreats,
+        selectedNode: null,
+      }));
     } else set({ threats, selectedNode: null });
   },
   selectedNode: null,

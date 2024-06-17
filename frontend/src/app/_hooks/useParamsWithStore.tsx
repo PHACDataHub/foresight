@@ -18,6 +18,10 @@ export default function useParamsWithStore(
       }
     } else if (store.clusterId) store.setClusterId(undefined);
     if ("history" in params) {
+      if (store.persona === "tom") {
+        store.setHistory(undefined);
+        return;
+      }
       const t = parseInt(params.history);
       if (t === 3 || t === 7 || t === 30) {
         if (store.history !== t) {

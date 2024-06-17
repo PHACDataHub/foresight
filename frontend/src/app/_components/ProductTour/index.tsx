@@ -171,6 +171,7 @@ export default function ProductTour() {
     setSelectedNode,
     setSearchTerms,
     setShowInfoPanel,
+    persona,
   } = useStore();
   const { locale } = useParams();
   const t = useTranslations("ProductTour");
@@ -316,7 +317,7 @@ export default function ProductTour() {
                   expandedClusters,
                   toggleExpandedCluster,
                   async (id) => {
-                    return await cluster.mutateAsync({ id });
+                    return await cluster.mutateAsync({ id, persona });
                   },
                   setLayoutBusy,
                   setLayoutNotBusy,
@@ -338,6 +339,7 @@ export default function ProductTour() {
       }
     },
     [
+      persona,
       cluster,
       expandedClusters,
       locale,

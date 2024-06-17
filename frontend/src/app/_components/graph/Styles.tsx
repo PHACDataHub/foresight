@@ -14,7 +14,7 @@ import {
 } from "~/app/_utils/graph";
 
 const Styles = () => {
-  const { searchMatches, selectedNode } = useStore();
+  const { searchMatches, selectedNode, persona } = useStore();
   const ogma = useOgma();
 
   const radiusFunction = useCallback((n: OgmaNode) => {
@@ -130,7 +130,7 @@ const Styles = () => {
         attributes={{
           text: {
             size: 15,
-            content: (n) => `${n.getData("title")}`,
+            content: (n) => `${n.getData("title") || n.getData("label")}`,
           },
           color: nodeColours.cluster,
         }}
@@ -147,7 +147,9 @@ const Styles = () => {
       />
       <NodeStyleRule
         selector={(n) =>
-          n.getData("type") === "article" && n.getData("outlier") !== true && !Boolean(n.getData("cluster_date"))
+          n.getData("type") === "article" &&
+          n.getData("outlier") !== true &&
+          !Boolean(n.getData("cluster_date"))
         }
         attributes={{
           text: {
@@ -158,7 +160,9 @@ const Styles = () => {
       />
       <NodeStyleRule
         selector={(n) =>
-          n.getData("type") === "article" && n.getData("outlier") !== true && Boolean(n.getData("cluster_date"))
+          n.getData("type") === "article" &&
+          n.getData("outlier") !== true &&
+          Boolean(n.getData("cluster_date"))
         }
         attributes={{
           text: {
@@ -189,6 +193,23 @@ const Styles = () => {
         }}
       />
       {/* Edge Styles */}
+      {persona === "tom" && (
+        <EdgeStyleRule
+          selector={(e) =>
+            e.getData("neo4jType") === "REPRESENTS"
+          }
+          attributes={{
+            color: "rgba(0,0,255,0.1)",
+            stroke: {
+              width: 2,
+            },
+            shape: {
+              head: "circle-hole-arrow",
+              // tail: "circle-hole-arrow",
+            },
+          }}
+        />
+      )}
       <EdgeStyleRule
         attributes={{
           text: (e) => {

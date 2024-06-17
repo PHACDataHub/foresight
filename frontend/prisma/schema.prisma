@@ -63,6 +63,7 @@ model User {
     username      String?
     emailVerified DateTime?
     image         String?
+    persona       String?
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
