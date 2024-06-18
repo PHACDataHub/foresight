@@ -1,3 +1,4 @@
+from collections import defaultdict
 import configparser
 import sys
 
@@ -5,8 +6,8 @@ from openpyxl import load_workbook, Workbook
 
 from langchain.output_parsers.list import NumberedListOutputParser
 from langchain.prompts.prompt import PromptTemplate
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains.summarize import load_summarize_chain
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.chains.summarize import load_summarize_chain
 
 from langchain_community.llms import Ollama
 
@@ -17,20 +18,47 @@ def load_config(file_name):
     return config
 
 
-def load_threats(config):
-    v1_threats = eval(config['public_health_threats']['V1_THREAT_CLASSES'])
-    # for k, v in v1_threats.items():
-    #     print(f"{k} --- {v}")
+def print_category_dict(category_dict):
+    for k1, v1 in category_dict.items():
+        print(f"{k1}")
+        if isinstance(v1, dict):
+            for k2, v2 in v1.items():
+                print(f"\t{k2}")
+                for e in v2:
+                    print(f"\t\t{e}")
+        elif isinstance(v1, list):
+            for e in v1:
+                print(f"\t{e}")
+        else:
+            raise Exception(f"Unknown category type -- {v1}")
+    return category_dict
+    
+    
+def load_categories(config):
+    category_dict = eval(config['public_health_threats']['THREAT_CATEGORIES'])
+    # print_category_dict(category_dict)
+    return category_dict
 
-    v2_threats = eval(config['public_health_threats']['V2_THREAT_CLASSES'])
-    # for k, d in v2_threats.items():
-    #     print(f"{k}")
-    #     for e, v in d.items():
-    #         print(f"\t{e} --- {v}")
-    return v1_threats, v2_threats
+
+def match_category(category_dict, category):
+    for k1, v1 in category_dict.items():
+        if k1.lower() == category.lower():
+            return k1
+        if isinstance(v1, dict):
+            for k2, v2 in v1.items():
+                if k2.lower() == category.lower():
+                    return k2
+                for e in v2:
+                    if e.lower() == category.lower():
+                        return e
+        else:   # if isinstance(v1, list):
+            for e in v1:
+                if e.lower() == category.lower():
+                    return e
+    raise Exception(f"Unknown category -- {category}")
 
 
-def load_data_file(file_name, sheet_name):
+def load_data_file(file_name, sheet_name, category_dict):
     wb = load_workbook(file_name)
     ws = wb[sheet_name]
     headers, inputs = [], []
@@ -38,7 +66,17 @@ def load_data_file(file_name, sheet_name):
         if i == 0:
             headers = [cell.value for cell in row]
             continue
-        inputs.append({headers[j]: cell.value for j, cell in enumerate(row)})
+        row_dict = {headers[j]: cell.value for j, cell in enumerate(row)}
+        
+        truths = []
+        for l in row_dict['Ground Truth'].split('\n'):
+            levels = [e.strip() for e in l.split('->') if e.strip()]
+            categories = [e.strip() for l in levels for e in l.split(',') if e ]
+            truths.extend(categories)
+        truths = [match_category(category_dict, t) for t in truths]
+        row_dict['Ground Truth'] = truths
+        
+        inputs.append(row_dict)
     return inputs
 
 
@@ -71,7 +109,7 @@ def summarize_text(model_name, llm_chain, output):
     if result and isinstance(result, list) and result[0]:
         output['sum'] = result[0]
     
-    print(f"[{model_name} SM] --- {output['url']} \n\t--- {output['sum']}\n")
+    print(f"[{model_name} SUMMARIZER] --- {output['url']} \n\t--- {output['sum']}\n")
     return output
 
 
@@ -100,135 +138,93 @@ def classify_text(llm_chain, text, topics):
                 identified_topics.append(topic)
                 break
     return identified_topics
-    
 
-def top_down_classification(model_name, llm_chain, v1_threats, v2_threats, output):
-    text = output['text']
-    
-    # cls_v1_threats = output['full_text_top_down_v1_threats']
-    # l1_threats = classify_text(llm_chain, text, list(v1_threats.keys()))
-    # for l1_threat in l1_threats:
-    #     cls_v1_threats[l1_threat] = classify_text(llm_chain, text, v1_threats[l1_threat])
-    
-    cls_v2_threats = output['full_text_top_down_v2_threats']
-    l1_threats = classify_text(llm_chain, text, list(v2_threats.keys()))
-    for l1_threat in l1_threats:
-        if l1_threat != 'Unknown Health Threats':
-            cls_v2_threats[l1_threat] = dict()
-            l2_threats = classify_text(llm_chain, text, v2_threats[l1_threat].keys())
-            for l2_threat in l2_threats:
-                cls_v2_threats[l1_threat][l2_threat] = classify_text(llm_chain, text, v2_threats[l1_threat][l2_threat])
-        else:
-            cls_v2_threats[l1_threat] = classify_text(llm_chain, text, v2_threats[l1_threat])
 
-    # print(f"[{model_name} FT TD] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
-    print(f"[{model_name} FT TD] --- {output['url']} \n\t--- {cls_v2_threats}\n")
+def classify_threats(model_name, llm_chain, category_dict, output):
+    print(f"[{model_name} CLASSIFIER] --- {output['url']} --- {output['ground_truth']}\n")
+    
+    for prp, hdr in zip(['text', 'sum'], ['full_text_top_down_threats', 'summary_top_down_threats']):
+        text = output[prp]
+        cls_threats = output[hdr]
+        l1_threats = classify_text(llm_chain, text, list(category_dict.keys()))
+        for l1_threat in l1_threats:
+            cls_threats.append(l1_threat)
+            if isinstance(category_dict[l1_threat], dict):
+                l2_threats = classify_text(llm_chain, text, category_dict[l1_threat].keys())
+                for l2_threat in l2_threats:
+                    cls_threats.append(l2_threat)
+                    cls_threats.extend(classify_text(llm_chain, text, category_dict[l1_threat][l2_threat]))
+            else:
+                cls_threats.extend(classify_text(llm_chain, text, category_dict[l1_threat]))
 
-    text = output['sum']
+        print(f"\t[{model_name} {prp} {hdr}] --- {output['url']} \n\t--- {cls_threats}\n")
+
+    for prp, hdr in zip(['text', 'sum'], ['full_text_bottom_up_threats', 'summary_bottom_up_threats']):
+        text = output[prp]
+        cls_threats = output[hdr]
     
-    # cls_v1_threats = output['summary_top_down_v1_threats']
-    # l1_threats = classify_text(llm_chain, text, list(v1_threats.keys()))
-    # for l1_threat in l1_threats:
-    #     cls_v1_threats[l1_threat] = classify_text(llm_chain, text, v1_threats[l1_threat])
+        threats = []
+        for k1, v1 in category_dict.items():
+            if isinstance(v1, dict):
+                for k1, v2 in v1.items():
+                    threats.extend(v2)
+            else:
+                threats.extend(v1)
     
-    cls_v2_threats = output['summary_top_down_v2_threats']
-    l1_threats = classify_text(llm_chain, text, list(v2_threats.keys()))
-    for l1_threat in l1_threats:
-        if l1_threat != 'Unknown Health Threats':
-            cls_v2_threats[l1_threat] = dict()
-            l2_threats = classify_text(llm_chain, text, v2_threats[l1_threat].keys())
-            for l2_threat in l2_threats:
-                cls_v2_threats[l1_threat][l2_threat] = classify_text(llm_chain, text, v2_threats[l1_threat][l2_threat])
-        else:
-            cls_v2_threats[l1_threat] = classify_text(llm_chain, text, v2_threats[l1_threat])
+        threat_list = classify_text(llm_chain, text, threats)
+        threat_set = set(threat_list)
     
-    # print(f"[{model_name} SM TD] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
-    print(f"[{model_name} SM TD] --- {output['url']} \n\t--- {cls_v2_threats}\n")
+        for k1, v1 in category_dict.items():
+            if isinstance(v1, dict):
+                for k2, v2 in v1.items():
+                    i = list(set(v2).intersection(threat_set))
+                    if i:
+                        cls_threats.extend([k1, k2] + i)
+            else:
+                i =  list(set(v1).intersection(threat_set))
+                if i:
+                    cls_threats.extend([k1] + i)
+        
+        print(f"\t[{model_name} {prp} {hdr}] --- {output['url']}\n\t--- {cls_threats}\n")
+        
     return output
 
 
-def bottom_up_classification(model_name, llm_chain, v1_threats, v2_threats, output):
-    text = output['text']
-    
-    # threats = []
-    # for _, v in v1_threats.items():
-    #     threats.extend(v)
-    # l2_threats = classify_text(llm_chain, text, threats)
-    # l2_set = set(l2_threats)
-    
-    # cls_v1_threats = output['full_text_bottom_up_v1_threats']
-    # for k, v in v1_threats.items():
-    #     i =  set(v).intersection(l2_set)
-    #     if i:
-    #         cls_v1_threats[k] = list(i)
+def compute_scores(output):
+    truths = output['ground_truth']
+    output_scores = defaultdict(list)
+    for hdr in ['full_text_top_down_threats', 'summary_top_down_threats', 'full_text_bottom_up_threats', 'summary_bottom_up_threats']:
+        prediction = output[hdr]
+        true_positives = len(set(prediction).intersection(set(truths)))
+        false_positives = len(set(prediction).difference(set(truths)))
+        true_negatives = 0
+        false_negatives = len(set(truths).difference(set(prediction)))
+        # print(f"[{hdr}] {true_positives} {false_positives} {true_negatives} {false_negatives}")
+        if true_positives > 0:
+            precision = true_positives * 1.0 / (true_positives + false_positives)
+            recall = true_positives * 1.0 / (true_positives + false_negatives)
+        else:
+            precision = 0
+            if true_positives + false_positives > 0:
+                precision = true_positives * 1.0 / (true_positives + false_positives)
+            recall = 0
+            if true_positives + false_negatives == 0:
+                recall = true_positives * 1.0 / (true_positives + false_negatives)
 
-    threats = []
-    for k, e in v2_threats.items():
-        if k != 'Unknown Health Threats':
-            for _, v in e.items():
-                threats.extend(v)
-        else:
-            threats.extend(e)
-    l3_threats = classify_text(llm_chain, text, threats)
-    l3_set = set(l3_threats)
-    
-    cls_v2_threats = output['full_text_bottom_up_v2_threats']
-    for k, e in v2_threats.items():
-        if k != 'Unknown Health Threats':
-            for l, v in e.items():
-                i =  set(v).intersection(l3_set)
-                if i:
-                    if k not in cls_v2_threats:
-                        cls_v2_threats[k] = dict()
-                    cls_v2_threats[k][l] = list(i)
-        else:
-            i =  set(e).intersection(l3_set)
-            if i:
-                cls_v2_threats[k] = list(i)
-    
-    # print(f"[{model_name} FT BU] --- {output['url']} \n\tV1--- {cls_v1_threats} \n\tV2--- {cls_v2_threats}\n")
-    print(f"[{model_name} FT BU] --- {output['url']}\n\t--- {cls_v2_threats}\n")
-    
-    text = output['sum']
-    
-    # threats = []
-    # for _, v in v1_threats.items():
-    #     threats.extend(v)
-    # l2_threats = classify_text(llm_chain, text, threats)
-    # l2_set = set(l2_threats)
-    
-    # cls_v1_threats = output['summary_bottom_up_v1_threats']
-    # for k, v in v1_threats.items():
-    #     i =  set(v).intersection(l2_set)
-    #     if i:
-    #         cls_v1_threats[k] = list(i)
+        score_hdr = hdr.replace('_threats', '_f1_score')
+        output[score_hdr] = 0
+        if precision + recall > 0:
+            output[score_hdr] = 2 * (precision * recall) / (precision + recall) 
+        output_scores[output[score_hdr]].append(score_hdr)
+            
+        score_hdr = hdr.replace('_threats', '_fh_score')
+        output[score_hdr] = 0
+        if precision + recall > 0:
+            output[score_hdr] = (1.25) * (precision * recall) / (0.25 * precision + recall)
+        output_scores[output[score_hdr]].append(score_hdr)
 
-    threats = []
-    for k, e in v2_threats.items():
-        if k != 'Unknown Health Threats':
-            for _, v in e.items():
-                threats.extend(v)
-        else:
-            threats.extend(e)
-    l3_threats = classify_text(llm_chain, text, threats)
-    l3_set = set(l3_threats)
-    
-    cls_v2_threats = output['summary_bottom_up_v2_threats']
-    for k, e in v2_threats.items():
-        if k != 'Unknown Health Threats':
-            for l, v in e.items():
-                i =  set(v).intersection(l3_set)
-                if i:
-                    if k not in cls_v2_threats:
-                        cls_v2_threats[k] = dict()
-                    cls_v2_threats[k][l] = list(i)
-        else:
-            i =  set(e).intersection(l3_set)
-            if i:
-                cls_v2_threats[k] = list(i)
-
-    # print(f"[{model_name} SM BU] --- {output['url']} \n\t--- {cls_v1_threats} \n\t--- {cls_v2_threats}\n")
-    print(f"[{model_name} SM BU] --- {output['url']}\n\t--- {cls_v2_threats}\n")
+    for score in sorted(output_scores.keys(), reverse=True):
+        output['best_scores'].append([score, output_scores[score]])
     return output
 
 
@@ -239,8 +235,8 @@ if __name__ == '__main__':
     llm_model_name = sys.argv[4]
 
     config = load_config(config_file_name)
-    v1_threats, v2_threats = load_threats(config)
-    inputs = load_data_file(input_data_file, input_sheet_name)
+    categories = load_categories(config)
+    inputs = load_data_file(input_data_file, input_sheet_name, categories)
     
     output_parser = NumberedListOutputParser()
     format_instructions = output_parser.get_format_instructions()
@@ -254,31 +250,47 @@ if __name__ == '__main__':
     cls_llm_chain = classifier_prompt | llm_model | output_parser
     
     outputs = []
+    best_methods = dict()
     for input in inputs:
         if not input['URL']:
             continue
-        
+
         output = {
-            # 'title': input['Title'], 
-            # 'text': input['Text Input'],
-            'text': input['Text'],
             'url': input['URL'],
-            # 'src': input['Type of source'],
+            'text': input['Text'],
             'sum': '',
-            # 'full_text_top_down_v1_threats': dict(),
-            # 'full_text_bottom_up_v1_threats': dict(),
-            # 'summary_top_down_v1_threats': dict(),
-            # 'summary_bottom_up_v1Input_threats': dict(),
-            'full_text_top_down_v2_threats': dict(),
-            'full_text_bottom_up_v2_threats': dict(),
-            'summary_top_down_v2_threats': dict(),
-            'summary_bottom_up_v2_threats': dict(),
+            'ground_truth': input['Ground Truth'],
+            'full_text_top_down_threats': [],
+            'full_text_bottom_up_threats': [],
+            'summary_top_down_threats': [],
+            'summary_bottom_up_threats': [],
+            'full_text_top_down_f1_score': [],
+            'full_text_top_down_fh_score': [],
+            'full_text_bottom_up_f1_score': [],
+            'full_text_bottom_up_fh_score': [],
+            'summary_top_down_f1_score': [],
+            'summary_top_down_fh_score': [],
+            'summary_bottom_up_f1_score': [],
+            'summary_bottom_up_fh_score': [],
+            'best_scores': [],
+            'best_methods': dict(),
         }
         
         output = summarize_text(llm_model_name, sum_llm_chain, output)
-        output = top_down_classification(llm_model_name, cls_llm_chain, v1_threats, v2_threats, output)
-        output = bottom_up_classification(llm_model_name, cls_llm_chain, v1_threats, v2_threats, output)
+        output = classify_threats(llm_model_name, cls_llm_chain, categories, output)
+        output = compute_scores(output)
         outputs.append(output)
-        
+
+        for i, score_headers in enumerate(output['best_scores']):
+            score, headers = score_headers
+            for header in headers:
+                output['best_methods'][header] = [i, score]
+                if header not in best_methods:
+                    best_methods[header] = [0 for i in range(0, 8)]
+                best_methods[header][i] += 1
+
+        print(f"{output['url']} --- {output['best_scores']} --- {output['best_methods']}\n")
+        print(f"{best_methods}\n")
+
     output_excel_file = input_data_file.replace(".xlsx", f"-{llm_model_name}-out.xlsx")
     write_to_excel_file(output_excel_file, 'Output', outputs)
