@@ -151,30 +151,18 @@ function ClusterKeywords({ cluster }: { cluster: Cluster }) {
       </Typography>
       <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap border-t">
         {rep.map((l, i) => (
-          <li key={`loc_${i}`} className="m-[2px] border border-black p-[1px]">
-            <Typography variant="body1" fontSize={12}>
-              {l}
-            </Typography>
+          <li key={`loc_${i}`} className="m-[2px]">
+            <Chip color="primary" label={l} />
           </li>
         ))}
         {kbi.map((l, i) => (
-          <li
-            key={`loc_${i}`}
-            className="m-[2px] border-dashed  border-black bg-gray-200 p-[1px]"
-          >
-            <Typography variant="body1" fontSize={12}>
-              {l}
-            </Typography>
+          <li key={`loc_${i}`} className="m-[2px]">
+            <Chip label={l} />
           </li>
         ))}
         {mmr.map((l, i) => (
-          <li
-            key={`loc_${i}`}
-            className="m-[2px] border border-gray-300 bg-gray-100 p-[1px]"
-          >
-            <Typography variant="body1" fontSize={12}>
-              {l}
-            </Typography>
+          <li key={`loc_${i}`} className="m-[2px]">
+            <Chip label={l} variant="outlined" />
           </li>
         ))}
       </ul>
@@ -221,6 +209,7 @@ export function ClusterView(
     useStore();
 
   const [articles, setArticles] = useState<Article[]>([]);
+  const [subClusters, setSubClusters] = useState<Cluster[]>([]);
   const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
@@ -255,10 +244,22 @@ export function ClusterView(
     const fetchCluster = async () => {
       if (cluster && details) {
         setIsFetching(true);
+        const id = getDataId(cluster);
         const d = await clusterQuery.mutateAsync({
-          id: getDataId(cluster),
+          id,
           persona,
         });
+        setSubClusters(
+          d.nodes
+            .filter(
+              (n: RawNode<AllDataTypes>) =>
+                getRawNodeData(n)?.type === "cluster" && id !== n.id,
+            )
+            .filter((n, i, arr) => {
+              return i === arr.findIndex((b) => b.id === n.id);
+            })
+            .map((n) => getRawNodeData<Cluster>(n)),
+        );
         setArticles(
           d.nodes
             .filter(
@@ -405,6 +406,26 @@ export function ClusterView(
               </div>
             }
           />
+          {persona === "tom" && (
+            <Tab
+              sx={{ fontSize: 14 }}
+              label={
+                <div className="flex items-center space-x-2 text-nowrap">
+                  <span>{t("subclusters")}</span>
+                  <Chip
+                    sx={{ fontSize: 14 }}
+                    label={
+                      isFetching ? (
+                        <FontAwesomeIcon icon={faSpinner} spin />
+                      ) : (
+                        subClusters.length
+                      )
+                    }
+                  />
+                </div>
+              }
+            />
+          )}
         </Tabs>
         {tab === 0 && (
           <>
@@ -601,6 +622,27 @@ export function ClusterView(
                   </section>
                 );
               })}
+          </div>
+        )}
+        {tab === 2 && (
+          <div className="h-0 flex-auto flex-col space-y-[8px] overflow-y-scroll pl-[30px] pr-[12px] pt-[12px]">
+            {subClusters.map((sc, idx) => (
+              <section key={`group_${idx}`}>
+                <Typography
+                  variant="h5"
+                  className="flex items-center space-x-2"
+                  sx={{
+                    fontSize: 16,
+                    fontWeight: 500,
+                    marginBottom: 2,
+                    borderBottom: "1px solid #1976d2",
+                    paddingBottom: "2px",
+                  }}
+                >
+                  <span>{"label" in sc && (sc.label as string)}</span>
+                </Typography>
+              </section>
+            ))}
           </div>
         )}
       </>

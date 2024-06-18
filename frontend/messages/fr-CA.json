@@ -199,6 +199,7 @@
         "ClusterView": {
             "summary": "Résumé",
             "articles": "Articles",
+            "subclusters": "Sous-groupes",
             "questions": "Questions sur ce cluster",
             "chat": {
                 "label": "Console de discussion",

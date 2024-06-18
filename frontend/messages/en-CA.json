@@ -203,6 +203,7 @@
         "ClusterView": {
             "summary": "Summary",
             "articles": "Articles",
+            "subclusters": "Sub-clusters",
             "questions": "Questions about this cluster",
             "chat": {
                 "label": "Chat Console",

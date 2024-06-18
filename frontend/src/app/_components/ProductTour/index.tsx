@@ -317,7 +317,7 @@ export default function ProductTour() {
                   expandedClusters,
                   toggleExpandedCluster,
                   async (id) => {
-                    return await cluster.mutateAsync({ id, persona });
+                    return await cluster.mutateAsync({ id: `${id}`, persona });
                   },
                   setLayoutBusy,
                   setLayoutNotBusy,

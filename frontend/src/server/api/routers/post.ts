@@ -6,10 +6,10 @@ import neo4j, {
 import { type RawEdge, type RawNode } from "@linkurious/ogma";
 import { z } from "zod";
 
+import { type User } from "next-auth";
 import { env } from "~/env";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { User } from "next-auth";
 
 const debug = false;
 
@@ -134,6 +134,16 @@ const parseData = (
       obj._articles.forEach((articles) =>
         parseData(articles, rawGraph, include_articles, cb),
       );
+    if ("_subclusters" in obj && Array.isArray(obj._subclusters)) {
+      obj._subclusters.forEach((subclusters) =>
+        parseData(
+          subclusters as Neo4JTransferRecord,
+          rawGraph,
+          include_articles,
+          cb,
+        ),
+      );
+    }
   } else if (obj.type === "article") {
     addEdges(obj._similar, rawGraph);
   }
@@ -470,10 +480,47 @@ const driver_dfo = neo4j.driver(
   neo4j.auth.basic(env.NEO4J_USERNAME, env.NEO4J_PASSWORD),
 );
 
-const getArticles = async (opts: { clusters: string[] }) => {
-  const session = driver.session();
+const getArticles = async (opts: {
+  clusters: string[];
+  user: User;
+  persona?: string;
+}) => {
+  const session =
+    opts.persona === "tom" ? driver_dfo.session() : driver.session();
   try {
-    const t = funcTimer("getArticles", opts);
+    const t = funcTimer("getArticles", {
+      clusters: opts.clusters,
+      persona: opts.persona,
+    });
+
+    if (opts.persona === "tom") {
+      const result = await session.run(
+        `MATCH (c:Cluster)-[r]-(article:Article)
+        RETURN article {
+            nodeid: id(article),
+            id: id(article),
+            cluster_id: ID(c),
+            type: "article",
+            .keywords,
+            .link,
+            .pub_name,
+            .summary,
+            .title,
+            _rels: r
+          }`,
+      );
+      const rawGraph = createGraph();
+      result.records.forEach((record) => {
+        const data = record.get("article") as Neo4JTransferRecord;
+        parseData(data, rawGraph, false);
+      });
+      t.measure("Graph translation complete.");
+      t.end();
+      return rawGraph.get();
+    }
+
+    if (isUserRestricted(opts.user)) throw new Error("403");
+
     const minmax = await session.run(
       `
     MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article)
@@ -948,6 +995,20 @@ export const postRouter = createTRPCRouter({
               .kbi_keywords,
               .mmr_keywords,
               _rels: [(cluster)-[r]-(c:Cluster) | r],
+              _subclusters: [(cluster)<-[r]-(c:Cluster) | c {
+                type: "cluster",
+                nodeid: id(c),
+                id: id(c),
+                _articles: [],
+                .label,
+                .name,
+                .summary,
+                .all_label,
+                .rep_keywords,
+                .kbi_keywords,
+                .mmr_keywords,
+                _rels: r                
+              }],
               _articles: [(cluster)-[r]-(article:Article) | article {
                 id: id(article),
                 nodeid: id(article),
@@ -1111,10 +1172,15 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         clusters: z.array(z.string()),
+        persona: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
-      return await getArticles({ clusters: input.clusters });
+    .mutation(async ({ input, ctx }) => {
+      return await getArticles({
+        clusters: input.clusters,
+        user: ctx.session.user,
+        persona: input.persona,
+      });
     }),
 
   question: protectedProcedure
@@ -1472,7 +1538,10 @@ export const postRouter = createTRPCRouter({
         t.measure("Graph translation complete.");
         t.end();
         if (!input.include_articles) return rawGraph.get();
-        const articles = await getArticles({ clusters });
+        const articles = await getArticles({
+          clusters,
+          user: ctx.session.user,
+        });
         return rawGraph.get(articles);
       } finally {
         await session.close();
