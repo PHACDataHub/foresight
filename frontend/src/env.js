@@ -30,6 +30,8 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: z.string(),
     GITHUB_CLIENT_SECRET: z.string(),
     GITHUB_ALLOWED_USERS: z.string(),
+    RESTRICTED_USERS: z.string(),
+    
     NEO4J_USERNAME: z.string(),
     NEO4J_PASSWORD: z.string(),
     NEO4J_URL: z.string(),
@@ -59,6 +61,7 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GITHUB_ALLOWED_USERS: process.env.GITHUB_ALLOWED_USERS ?? "",
+    RESTRICTED_USERS: process.env.RESTRICTED_USERS ?? "",
     NEO4J_USERNAME: process.env.NEO4J_USERNAME,
     NEO4J_PASSWORD: process.env.NEO4J_PASSWORD,
     NEO4J_URL: process.env.NEO4J_URL ?? "",

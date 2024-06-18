@@ -105,6 +105,7 @@ jobs:
             GITHUB_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}
             GITHUB_CLIENT_SECRET=${{ secrets.GH_CLIENT_SECRET }}
             GITHUB_ALLOWED_USERS=${{ secrets.GH_ALLOWED_USERS }}
+            RESTRICTED_USERS=${{ secrets.RESTRICTED_USERS }}
             NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
             NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
