@@ -9,6 +9,7 @@ import { Title } from "~/app/_components/Title";
 import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 import { getNodeColor } from "~/app/_utils/graph";
 import { api } from "~/trpc/react";
+import { useStore } from "~/app/_store";
 
 export default function ArticleComponent({
   article: articleNode,
@@ -18,6 +19,7 @@ export default function ArticleComponent({
   standAlone?: boolean;
 }) {
   const getArticle = api.post.getArticle.useMutation();
+  const { persona } = useStore();
   const [article, setArticle] = useState(articleNode);
   const [loading, setLoading] = useState(false);
 
@@ -67,54 +69,56 @@ export default function ArticleComponent({
               {loading ? <Skeleton /> : article.pub_name}
             </Typography>
           </div>
-          <div className="flex space-x-[32px] ">
-            <div
-              className={`flex flex-col space-y-[8px]${loading ? " flex-1" : ""}`}
-            >
-              <div className="flex space-x-1">
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? <Skeleton /> : t("pubTime")}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  fontWeight={500}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? (
-                    <Skeleton />
-                  ) : (
-                    article.pub_time?.toLocaleTimeString()
-                  )}
-                </Typography>
-              </div>
-              <div className="flex space-x-1">
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? <Skeleton /> : t("pubDate")}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  fontSize={14}
-                  fontWeight={500}
-                  className={loading ? "flex-1" : ""}
-                >
-                  {loading ? (
-                    <Skeleton />
-                  ) : (
-                    article.pub_date?.toLocaleDateString()
-                  )}
-                </Typography>
+          {persona !== "tom" && (
+            <div className="flex space-x-[32px] ">
+              <div
+                className={`flex flex-col space-y-[8px]${loading ? " flex-1" : ""}`}
+              >
+                <div className="flex space-x-1">
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? <Skeleton /> : t("pubTime")}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    fontWeight={500}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? (
+                      <Skeleton />
+                    ) : (
+                      article.pub_time?.toLocaleTimeString()
+                    )}
+                  </Typography>
+                </div>
+                <div className="flex space-x-1">
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? <Skeleton /> : t("pubDate")}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    fontWeight={500}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? (
+                      <Skeleton />
+                    ) : (
+                      article.pub_date?.toLocaleDateString()
+                    )}
+                  </Typography>
+                </div>
               </div>
             </div>
-          </div>
+          )}
           {article.outlier && (
             <div className="flex space-x-1">
               <Typography
@@ -128,6 +132,34 @@ export default function ArticleComponent({
               </Typography>
             </div>
           )}
+          {persona === "tom" &&
+            "link" in article &&
+            typeof article.link === "string" && (
+              <div className="flex space-x-2">
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? <Skeleton /> : t("link")}
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  fontWeight={500}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? (
+                    <Skeleton />
+                  ) : (
+                    <a href={article.link} target="_blank">
+                      {article.link}
+                    </a>
+                  )}
+                </Typography>
+              </div>
+            )}
         </div>
 
         {standAlone && (
@@ -176,18 +208,25 @@ export default function ArticleComponent({
             </Typography>
           </>
         ) : (
-          article.content?.split("\n").map((content, i) => (
-            <Typography
-              key={i}
-              variant="body1"
-              fontSize={14}
-              lineHeight={1.4}
-              mt={1}
-              className="whitespace-pre-wrap"
-            >
-              <HighlightSearchTerms text={content} />
-            </Typography>
-          ))
+          (persona === "tom" &&
+          "summary" in article &&
+          typeof article.summary === "string"
+            ? article.summary
+            : article.content
+          )
+            ?.split("\n")
+            .map((content, i) => (
+              <Typography
+                key={i}
+                variant="body1"
+                fontSize={14}
+                lineHeight={1.4}
+                mt={1}
+                className="whitespace-pre-wrap"
+              >
+                <HighlightSearchTerms text={content} />
+              </Typography>
+            ))
         )}
       </div>
     </article>

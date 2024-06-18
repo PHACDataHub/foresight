@@ -18,6 +18,7 @@ const Interactions = () => {
     setLayoutBusy,
     setLayoutNotBusy,
     refresh,
+    persona,
   } = useStore();
   const ogma = useOgma();
   const cluster = api.post.cluster.useMutation();
@@ -39,7 +40,7 @@ const Interactions = () => {
             expandedClusters,
             toggleExpandedCluster,
             async (id) => {
-              return await cluster.mutateAsync({ id });
+              return await cluster.mutateAsync({ id, persona });
             },
             setLayoutBusy,
             setLayoutNotBusy,
@@ -52,6 +53,7 @@ const Interactions = () => {
       ogma.events.off(doubleClickHandler);
     };
   }, [
+    persona,
     refresh,
     setLayout,
     setLayoutBusy,

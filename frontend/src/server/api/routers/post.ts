@@ -458,6 +458,11 @@ const driver = neo4j.driver(
   neo4j.auth.basic(env.NEO4J_USERNAME, env.NEO4J_PASSWORD),
 );
 
+const driver_dfo = neo4j.driver(
+  env.DFO_NEO4J_URL,
+  neo4j.auth.basic(env.NEO4J_USERNAME, env.NEO4J_PASSWORD),
+);
+
 const getArticles = async (opts: { clusters: string[] }) => {
   const session = driver.session();
   try {
@@ -529,6 +534,15 @@ export const postRouter = createTRPCRouter({
     return result;
   }),
 
+  updateUserPersona: protectedProcedure
+    .input(z.object({ persona: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.user.update({
+        where: { id: ctx.session.user.id },
+        data: { persona: input.persona },
+      });
+    }),
+
   nodesWithTerms: protectedProcedure
     .input(
       z.object({
@@ -538,17 +552,48 @@ export const postRouter = createTRPCRouter({
         everything: z.boolean().optional(),
         threats: z.array(z.string()),
         and: z.boolean().optional(),
+        persona: z.string(),
       }),
     )
     .query(async ({ input }) => {
-      const session = driver.session();
-      const period = getPeriod({ day: input.day, history: input.history });
-      const comp = input.and ? "all" : "any";
-
       if (input.terms.length === 0) return [];
+
+      const session =
+        input.persona === "tom" ? driver_dfo.session() : driver.session();
 
       try {
         const t = funcTimer("nodesWithTerms", input);
+        const comp = input.and ? "all" : "any";
+
+        if (input.persona === "tom") {
+          const result = await session.run(
+            `
+          MATCH (c:Cluster)
+            WHERE 
+              ${comp}(term in $terms WHERE toLower(c.label) CONTAINS term OR toLower(c.summary) CONTAINS term)
+              OR EXISTS {
+                MATCH (c)<-[]-(a:Article)
+                  WHERE ${comp}(term IN $terms WHERE toLower(a.title) CONTAINS term OR toLower(a.summary) CONTAINS term)
+              }
+          return id(c) as id
+          UNION
+          MATCH (a:Article)
+            WHERE
+              ${comp}(term IN $terms WHERE toLower(a.title) CONTAINS term OR toLower(a.summary) CONTAINS term)
+          return id(a) as id
+          `,
+            { terms: input.terms },
+          );
+          t.measure("Neo4J query completed", true);
+          const ret = result.records.map((record) => {
+            const id = record.get("id") as string;
+            return `${id}`;
+          });
+          t.measure("Mapping complete.");
+          t.end();
+          return ret;
+        }
+        const period = getPeriod({ day: input.day, history: input.history });
         const result = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -586,28 +631,51 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  threats: protectedProcedure.query(async () => {
-    const session = driver.session();
-    try {
-      const result = await session.run(
-        "MATCH (t:Threat) return t order by t.score DESC;",
-      );
-      return result.records
-        .map((record) => {
-          const t = record.get("t") as {
-            properties: { text: string; score: number };
-          };
-          return { text: t.properties.text, score: t.properties.score ?? 0 };
-        })
-        .sort((a, b) => {
-          if (a.score > b.score) return -1;
-          if (a.score < b.score) return 1;
-          return 0;
-        });
-    } finally {
-      await session.close();
-    }
-  }),
+  threats: protectedProcedure
+    .input(z.object({ persona: z.string() }))
+    .query(async ({ input }) => {
+      const session =
+        input.persona === "tom" ? driver_dfo.session() : driver.session();
+      try {
+        if (input.persona === "tom") {
+          const result = await session.run(
+            `MATCH (t:Cluster) WHERE NOT t.id CONTAINS "-"  return t ORDER BY size(t.all_label) DESC;`,
+          );
+          return result.records
+            .map((record) => {
+              const t = record.get("t") as {
+                properties: { label: string; all_label: string[] };
+              };
+              return {
+                text: t.properties.label,
+                score: t.properties.all_label.length ?? 0,
+              };
+            })
+            .sort((a, b) => {
+              if (a.score > b.score) return -1;
+              if (a.score < b.score) return 1;
+              return 0;
+            });
+        }
+        const result = await session.run(
+          "MATCH (t:Threat) return t order by t.score DESC;",
+        );
+        return result.records
+          .map((record) => {
+            const t = record.get("t") as {
+              properties: { text: string; score: number };
+            };
+            return { text: t.properties.text, score: t.properties.score ?? 0 };
+          })
+          .sort((a, b) => {
+            if (a.score > b.score) return -1;
+            if (a.score < b.score) return 1;
+            return 0;
+          });
+      } finally {
+        await session.close();
+      }
+    }),
 
   listEvents: protectedProcedure.query(async () => {
     const session = driver.session();
@@ -847,11 +915,52 @@ export const postRouter = createTRPCRouter({
     }),
 
   cluster: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string(), persona: z.string() }))
     .mutation(async ({ input }) => {
-      const session = driver.session();
+      const session =
+        input.persona === "tom" ? driver_dfo.session() : driver.session();
       try {
         const t = funcTimer("cluster", input);
+
+        if (input.persona === "tom") {
+          const data = await session.run(
+            `
+            MATCH (cluster:Cluster) WHERE ID(cluster) = $id RETURN cluster {
+              type: "cluster",
+              nodeid: id(cluster),
+              id: id(cluster),
+              .label,
+              .name,
+              .summary,
+              .all_label,
+              .kbi_keywords,
+              .mmr_keywords,
+              _rels: [(cluster)-[r]-(c:Cluster) | r],
+              _articles: [(cluster)-[r]-(article:Article) | article {
+                id: id(article),
+                nodeid: id(article),
+                type: "article",
+                .keywords,
+                .link,
+                .pub_name,
+                .summary,
+                .title,
+                _rels: r
+              } ]
+            } `,
+            { id: parseInt(input.id) },
+          );
+
+          const rawGraph = createGraph();
+          data.records.forEach((record) => {
+            const data = record.get("cluster") as Neo4JTransferRecord;
+            parseData(data, rawGraph, true);
+          });
+          t.measure("Graph translation complete.");
+          t.end();
+          return rawGraph.get();
+        }
+
         const minmax = await session.run(
           `
         MATCH (c:Cluster {id: $id})<-[r:IN_CLUSTER]-(article:Article)
@@ -1035,13 +1144,34 @@ export const postRouter = createTRPCRouter({
         history: z.literal(3).or(z.literal(7)).or(z.literal(30)).optional(),
         everything: z.boolean().optional(),
         threats: z.array(z.string()),
+        persona: z.string(),
       }),
     )
     .query(async ({ input }) => {
-      const session = driver.session();
+      const session =
+        input.persona === "tom" ? driver_dfo.session() : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
+        if (input.persona === "tom") {
+          const counter = await session.run(
+            `
+            MATCH (cluster:Cluster)-[]-(article: Article)
+              // WHERE
+              //   cluster.label IN $threats OR
+              //   EXISTS {
+              //     (cluster)<-[r*3]-(b:Cluster) WHERE b.label IN $threats
+              //   }
+            RETURN
+              COUNT(article) as count`,
+            { threats: input.threats },
+          );
+          for (const r of counter.records) {
+            const count = r.get("count") as Neo4jInteger;
+            return count.toNumber();
+          }
+          return 0;
+        }
         const counter = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -1070,14 +1200,68 @@ export const postRouter = createTRPCRouter({
         everything: z.boolean().optional(),
         threats: z.array(z.string()),
         include_articles: z.boolean().default(true),
+        persona: z.string(),
       }),
     )
     .query(async ({ input }) => {
-      const session = driver.session();
+      const session =
+        input.persona === "tom" ? driver_dfo.session() : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
         const t = funcTimer("hierarchicalClusters", input);
+        if (input.persona === "tom") {
+          const data = await session.run(
+            `
+              MATCH (cluster:Cluster)
+              // WHERE
+              //   cluster.label IN $threats OR
+              //   EXISTS {
+              //     (cluster)<-[r*3]-(b:Cluster) WHERE b.label IN $threats
+              //   }
+              RETURN cluster {
+                type: "cluster",
+                nodeid: id(cluster),
+                id: id(cluster),
+                .label,
+                .name,
+                .summary,
+                .all_label,
+                .kbi_keywords,
+                .mmr_keywords,
+                _rels: [
+                  (cluster)-[r]-(c:Cluster)
+                  // WHERE  
+                  //   c.label IN $threats OR
+                  //   EXISTS {
+                  //     (c)<-[*3]-(b:Cluster) WHERE b.label IN $threats
+                  //   }
+                  | r],
+                _articles: [(cluster)-[r]-(article:Article) | article {
+                  nodeid: id(article),
+                  id: id(article),
+                  type: "article",
+                  .keywords,
+                  .link,
+                  .pub_name,
+                  .summary,
+                  .title,
+                  _rels: r
+                } ]
+              } `,
+            { threats: input.threats },
+          );
+
+          const rawGraph = createGraph();
+          data.records.forEach((record) => {
+            const data = record.get("cluster") as Neo4JTransferRecord;
+            parseData(data, rawGraph, input.include_articles);
+          });
+          t.measure("Graph translation complete.");
+          t.end();
+          return rawGraph.get();
+        }
+
         const threats = await session.run(
           `
           WITH $period + '-\\d+' AS id_pattern

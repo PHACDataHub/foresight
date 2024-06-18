@@ -99,6 +99,7 @@ jobs:
             NEO4J_USERNAME=${{ secrets.NEO4J_USERNAME }}
             NEO4J_PASSWORD=${{ secrets.NEO4J_PASSWORD }}
             NEO4J_URL=${{ secrets.NEO4J_URL }}
+            DFO_NEO4J_URL=${{ secrets.DFO_NEO4J_URL }}
             QA_SERVICE_URL=${{ secrets.QA_SERVICE_URL }}
             NEXT_PUBLIC_GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
             GITHUB_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}

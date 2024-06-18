@@ -18,6 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { IconButton } from "@mui/material";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useStore } from "~/app/_store";
 
 type TimeTravelProps = {
   date?: Date;
@@ -41,6 +42,8 @@ function TimeTravelComponent({
 }: TimeTravelProps) {
   const { locale, day } = useParams();
   const selectedDate = useRef<HTMLAnchorElement>(null);
+
+  const { persona } = useStore();
 
   const router = useRouter();
 
@@ -163,6 +166,8 @@ function TimeTravelComponent({
     const y = date.getFullYear();
     return !(d === 31 && m === 0 && y === 2020);
   }, [date]);
+
+  if (persona === "tom") return <></>;
 
   return (
     <nav className="sdp-timetravel mb-3 mt-3 flex space-x-2 whitespace-nowrap">

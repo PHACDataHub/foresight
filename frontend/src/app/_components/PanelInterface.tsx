@@ -72,6 +72,7 @@ export default function PanelInterface() {
     feature_Timeline,
     include_articles,
     feature_workbench,
+    persona,
   } = useStore();
 
   const MIN_SIZE_IN_PIXELS = 500;
@@ -93,22 +94,18 @@ export default function PanelInterface() {
   const rodModeTrackerTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleSidePanelCollapse = useCallback(() => {
-    console.log("handleSidePanelCollapse");
     setShowInfoPanel(false);
   }, [setShowInfoPanel]);
 
   const handleSidePanelExpand = useCallback(() => {
-    console.log("handleSidePanelExpand");
     setShowInfoPanel(true);
   }, [setShowInfoPanel]);
 
   const handleWorkbenchPanelCollapse = useCallback(() => {
-    console.log("handleWorkbenchPanelCollapse");
     setShowWorkbenchPanel(false);
   }, [setShowWorkbenchPanel]);
 
   const handleWorkbenchPanelExpand = useCallback(() => {
-    console.log("handleWorkbenchPanelExpand");
     setShowWorkbenchPanel(true);
   }, [setShowWorkbenchPanel]);
 
@@ -180,12 +177,13 @@ export default function PanelInterface() {
   }, []);
 
   useLayoutEffect(() => {
-    if (!sidePanelRef.current || !workbenchPanelRef.current) return;
+    if (!sidePanelRef.current) return;
     !showInfoPanel && sidePanelRef.current.collapse();
     showInfoPanel && sidePanelRef.current.expand();
+    if (!feature_workbench || !workbenchPanelRef.current) return;
     !showWorkbenchPanel && workbenchPanelRef.current.collapse();
     showWorkbenchPanel && workbenchPanelRef.current.expand();
-  }, [showInfoPanel, showWorkbenchPanel]);
+  }, [feature_workbench, showInfoPanel, showWorkbenchPanel]);
 
   useLayoutEffect(() => {
     if (!panelDrawerRef.current) return;
@@ -214,7 +212,8 @@ export default function PanelInterface() {
       history,
       everything,
       threats,
-      include_articles,
+      include_articles: typeof history === "number" || include_articles,
+      persona,
     },
     {
       refetchOnWindowFocus: false,

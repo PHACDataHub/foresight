@@ -21,7 +21,7 @@ export default function HistoryChooser({
     last30: string;
   };
 }) {
-  const { history } = useStore();
+  const { history, persona } = useStore();
   const router = useRouter();
   const { locale, day } = useParams();
 
@@ -43,6 +43,8 @@ export default function HistoryChooser({
     () => (typeof day === "string" ? parseInt(day) : -1),
     [day],
   );
+
+  if (persona === "tom") return <></>;
 
   return (
     <FormControl

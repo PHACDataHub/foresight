@@ -9,14 +9,14 @@ import { useSearchTerms } from "~/app/_hooks/useSearchTerms";
 import { api } from "~/trpc/react";
 
 export default function WorkingWith() {
-  const { searchMatches, everything, threats, history } = useStore();
+  const { searchMatches, everything, threats, history, persona } = useStore();
   const t = useTranslations();
   const terms = useSearchTerms();
   const { day } = useParams();
 
   const { isFetching, data: articleCount } =
     api.post.hierarchicalClustersArticleCount.useQuery(
-      { day: parseInt(day as string), history, everything, threats },
+      { day: parseInt(day as string), history, everything, threats, persona },
       {
         refetchOnWindowFocus: false,
         enabled: typeof day === "string",
