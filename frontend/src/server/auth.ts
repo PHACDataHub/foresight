@@ -9,6 +9,7 @@ import GithubProvider from "next-auth/providers/github";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { isUserRestricted } from "./api/routers/post";
 
 const allowed_users = env.GITHUB_ALLOWED_USERS?.split(",") || [];
 
@@ -47,14 +48,21 @@ export const authOptions: NextAuthOptions = {
         return true;
       return false;
     },
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        persona: ("persona" in user && user.persona as string) ?? "",
-        id: user.id,
-      },
-    }),
+    session: ({ session, user }) => {
+      const persona = isUserRestricted(user)
+        ? "tom"
+        : "persona" in user && (user.persona as string);
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          username: "username" in user && user.username as string,
+          persona,
+          id: user.id,
+        },
+      };
+    },
   },
   adapter: PrismaAdapter(db),
   providers: [

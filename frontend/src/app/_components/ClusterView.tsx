@@ -137,6 +137,8 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
 
 function ClusterKeywords({ cluster }: { cluster: Cluster }) {
   const t = useTranslations("ClusterKeywords");
+  const rep =
+    "rep_keywords" in cluster ? (cluster.rep_keywords as string[]) : [];
   const kbi =
     "kbi_keywords" in cluster ? (cluster.kbi_keywords as string[]) : [];
   const mmr =
@@ -148,14 +150,31 @@ function ClusterKeywords({ cluster }: { cluster: Cluster }) {
         {t("keywords")}
       </Typography>
       <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap border-t">
+        {rep.map((l, i) => (
+          <li key={`loc_${i}`} className="m-[2px] border border-black p-[1px]">
+            <Typography variant="body1" fontSize={12}>
+              {l}
+            </Typography>
+          </li>
+        ))}
         {kbi.map((l, i) => (
-          <li key={`loc_${i}`} className="m-[2px] border border-black p-[2px]">
-            {l}
+          <li
+            key={`loc_${i}`}
+            className="m-[2px] border-dashed  border-black bg-gray-200 p-[1px]"
+          >
+            <Typography variant="body1" fontSize={12}>
+              {l}
+            </Typography>
           </li>
         ))}
         {mmr.map((l, i) => (
-          <li key={`loc_${i}`} className="m-[2px] border border-gray-300 bg-gray-100 p-[2px]">
-            {l}
+          <li
+            key={`loc_${i}`}
+            className="m-[2px] border border-gray-300 bg-gray-100 p-[1px]"
+          >
+            <Typography variant="body1" fontSize={12}>
+              {l}
+            </Typography>
           </li>
         ))}
       </ul>

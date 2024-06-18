@@ -9,6 +9,7 @@ import { z } from "zod";
 import { env } from "~/env";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { User } from "next-auth";
 
 const debug = false;
 
@@ -232,6 +233,12 @@ const funcTimer = (
         .forEach((m) => i.msg(m));
   }
   return i;
+};
+
+export const isUserRestricted = (user: User) => {
+  const restricted_users = env.RESTRICTED_USERS?.split(",") || [];
+  const username = ("username" in user && (user.username as string)) || "";
+  return restricted_users.includes(username);
 };
 
 export type Neo4JNumber = { low: number; high: number };
@@ -530,7 +537,9 @@ const getArticles = async (opts: { clusters: string[] }) => {
 
 export const postRouter = createTRPCRouter({
   personas: protectedProcedure.query(async ({ ctx }) => {
-    const result = await ctx.db.persona.findMany();
+    const result = await ctx.db.persona.findMany({
+      where: isUserRestricted(ctx.session.user) ? { id: "tom" } : undefined,
+    });
     return result;
   }),
 
@@ -555,7 +564,7 @@ export const postRouter = createTRPCRouter({
         persona: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       if (input.terms.length === 0) return [];
 
       const session =
@@ -593,6 +602,7 @@ export const postRouter = createTRPCRouter({
           t.end();
           return ret;
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
         const period = getPeriod({ day: input.day, history: input.history });
         const result = await session.run(
           `
@@ -633,7 +643,7 @@ export const postRouter = createTRPCRouter({
 
   threats: protectedProcedure
     .input(z.object({ persona: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const session =
         input.persona === "tom" ? driver_dfo.session() : driver.session();
       try {
@@ -657,6 +667,7 @@ export const postRouter = createTRPCRouter({
               return 0;
             });
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
         const result = await session.run(
           "MATCH (t:Threat) return t order by t.score DESC;",
         );
@@ -916,7 +927,7 @@ export const postRouter = createTRPCRouter({
 
   cluster: protectedProcedure
     .input(z.object({ id: z.string(), persona: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const session =
         input.persona === "tom" ? driver_dfo.session() : driver.session();
       try {
@@ -933,6 +944,7 @@ export const postRouter = createTRPCRouter({
               .name,
               .summary,
               .all_label,
+              .rep_keywords,
               .kbi_keywords,
               .mmr_keywords,
               _rels: [(cluster)-[r]-(c:Cluster) | r],
@@ -960,6 +972,7 @@ export const postRouter = createTRPCRouter({
           t.end();
           return rawGraph.get();
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         const minmax = await session.run(
           `
@@ -1147,7 +1160,7 @@ export const postRouter = createTRPCRouter({
         persona: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const session =
         input.persona === "tom" ? driver_dfo.session() : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
@@ -1172,6 +1185,7 @@ export const postRouter = createTRPCRouter({
           }
           return 0;
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
         const counter = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -1203,7 +1217,7 @@ export const postRouter = createTRPCRouter({
         persona: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const session =
         input.persona === "tom" ? driver_dfo.session() : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
@@ -1227,6 +1241,7 @@ export const postRouter = createTRPCRouter({
                 .name,
                 .summary,
                 .all_label,
+                .rep_keywords,
                 .kbi_keywords,
                 .mmr_keywords,
                 _rels: [
@@ -1261,6 +1276,7 @@ export const postRouter = createTRPCRouter({
           t.end();
           return rawGraph.get();
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         const threats = await session.run(
           `

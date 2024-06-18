@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { Stack } from "@mui/material";
 import { LogOutIcon } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
 import PersonaAvatar from "./PersonaAvatar";
@@ -21,6 +22,8 @@ import PersonaAvatar from "./PersonaAvatar";
 export default function SignOut() {
   const t = useTranslations("ProfileMenu");
   const session = useSession();
+  const router = useRouter();
+  const { locale } = useParams();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = useMemo(() => Boolean(anchorEl), [anchorEl]);
@@ -48,9 +51,10 @@ export default function SignOut() {
       const p = evt.currentTarget.getAttribute("data-value") ?? "alice";
       setPersona(p);
       updateUserPersona.mutate({ persona: p });
+      if (p === "tom" && typeof locale === "string") router.push(`/${locale}/1`);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setPersona],
+    [setPersona, locale],
   );
 
   if (session.status !== "authenticated") return;
