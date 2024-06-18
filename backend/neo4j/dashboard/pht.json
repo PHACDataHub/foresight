@@ -1,0 +1,106 @@
+{
+    "uuid": "45b2cf15-d9f9-4766-9416-676314fde8a6",
+    "title": "Public Health Threats and WHO Disease Outbreak News",
+    "version": "2.4",
+    "settings": {
+      "pagenumber": 1,
+      "editable": true,
+      "fullscreenEnabled": false,
+      "parameters": {
+        "neodash_don_title": "",
+        "neodash_don_title_display": "",
+        "neodash_don_url": "Measles - Chile (who.int)",
+        "neodash_don_url_display": "Measles - Chile (who.int)",
+        "neodash_terms": "Measle"
+      },
+      "theme": "light",
+      "disableRowLimiting": true
+    },
+    "pages": [
+      {
+        "title": "Clasifications",
+        "reports": [
+          {
+            "id": "f9cc1d83-98ba-4551-9c81-cf3f4d606943",
+            "title": "Public Health Threat Classifications",
+            "query": "MATCH path=(:Threat)-[:PART_OF*1..]-(:Threat)\nRETURN path\n\n\n\n",
+            "width": 24,
+            "height": 10,
+            "x": 0,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "Threat": "text"
+            },
+            "settings": {
+              "refreshButtonEnabled": true,
+              "fullscreenEnabled": true,
+              "downloadImageEnabled": true,
+              "showPropertiesOnHover": true,
+              "allowDownload": true
+            },
+            "schema": [
+              [
+                "Threat",
+                "text"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Matching Disease Outbreak News",
+        "reports": [
+          {
+            "id": "ce9acea1-6f3f-4939-8c27-4587b713d008",
+            "title": "Find title by term",
+            "query": "RETURN true;",
+            "width": 6,
+            "height": 4,
+            "x": 0,
+            "y": 0,
+            "type": "select",
+            "selection": {},
+            "settings": {
+              "type": "Free Text",
+              "entityType": "terms",
+              "parameterName": "neodash_terms"
+            },
+            "schema": []
+          },
+          {
+            "id": "dcb556c3-6483-4055-b54d-f070f2669efb",
+            "title": "Matched classifications",
+            "query": "MATCH (d:DON)\n  WHERE ANY(e IN SPLIT($neodash_terms, ',') WHERE TOLOWER(d.url) CONTAINS TOLOWER(e))\nWITH d \n  MATCH path=(:Threat)<-[:PART_OF*0..]-(:Threat)<-[:DETECTED_THREAT]-(d)\nRETURN path\n\n\n\n\n\n",
+            "width": 18,
+            "height": 10,
+            "x": 6,
+            "y": 0,
+            "type": "graph",
+            "selection": {
+              "Threat": "text",
+              "DON": "url"
+            },
+            "settings": {},
+            "schema": [
+              [
+                "Threat",
+                "text"
+              ],
+              [
+                "DON",
+                "summary",
+                "url",
+                "content"
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {},
+    "extensions": {
+      "active": true,
+      "activeReducers": []
+    }
+  }
