@@ -52,25 +52,27 @@ export default function ArticleComponent({
         className={`${standAlone ? "h-0 flex-auto overflow-auto pr-[12px] pt-[10px]" : ""}`}
       >
         <div className="mr-[12px] flex flex-col space-y-[8px] pb-[12px] pt-[12px]">
-          <div className="flex space-x-2">
-            <Typography
-              variant="body1"
-              fontSize={14}
-              className={loading ? "flex-1" : ""}
-            >
-              {loading ? <Skeleton /> : t("publication")}
-            </Typography>
+          {persona !== "rachel" && (
+            <div className="flex space-x-2">
+              <Typography
+                variant="body1"
+                fontSize={14}
+                className={loading ? "flex-1" : ""}
+              >
+                {loading ? <Skeleton /> : t("publication")}
+              </Typography>
 
-            <Typography
-              variant="body1"
-              fontSize={14}
-              fontWeight={500}
-              className={loading ? "flex-1" : ""}
-            >
-              {loading ? <Skeleton /> : article.pub_name}
-            </Typography>
-          </div>
-          {persona !== "tom" && (
+              <Typography
+                variant="body1"
+                fontSize={14}
+                fontWeight={500}
+                className={loading ? "flex-1" : ""}
+              >
+                {loading ? <Skeleton /> : article.pub_name}
+              </Typography>
+            </div>
+          )}
+          {persona !== "tom" && persona !== "rachel" && (
             <div className="flex space-x-[32px] ">
               <div
                 className={`flex flex-col space-y-[8px]${loading ? " flex-1" : ""}`}
@@ -217,7 +219,7 @@ export default function ArticleComponent({
             </Typography>
           </>
         ) : (
-          (persona === "tom" &&
+          ((persona === "tom" || persona === "rachel") &&
           "summary" in article &&
           typeof article.summary === "string"
             ? article.summary

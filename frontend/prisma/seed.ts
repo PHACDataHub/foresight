@@ -54,9 +54,21 @@ async function main() {
     },
   });
 
+  const rachel = await prisma.persona.upsert({
+    where: { id: "rachel" },
+    update: {},
+    create: {
+      id: "rachel",
+      name: "Rachel",
+      image: "/Rachel.png",
+      description: "",
+    },
+  });
+
+
   const tom = await prisma.persona.upsert({
     where: { id: "tom" },
-    update: { image: "/Tom.png"},
+    update: {},
     create: {
       id: "tom",
       name: "Tom",
@@ -65,7 +77,7 @@ async function main() {
     },
   });
 
-  console.log( { alice, anthony, aimee, anita, arjun, tom });
+  console.log( { alice, anthony, aimee, anita, arjun, rachel, tom });
 
 }
 main()

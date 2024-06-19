@@ -662,7 +662,9 @@ export const postRouter = createTRPCRouter({
       if (input.terms.length === 0) return [];
 
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
 
       try {
         const t = funcTimer("nodesWithTerms", input);
@@ -697,6 +699,32 @@ export const postRouter = createTRPCRouter({
           return ret;
         }
         if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
+        if (input.persona === "rachel") {
+          const result = await session.run(
+            `
+          MATCH (t:Threat)
+            WHERE 
+              ${comp}(term in $terms WHERE toLower(t.text) CONTAINS term)
+          return id(t) as id
+          UNION
+          MATCH (a:DON)
+            WHERE
+              ${comp}(term IN $terms WHERE toLower(a.content) CONTAINS term OR toLower(a.summary) CONTAINS term)
+          return id(a) as id
+          `,
+            { terms: input.terms },
+          );
+          t.measure("Neo4J query completed", true);
+          const ret = result.records.map((record) => {
+            const id = record.get("id") as string;
+            return `${id}`;
+          });
+          t.measure("Mapping complete.");
+          t.end();
+          return ret;
+
+        }
         const period = getPeriod({ day: input.day, history: input.history });
         const result = await session.run(
           `
@@ -739,7 +767,9 @@ export const postRouter = createTRPCRouter({
     .input(z.object({ persona: z.string() }))
     .query(async ({ input, ctx }) => {
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
       try {
         if (input.persona === "tom") {
           const result = await session.run(
@@ -1277,7 +1307,9 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
@@ -1301,6 +1333,20 @@ export const postRouter = createTRPCRouter({
           return 0;
         }
         if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
+        if (input.persona === "rachel") {
+          const counter = await session.run(
+            `
+            MATCH (article: DON)
+            RETURN
+              COUNT(article) as count`,
+          );
+          for (const r of counter.records) {
+            const count = r.get("count") as Neo4jInteger;
+            return count.toNumber();
+          }
+          return 0;
+        }
         const counter = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -1334,7 +1380,9 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
@@ -1393,6 +1441,55 @@ export const postRouter = createTRPCRouter({
           return rawGraph.get();
         }
         if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
+        if (input.persona === "rachel") {
+          const data = await session.run(
+            `
+              MATCH (t:Threat)-[r]-(article:DON)
+              // WHERE
+              //   t.text IN $threats
+              RETURN article {
+                nodeid: id(article),
+                id: id(article),
+                type: "article",
+                _rels: r,
+                title: article.summary,
+                .content,
+                .url
+              }
+              `,
+            { threats: input.threats },
+          );
+
+          const threats = await session.run(
+            `
+              MATCH (threat:Threat)
+              // WHERE
+              //   threat.text IN $threats
+              RETURN threat {
+                nodeid: id(threat),
+                id: id(threat),
+                type: "threat",
+                title: threat.text
+              }
+              `,
+            { threats: input.threats },
+          );
+
+          const rawGraph = createGraph();
+          data.records.forEach((record) => {
+            const data = record.get("article") as Neo4JTransferRecord;
+            parseData(data, rawGraph, input.include_articles);
+          });
+          threats.records.forEach((record) => {
+            const data = record.get("threat") as Neo4JTransferRecord;
+            parseData(data, rawGraph, input.everything);
+          });
+
+          t.measure("Graph translation complete.");
+          t.end();
+          return rawGraph.get();
+        }
 
         const threats = await session.run(
           `

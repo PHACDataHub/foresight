@@ -167,7 +167,7 @@ function TimeTravelComponent({
     return !(d === 31 && m === 0 && y === 2020);
   }, [date]);
 
-  if (persona === "tom") return <></>;
+  if (persona === "tom" || persona === "rachel") return <></>;
 
   return (
     <nav className="sdp-timetravel mb-3 mt-3 flex space-x-2 whitespace-nowrap">

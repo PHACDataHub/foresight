@@ -84,7 +84,7 @@ function ThreatSelectorComponent() {
     return t("selectnone");
   }, [t, selected.length, threats]);
 
-  if (persona === "tom") return <></>;
+  if (persona === "tom" || persona === "rachel") return <></>;
 
   return (
     <div className="sdp-threat-sel relative" onClick={preventPropagation}>

@@ -52,7 +52,7 @@ export default function SignOut() {
       setPersona(p);
       setSelectedNode(null);
       updateUserPersona.mutate({ persona: p });
-      if (p === "tom" && typeof locale === "string")
+      if ((p === "tom" || p === "rachel") && typeof locale === "string")
         router.push(`/${locale}/1`);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
