@@ -40,6 +40,7 @@ import ButtonGroup from "@mui/material/ButtonGroup";
 import IconButton from "@mui/material/IconButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { Typography } from "@mui/material";
 import {
   applyLayout,
   findAlongPath,
@@ -71,7 +72,15 @@ export default function Controls() {
     feature_workbench,
     setFeature_Workbench,
     persona,
+    sourceHighlight,
+    addSourceToHighlight,
+    removeSourceToHighlight,
   } = useStore();
+
+  const { data: sources } = api.post.sources.useQuery(
+    { persona },
+    { enabled: persona === "tom" },
+  );
 
   const { day, locale } = useParams();
   const router = useRouter();
@@ -564,6 +573,27 @@ export default function Controls() {
           {maximized && <Minimize2 size={22} />}
         </IconButton>
       </div>
+      {sources && (
+        <div className="mt-2 flex flex-col space-y-3 border bg-gray-50 p-2">
+          <Typography variant="h5">Highlight Sources</Typography>
+          <ButtonGroup className="flex flex-col items-end space-y-2">
+            {sources.map((s, idx) => (
+              <Button
+                onClick={() =>
+                  sourceHighlight.includes(s)
+                    ? removeSourceToHighlight(s)
+                    : addSourceToHighlight(s)
+                }
+                color="success"
+                variant={sourceHighlight.includes(s) ? "contained" : "text"}
+                key={`${idx}`}
+              >
+                {s}
+              </Button>
+            ))}
+          </ButtonGroup>
+        </div>
+      )}
     </div>
   );
 }

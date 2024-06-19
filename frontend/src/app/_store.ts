@@ -157,6 +157,9 @@ export interface ForesightStore {
   setLayout: (layout: LayoutModes) => void;
   threats: string[];
   setThreats: (threats: string[] | null) => void;
+  sourceHighlight: string[];
+  addSourceToHighlight: (source: string) => void;
+  removeSourceToHighlight: (source: string) => void;
 }
 
 export const useStore = create<ForesightStore>((set) => ({
@@ -329,4 +332,15 @@ export const useStore = create<ForesightStore>((set) => ({
 
       return { qa };
     }),
+  sourceHighlight: [],
+  addSourceToHighlight: (source) =>
+    set((state) => ({
+      sourceHighlight: state.sourceHighlight
+        .filter((s) => s !== source)
+        .concat(source),
+    })),
+  removeSourceToHighlight: (source) =>
+    set((state) => ({
+      sourceHighlight: state.sourceHighlight.filter((s) => s !== source),
+    })),
 }));

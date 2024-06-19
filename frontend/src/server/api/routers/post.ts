@@ -723,7 +723,6 @@ export const postRouter = createTRPCRouter({
           t.measure("Mapping complete.");
           t.end();
           return ret;
-
         }
         const period = getPeriod({ day: input.day, history: input.history });
         const result = await session.run(
@@ -758,6 +757,35 @@ export const postRouter = createTRPCRouter({
         t.measure("Mapping complete.");
         t.end();
         return ret;
+      } finally {
+        await session.close();
+      }
+    }),
+
+  sources: protectedProcedure
+    .input(z.object({ persona: z.string() }))
+    .query(async ({ input }) => {
+      // const rawGraph = createGraph();
+      if (input.persona !== "tom") return []; //rawGraph.get();
+      const session = driver_dfo.session();
+      try {
+        // const sources = await session.run(
+        //   `
+        //     MATCH (source:Source)-[r]-(article: Article)-[]-(:Cluster)
+        //     RETURN source {
+        //       type: "source",
+        //       nodeid: id(source),
+        //       id: id(source),
+        //       title: source.id,
+        //       _rels: r
+        //     } `,
+        // );
+        // sources.records.forEach((record) => {
+        //   const data = record.get("source") as Neo4JTransferRecord;
+        //   parseData(data, rawGraph, false);
+        // });
+        const sources = await session.run("MATCH (source:Source) RETURN source.id AS id");
+        return sources.records.map((record) => record.get("id") as string);
       } finally {
         await session.close();
       }
@@ -1437,26 +1465,6 @@ export const postRouter = createTRPCRouter({
             const data = record.get("cluster") as Neo4JTransferRecord;
             parseData(data, rawGraph, input.include_articles);
           });
-
-          // if (input.include_articles) {
-          //   const sources = await session.run(
-          //     `
-          //       MATCH (source:Source)-[r]-(article: Article)-[]-(:Cluster)
-          //       RETURN source {
-          //         type: "source",
-          //         nodeid: id(source),
-          //         id: id(source),
-          //         title: source.id,
-          //         _rels: r
-          //       } `,
-          //     { threats: input.threats },
-          //   );          
-  
-          //   sources.records.forEach((record) => {
-          //     const data = record.get("source") as Neo4JTransferRecord;
-          //     parseData(data, rawGraph, false);
-          //   });
-          // }
 
           t.measure("Graph translation complete.");
           t.end();

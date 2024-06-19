@@ -14,7 +14,13 @@ import {
 } from "~/app/_utils/graph";
 
 const Styles = () => {
-  const { searchMatches, keywordMatches, selectedNode, persona } = useStore();
+  const {
+    searchMatches,
+    keywordMatches,
+    selectedNode,
+    persona,
+    sourceHighlight,
+  } = useStore();
   const ogma = useOgma();
 
   const radiusFunction = useCallback((n: OgmaNode) => {
@@ -85,17 +91,39 @@ const Styles = () => {
     [keywordMatches],
   );
 
+  const isSourceHighlighted = useCallback(
+    (n: OgmaNode | null) => {
+      if (!n) return false;
+      const source = `${n.getData("source")}`;
+      return sourceHighlight.includes(source);
+    },
+    [sourceHighlight],
+  );
 
   return (
     <>
+      <NodeStyleRule
+        selector={isSourceHighlighted}
+        attributes={{ 
+          pulse: {
+            enabled: true,
+            startColor: "#2e7d32",
+            endColor: "#2e7d32",
+            
+            duration: 0,
+            width: 1,
+
+          },
+          }}
+      />
       {/* Node Styling for highlighted terms */}
       <NodeStyleRule
         selector={(n) => isHaloed(n) || isKeywordMatched(n)}
         attributes={{
           halo: {
             color: "yellow",
-            strokeColor: (n) => isKeywordMatched(n) ? "orange" : "#ccc",
-            strokeWidth: (n) => isKeywordMatched(n) ? 3 : 1,
+            strokeColor: (n) => (isKeywordMatched(n) ? "orange" : "#ccc"),
+            strokeWidth: (n) => (isKeywordMatched(n) ? 3 : 1),
             width: 10,
           },
         }}
@@ -213,21 +241,27 @@ const Styles = () => {
       />
       {/* Edge Styles */}
       {persona === "tom" && (
-        <EdgeStyleRule
-          selector={(e) =>
-            e.getData("neo4jType") === "REPRESENTS"
-          }
-          attributes={{
-            color: "rgba(0,0,255,0.1)",
-            stroke: {
-              width: 2,
-            },
-            shape: {
-              head: "circle-hole-arrow",
-              // tail: "circle-hole-arrow",
-            },
-          }}
-        />
+        <>
+          <EdgeStyleRule
+            selector={(e) => e.getData("neo4jType") === "REPRESENTS"}
+            attributes={{
+              color: "rgba(0,0,255,0.1)",
+              stroke: {
+                width: 2,
+              },
+              shape: {
+                head: "circle-hole-arrow",
+                // tail: "circle-hole-arrow",
+              },
+            }}
+          />
+          <EdgeStyleRule
+            selector={(e) => e.getSource().getData("type") === "source"}
+            attributes={{
+              color: "rgba(128, 128, 128, 0.1)",
+            }}
+          />
+        </>
       )}
       <EdgeStyleRule
         attributes={{
