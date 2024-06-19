@@ -1416,10 +1416,11 @@ export const postRouter = createTRPCRouter({
                   //     (c)<-[*3]-(b:Cluster) WHERE b.label IN $threats
                   //   }
                   | r],
-                _articles: [(cluster)-[r]-(article:Article) | article {
+                _articles: [(cluster)-[r]-(article:Article)-[]-(source:Source) | article {
                   nodeid: id(article),
                   id: id(article),
                   type: "article",
+                  source: source.id,
                   .keywords,
                   .link,
                   .pub_name,
@@ -1436,6 +1437,27 @@ export const postRouter = createTRPCRouter({
             const data = record.get("cluster") as Neo4JTransferRecord;
             parseData(data, rawGraph, input.include_articles);
           });
+
+          // if (input.include_articles) {
+          //   const sources = await session.run(
+          //     `
+          //       MATCH (source:Source)-[r]-(article: Article)-[]-(:Cluster)
+          //       RETURN source {
+          //         type: "source",
+          //         nodeid: id(source),
+          //         id: id(source),
+          //         title: source.id,
+          //         _rels: r
+          //       } `,
+          //     { threats: input.threats },
+          //   );          
+  
+          //   sources.records.forEach((record) => {
+          //     const data = record.get("source") as Neo4JTransferRecord;
+          //     parseData(data, rawGraph, false);
+          //   });
+          // }
+
           t.measure("Graph translation complete.");
           t.end();
           return rawGraph.get();
@@ -1446,8 +1468,6 @@ export const postRouter = createTRPCRouter({
           const data = await session.run(
             `
               MATCH (t:Threat)-[r]-(article:DON)
-              // WHERE
-              //   t.text IN $threats
               RETURN article {
                 nodeid: id(article),
                 id: id(article),
@@ -1464,13 +1484,13 @@ export const postRouter = createTRPCRouter({
           const threats = await session.run(
             `
               MATCH (threat:Threat)
-              // WHERE
-              //   threat.text IN $threats
+                OPTIONAL MATCH (threat)-[r]-(o:Threat)
               RETURN threat {
                 nodeid: id(threat),
                 id: id(threat),
                 type: "threat",
-                title: threat.text
+                title: threat.text,
+                _rels: r
               }
               `,
             { threats: input.threats },
