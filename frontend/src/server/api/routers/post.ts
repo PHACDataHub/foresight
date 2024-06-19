@@ -599,6 +599,53 @@ export const postRouter = createTRPCRouter({
       });
     }),
 
+  nodesWithKeywordTerms: protectedProcedure
+    .input(
+      z.object({
+        terms: z.array(z.string()),
+        and: z.boolean().optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      if (input.terms.length === 0) return [];
+
+      const session = driver_dfo.session();
+
+      try {
+        const t = funcTimer("nodesWithKeywordTerms", input);
+        const comp = input.and ? "all" : "any";
+
+        const result = await session.run(
+          `
+        MATCH (c:Cluster)
+          WHERE 
+            ${comp}(term in $terms WHERE term IN c.keywords)
+            OR EXISTS {
+              MATCH (c)<-[]-(a:Article)
+                WHERE ${comp}(term IN $terms WHERE term IN a.keywords)
+            }
+        return id(c) as id
+        UNION
+        MATCH (a:Article)
+          WHERE
+            ${comp}(term IN $terms WHERE term IN a.keywords)
+        return id(a) as id
+        `,
+          { terms: input.terms },
+        );
+        t.measure("Neo4J query completed", true);
+        const ret = result.records.map((record) => {
+          const id = record.get("id") as string;
+          return `${id}`;
+        });
+        t.measure("Mapping complete.");
+        t.end();
+        return ret;
+      } finally {
+        await session.close();
+      }
+    }),
+
   nodesWithTerms: protectedProcedure
     .input(
       z.object({
@@ -991,6 +1038,7 @@ export const postRouter = createTRPCRouter({
               .name,
               .summary,
               .all_label,
+              .keywords,
               .rep_keywords,
               .kbi_keywords,
               .mmr_keywords,
@@ -1004,6 +1052,7 @@ export const postRouter = createTRPCRouter({
                 .name,
                 .summary,
                 .all_label,
+                .keywords,
                 .rep_keywords,
                 .kbi_keywords,
                 .mmr_keywords,
@@ -1307,6 +1356,7 @@ export const postRouter = createTRPCRouter({
                 .name,
                 .summary,
                 .all_label,
+                .keywords,
                 .rep_keywords,
                 .kbi_keywords,
                 .mmr_keywords,

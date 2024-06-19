@@ -12,13 +12,17 @@ export default function ClusterList({
   clusters: Cluster[];
   ogma?: OgmaLib;
 }) {
-  const { searchMatches } = useStore();
+  const { searchMatches, keywordMatches } = useStore();
 
   const ordered = useMemo(() => {
     if (searchMatches.length === 0) return clusters;
     return clusters
       .map((a) => a)
       .sort((a, b) => {
+        const kac = keywordMatches.includes(getDataId(a));
+        const kbc = keywordMatches.includes(getDataId(b));
+        if (kac && !kbc) return -1;
+        if (kbc && !kac) return 1;
         const ac = searchMatches.includes(getDataId(a));
         const bc = searchMatches.includes(getDataId(b));
         if (ac && !bc) return -1;
@@ -30,7 +34,7 @@ export default function ClusterList({
         if (ad.nr_articles < bd.nr_articles) return 1;
         return 0;
       });
-  }, [clusters, searchMatches]);
+  }, [clusters, searchMatches, keywordMatches]);
 
   return (
     <div className="h-0 flex-auto space-y-[14px] overflow-auto pr-[12px] pt-[10px]">
@@ -38,16 +42,22 @@ export default function ClusterList({
         <div
           key={`clusterList_${i}`}
           style={
-            c && searchMatches.includes(getDataId(c))
-              ? { borderLeft: "12px solid yellow" }
-              : {}
+            c &&
+            (keywordMatches.includes(getDataId(c))
+              ? { borderLeft: "7px solid yellow" }
+              : searchMatches.includes(getDataId(c))
+                ? { borderLeft: "12px solid yellow" }
+                : {})
           }
         >
           <div
             style={
-              c && searchMatches.includes(getDataId(c))
-                ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
-                : {}
+              c &&
+              (keywordMatches.includes(getDataId(c))
+                ? { borderLeft: "5px solid orange", paddingLeft: "10px" }
+                : searchMatches.includes(getDataId(c))
+                  ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
+                  : {})
             }
           >
             <ClusterView cluster={c} ogma={ogma} />

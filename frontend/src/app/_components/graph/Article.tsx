@@ -10,6 +10,7 @@ import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 import { getNodeColor } from "~/app/_utils/graph";
 import { api } from "~/trpc/react";
 import { useStore } from "~/app/_store";
+import ClusterKeywordGroup from "~/app/_components/ClusterKeywordGroup";
 
 export default function ArticleComponent({
   article: articleNode,
@@ -166,6 +167,14 @@ export default function ArticleComponent({
           <div className="mr-[12px]">
             <Title title={article.title} />
           </div>
+        )}
+
+        {persona === "tom" && "keywords" in article && (
+          <ClusterKeywordGroup
+            title="Keywords"
+            color="primary"
+            keywords={article.keywords as string[]}
+          />
         )}
 
         {loading ? (

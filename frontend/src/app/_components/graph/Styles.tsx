@@ -14,7 +14,7 @@ import {
 } from "~/app/_utils/graph";
 
 const Styles = () => {
-  const { searchMatches, selectedNode, persona } = useStore();
+  const { searchMatches, keywordMatches, selectedNode, persona } = useStore();
   const ogma = useOgma();
 
   const radiusFunction = useCallback((n: OgmaNode) => {
@@ -68,15 +68,34 @@ const Styles = () => {
     [searchMatches],
   );
 
+  const isKeywordMatched = useCallback(
+    (n: OgmaNode | null) => {
+      if (!n) return false;
+      const id = `${n.getData("id")}`;
+      if (n.isVirtual()) {
+        const subNodes = n.getSubNodes();
+        if (subNodes)
+          for (let idx = 0; idx < (subNodes?.size ?? 0); idx += 1) {
+            if (keywordMatches.includes(`${subNodes.get(idx).getData("id")}`))
+              return true;
+          }
+      }
+      return keywordMatches.includes(id);
+    },
+    [keywordMatches],
+  );
+
+
   return (
     <>
       {/* Node Styling for highlighted terms */}
       <NodeStyleRule
-        selector={isHaloed}
+        selector={(n) => isHaloed(n) || isKeywordMatched(n)}
         attributes={{
           halo: {
             color: "yellow",
-            strokeColor: "#ccc",
+            strokeColor: (n) => isKeywordMatched(n) ? "orange" : "#ccc",
+            strokeWidth: (n) => isKeywordMatched(n) ? 3 : 1,
             width: 10,
           },
         }}

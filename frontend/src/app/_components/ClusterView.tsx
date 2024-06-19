@@ -45,6 +45,7 @@ import { api } from "~/trpc/react";
 import ArticleComponent from "./graph/Article";
 import { HighlightSearchTerms } from "./HighlightTerms";
 import { Title } from "./Title";
+import ClusterKeywordGroup from "./ClusterKeywordGroup";
 
 const Location = styled("div")<{
   status?: "missing" | "invalid";
@@ -72,23 +73,27 @@ const Location = styled("div")<{
 });
 
 function ArticleList({ articles }: { articles: Article[] }) {
-  const { searchMatches } = useStore();
+  const { searchMatches, keywordMatches } = useStore();
   return (
     <>
       {articles.map((article, idx) => (
         <div
           key={`${idx}--${article.id}`}
           style={
-            searchMatches.includes(`${article.id}`)
-              ? { borderLeft: "12px solid yellow" }
-              : undefined
+            keywordMatches.includes(`${article.id}`)
+              ? { borderLeft: "7px solid yellow" }
+              : searchMatches.includes(`${article.id}`)
+                ? { borderLeft: "12px solid yellow" }
+                : undefined
           }
         >
           <Accordion
             sx={
-              searchMatches.includes(`${article.id}`)
-                ? { borderLeft: "1px solid #bbb" }
-                : undefined
+              keywordMatches.includes(`${article.id}`)
+                ? { borderLeft: "5px solid orange" }
+                : searchMatches.includes(`${article.id}`)
+                  ? { borderLeft: "1px solid #bbb" }
+                  : undefined
             }
           >
             <AccordionSummary
@@ -137,35 +142,32 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
 
 function ClusterKeywords({ cluster }: { cluster: Cluster }) {
   const t = useTranslations("ClusterKeywords");
-  const rep =
-    "rep_keywords" in cluster ? (cluster.rep_keywords as string[]) : [];
-  const kbi =
-    "kbi_keywords" in cluster ? (cluster.kbi_keywords as string[]) : [];
-  const mmr =
-    "mmr_keywords" in cluster ? (cluster.mmr_keywords as string[]) : [];
-  if (kbi.length + mmr.length === 0) return;
+  // const rep =
+  //   "rep_keywords" in cluster
+  //     ? (cluster.rep_keywords as string[]).filter((l) => Boolean(l))
+  //     : [];
+  // const kbi =
+  //   "kbi_keywords" in cluster
+  //     ? (cluster.kbi_keywords as string[]).filter((l) => Boolean(l))
+  //     : [];
+  // const mmr =
+  //   "mmr_keywords" in cluster
+  //     ? (cluster.mmr_keywords as string[]).filter((l) => Boolean(l))
+  //     : [];
+  // if (kbi.length + mmr.length + rep.length === 0) return;
+  // if (kbi.length + mmr.length + rep.length === 0) return;
+
+  const keywords =
+    "keywords" in cluster ? cluster.keywords!.filter((l) => Boolean(l)) : [];
+
+  if (keywords.length === 0) return;
+
   return (
-    <section className="mt-2">
-      <Typography variant="h3" fontSize={15}>
+    <section className="mb-4 mt-2 border-b border-gray-300 pb-4">
+      <Typography variant="h3" fontSize={16} fontWeight={800}>
         {t("keywords")}
       </Typography>
-      <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap border-t">
-        {rep.map((l, i) => (
-          <li key={`loc_${i}`} className="m-[2px]">
-            <Chip color="primary" label={l} />
-          </li>
-        ))}
-        {kbi.map((l, i) => (
-          <li key={`loc_${i}`} className="m-[2px]">
-            <Chip label={l} />
-          </li>
-        ))}
-        {mmr.map((l, i) => (
-          <li key={`loc_${i}`} className="m-[2px]">
-            <Chip label={l} variant="outlined" />
-          </li>
-        ))}
-      </ul>
+      <ClusterKeywordGroup title="" keywords={keywords} color="primary" />
     </section>
   );
 }
@@ -205,8 +207,14 @@ export function ClusterView(
 
   const t = useTranslations("ClusterView");
 
-  const { qa, addQA, feature_GroupArticleBy, searchMatches, persona } =
-    useStore();
+  const {
+    qa,
+    addQA,
+    feature_GroupArticleBy,
+    searchMatches,
+    keywordMatches,
+    persona,
+  } = useStore();
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [subClusters, setSubClusters] = useState<Cluster[]>([]);
@@ -273,9 +281,14 @@ export function ClusterView(
             .sort(
               (a, b) =>
                 d3.descending(
+                  keywordMatches.includes(`${a.id}`) ? 1 : 0,
+                  keywordMatches.includes(`${b.id}`) ? 1 : 0,
+                ) ||
+                d3.descending(
                   searchMatches.includes(`${a.id}`) ? 1 : 0,
                   searchMatches.includes(`${b.id}`) ? 1 : 0,
-                ) || d3.descending(a.gphin_score, b.gphin_score),
+                ) ||
+                d3.descending(a.gphin_score, b.gphin_score),
             ),
         );
         setIsFetching(false);
@@ -283,7 +296,7 @@ export function ClusterView(
     };
     void fetchCluster();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cluster, details, persona]);
+  }, [cluster, details, persona, searchMatches, searchMatches]);
 
   const handleGroupArticleByChange = useCallback(
     (evt: SelectChangeEvent<string>) => {
@@ -628,19 +641,7 @@ export function ClusterView(
           <div className="h-0 flex-auto flex-col space-y-[8px] overflow-y-scroll pl-[30px] pr-[12px] pt-[12px]">
             {subClusters.map((sc, idx) => (
               <section key={`group_${idx}`}>
-                <Typography
-                  variant="h5"
-                  className="flex items-center space-x-2"
-                  sx={{
-                    fontSize: 16,
-                    fontWeight: 500,
-                    marginBottom: 2,
-                    borderBottom: "1px solid #1976d2",
-                    paddingBottom: "2px",
-                  }}
-                >
-                  <span>{"label" in sc && (sc.label as string)}</span>
-                </Typography>
+                <Title data={sc} showLocate ogma={ogma} hideArticles />
               </section>
             ))}
           </div>

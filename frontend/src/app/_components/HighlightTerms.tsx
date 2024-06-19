@@ -31,6 +31,7 @@ export default function HighlightTerms({
     threats,
     setSearchMatches,
     persona,
+    setKeywordMatches,
   } = useStore();
   const { day } = useParams();
   const terms = useSearchTerms();
@@ -52,11 +53,30 @@ export default function HighlightTerms({
     },
   );
 
+  // When keywords are available (like for Tom), fetch matching nodes
+  const { data: keywordHighlightedNodeIds } =
+    api.post.nodesWithKeywordTerms.useQuery(
+      {
+        terms,
+        and: searchAnd,
+      },
+      {
+        refetchOnWindowFocus: false,
+        enabled: persona === "tom",
+      },
+    );
+
   useEffect(() => {
     if (highlightedNodeIds) {
       setSearchMatches(highlightedNodeIds);
     }
   }, [highlightedNodeIds, setSearchMatches]);
+
+  useEffect(() => {
+    if (keywordHighlightedNodeIds) {
+      setKeywordMatches(keywordHighlightedNodeIds)
+    }
+  }, [keywordHighlightedNodeIds, setKeywordMatches]);
 
   const updateSearchAsYouType = useDebounceCallback(setSearchAsYouType, 300);
 
