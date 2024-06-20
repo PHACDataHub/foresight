@@ -176,6 +176,13 @@
         "resetToDefault": "Reset to default",
         "selected": "{count, plural, =1 {one} other {#}} selected"
     },
+    "HighlightSource": {
+        "selectall": "Select All",
+        "selectnone": "Select None",
+        "highlightSources": "Highlight sources",
+        "resetToDefault": "Reset to default",
+        "selected": "{count, plural, =1 {one} other {#}} highlighted"
+    },
     "Graph": {
         "resetLayout": "Reset Layout",
         "expandArticles": "Expand {type, select, hierarchicalcluster {articles along path} other {all articles}}",

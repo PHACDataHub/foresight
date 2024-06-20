@@ -27,11 +27,12 @@ import "@fontsource/roboto/700.css";
 import TodayIs from "~/app/_components/TodayIs";
 import ThreatSelector from "~/app/_components/ThreatSelector";
 import WorkingWith from "~/app/_components/WorkingWith";
+import Session from "~/app/_components/Session";
+import HighlightSource from "~/app/_components/HighlightSource";
 
 import "~/styles/globals.css";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import Session from "./_components/Session";
 
 // Can be imported from a shared config
 const locales = ["en-CA", "fr-CA"];
@@ -63,7 +64,9 @@ export default async function RootLayout({
   return (
     <TRPCReactProvider>
       <html className="no-js h-full">
-        <head><title>{t("title")}</title></head>
+        <head>
+          <title>{t("title")}</title>
+        </head>
         <body className="h-full">
           <NextIntlClientProvider
             messages={
@@ -129,6 +132,16 @@ export default async function RootLayout({
                         }
                       >
                         <ThreatSelector />
+                      </NextIntlClientProvider>
+
+                      <NextIntlClientProvider
+                        messages={
+                          typeof messages.HighlightSource === "object"
+                            ? messages.HighlightSource
+                            : {}
+                        }
+                      >
+                        <HighlightSource />
                       </NextIntlClientProvider>
                     </div>
                   </div>

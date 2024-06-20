@@ -172,6 +172,14 @@
         "resetToDefault": "Réinitialiser",
         "selected": "{count, plural, =1 {un sélectionné} other {# sélectionnés}}"
     },
+    "HighlightSource": {
+        "selectall": "Tout Sélectionner",
+        "selectnone": "Ne Rien Sélectionner",
+        "highlightSources": "Mettre en évidence les sources",
+        "filterView": "Filtrer",
+        "resetToDefault": "Réinitialiser",
+        "selected": "{count, plural, =1 {un mis en évidence} other {# mis en évidence}}"
+    },
     "Graph": {
         "resetLayout": "Réinitialiser",
         "expandArticles": "Développer {type, select, hierarchicalcluster {les articles le long du chemin} other {tous les articles}}",
