@@ -102,19 +102,19 @@ const Styles = () => {
 
   return (
     <>
+      {/* Node Styling for source highlighted terms */}
       <NodeStyleRule
         selector={isSourceHighlighted}
-        attributes={{ 
+        attributes={{
           pulse: {
             enabled: true,
             startColor: "#2e7d32",
             endColor: "#2e7d32",
-            
+
             duration: 0,
             width: 1,
-
           },
-          }}
+        }}
       />
       {/* Node Styling for highlighted terms */}
       <NodeStyleRule
