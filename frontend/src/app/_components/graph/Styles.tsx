@@ -17,6 +17,7 @@ const Styles = () => {
   const {
     searchMatches,
     keywordMatches,
+    semanticMatches,
     selectedNode,
     persona,
     sourceHighlight,
@@ -91,6 +92,23 @@ const Styles = () => {
     [keywordMatches],
   );
 
+  const isSemanticMatch = useCallback(
+    (n: OgmaNode | null) => {
+      if (!n) return false;
+      const id = `${n.getData("id")}`;
+      if (n.isVirtual()) {
+        const subNodes = n.getSubNodes();
+        if (subNodes)
+          for (let idx = 0; idx < (subNodes?.size ?? 0); idx += 1) {
+            if (semanticMatches.includes(`${subNodes.get(idx).getData("id")}`))
+              return true;
+          }
+      }
+      return semanticMatches.includes(id);
+    },
+    [semanticMatches],
+  );
+
   const isSourceHighlighted = useCallback(
     (n: OgmaNode | null) => {
       if (!n) return false;
@@ -102,7 +120,7 @@ const Styles = () => {
 
   return (
     <>
-      {/* Node Styling for source highlighted terms */}
+      {/* Node Styling for highlighting sources */}
       <NodeStyleRule
         selector={isSourceHighlighted}
         attributes={{
@@ -118,12 +136,20 @@ const Styles = () => {
       />
       {/* Node Styling for highlighted terms */}
       <NodeStyleRule
-        selector={(n) => isHaloed(n) || isKeywordMatched(n)}
+        selector={(n) =>
+          isSemanticMatch(n) || isHaloed(n) || isKeywordMatched(n)
+        }
         attributes={{
           halo: {
             color: "yellow",
-            strokeColor: (n) => (isKeywordMatched(n) ? "orange" : "#ccc"),
-            strokeWidth: (n) => (isKeywordMatched(n) ? 3 : 1),
+            strokeColor: (n) =>
+              isSemanticMatch(n)
+                ? "red"
+                : isKeywordMatched(n)
+                  ? "orange"
+                  : "#ccc",
+            strokeWidth: (n) =>
+              isSemanticMatch(n) ? 5 : isKeywordMatched(n) ? 3 : 1,
             width: 10,
           },
         }}

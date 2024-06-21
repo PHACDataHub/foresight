@@ -179,7 +179,7 @@
     "HighlightSource": {
         "selectall": "Select All",
         "selectnone": "Select None",
-        "highlightSources": "Highlight sources",
+        "highlightSources": "Highlights",
         "resetToDefault": "Reset to default",
         "selected": "{count, plural, =1 {one} other {#}} highlighted"
     },

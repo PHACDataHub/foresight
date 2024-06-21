@@ -583,6 +583,60 @@ const getArticles = async (opts: {
 };
 
 export const postRouter = createTRPCRouter({
+  semanticSearch: protectedProcedure
+    .input(z.object({ search: z.string() }))
+    .mutation(async ({ input }) => {
+      const session = driver_dfo.session();
+      const threshold = 0.7;
+      const topK = 10;
+
+      try {
+        const result = await session.run(
+          `
+          CALL apoc.load.jsonParams(
+              "http://34.118.173.82:8000/create_embeddings",
+              {method: "POST", \`Content-Type\`: "application/json"},
+              apoc.convert.toJson({text: $search})
+          ) YIELD value AS chunk_vector_dict
+          WITH chunk_vector_dict['embeddings'] AS chunk_vector_list
+            UNWIND  chunk_vector_list AS chunk_vector
+          WITH chunk_vector[0] AS chunk, chunk_vector[1] AS vector
+              CALL db.index.vector.queryNodes("cluster-embeddings", TOINTEGER($topK), vector)
+            YIELD node AS embedding, score
+          WITH embedding, score
+            WHERE embedding.uid <> "28" AND score >= TOFLOAT($threshold)
+            MATCH (embedding)-[:EMBBEDINGS_OF]->(cluster:Cluster)
+            RETURN ID(cluster) as nodeid ORDER BY score DESC
+          UNION
+          CALL apoc.load.jsonParams(
+              "http://34.118.173.82:8000/create_embeddings",
+              {method: "POST", \`Content-Type\`: "application/json"},
+              apoc.convert.toJson({text: $search})
+          ) YIELD value AS chunk_vector_dict
+          WITH chunk_vector_dict['embeddings'] AS chunk_vector_list
+            UNWIND  chunk_vector_list AS chunk_vector
+          WITH chunk_vector[0] AS chunk, chunk_vector[1] AS vector
+              CALL db.index.vector.queryNodes("article-embeddings", TOINTEGER($topK), vector)
+            YIELD node AS embedding, score
+          WITH embedding, score
+            WHERE embedding.uid <> "28" AND score >= TOFLOAT($threshold)
+            MATCH (embedding)-[:EMBBEDINGS_OF]->(article:Article)
+          RETURN ID(article) as nodeid ORDER BY score DESC
+          `,
+          { search: input.search, threshold, topK },
+        );
+        return result.records.map(
+          (r) => {
+            const id = r.get("nodeid") as unknown;
+            if (neo4j.isInt(id)) return id.toString();
+            return "";
+          }
+        );
+      } finally {
+        await session.close();
+      }
+    }),
+
   personas: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.persona.findMany({
       where: isUserRestricted(ctx.session.user) ? { id: "tom" } : undefined,
@@ -784,7 +838,9 @@ export const postRouter = createTRPCRouter({
         //   const data = record.get("source") as Neo4JTransferRecord;
         //   parseData(data, rawGraph, false);
         // });
-        const sources = await session.run("MATCH (source:Source) RETURN source.id AS id");
+        const sources = await session.run(
+          "MATCH (source:Source) RETURN source.id AS id",
+        );
         return sources.records.map((record) => record.get("id") as string);
       } finally {
         await session.close();

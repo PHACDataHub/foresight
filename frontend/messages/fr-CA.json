@@ -175,7 +175,7 @@
     "HighlightSource": {
         "selectall": "Tout Sélectionner",
         "selectnone": "Ne Rien Sélectionner",
-        "highlightSources": "Mettre en évidence les sources",
+        "highlightSources": "Mettre en évidence",
         "filterView": "Filtrer",
         "resetToDefault": "Réinitialiser",
         "selected": "{count, plural, =1 {un mis en évidence} other {# mis en évidence}}"

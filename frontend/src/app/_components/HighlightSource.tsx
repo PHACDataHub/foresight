@@ -14,12 +14,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Chip from "@mui/material/Chip";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
+import HighlightTerms from "./HighlightTerms";
 
 function HighlightSourceComponent() {
   const [open, setOpen] = useState(false);
@@ -74,13 +74,17 @@ function HighlightSourceComponent() {
 
   const handleGroupSelect = useCallback(() => {
     if (!sources) return;
-    const m = selected.length === sources.length ? removeSourceToHighlight : addSourceToHighlight;
-    sources.forEach((s) => m(s))
+    const m =
+      selected.length === sources.length
+        ? removeSourceToHighlight
+        : addSourceToHighlight;
+    sources.forEach((s) => m(s));
   }, [addSourceToHighlight, removeSourceToHighlight, selected.length, sources]);
 
   const groupSelectText = useMemo(() => {
-    if (!sources || sources.length !== selected.length) return t("selectall");
-    return t("selectnone");
+    if (!sources || sources.length !== selected.length)
+      return t("HighlightSource.selectall");
+    return t("HighlightSource.selectnone");
   }, [sources, selected.length, t]);
 
   if (persona !== "tom") return <></>;
@@ -94,16 +98,21 @@ function HighlightSourceComponent() {
         endIcon={<FontAwesomeIcon icon={faAngleDown} />}
         onClick={handleOpenClick}
       >
-        {t("highlightSources")}
+        {t("HighlightSource.highlightSources")}
       </Button>
       {open && (
-        <div className="sdp-threat-sel-list absolute right-0 z-[1402] flex w-[600px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
-          <div className="flex h-[52px] items-center justify-between pb-[20px] pt-[22px]">
-            <Chip
-              label={t("selected", { count: selected.length })}
-              sx={{ fontSize: 14 }}
-            />
-            <div className="space-x-[10px]">
+        <div className="sdp-threat-sel-list absolute right-0 z-[1402] flex w-[650px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
+          <div className="flex h-[72px] items-center justify-between space-x-2 pb-[20px] pt-[22px]">
+            <div>
+              <HighlightTerms
+                messages={{
+                  includeAll: t("HighlightTerms.includeAll"),
+                  label: t("HighlightTerms.label"),
+                  placeholder: t("HighlightTerms.placeholder"),
+                }}
+              />
+            </div>
+            <div className="text-nowrap">
               <Button
                 variant="contained"
                 onClick={handleGroupSelect}
