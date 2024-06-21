@@ -149,8 +149,8 @@ export interface ForesightStore {
   setKeywordMatches: (searchMatches: string[]) => void;
   semanticSearch: string;
   setSemanticSearch: (semanticSearch: string) => void;
-  semanticMatches: string[];
-  setSemanticMatches: (semanticMatches: string[]) => void;
+  semanticMatches: {id: number, score: number}[];
+  setSemanticMatches: (semanticMatches: {id: number, score: number}[]) => void;
   // TODO: refactor open node madness
   openNode?: string;
   setOpenNode: (locateNode?: string) => void;

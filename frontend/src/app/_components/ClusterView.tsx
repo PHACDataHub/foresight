@@ -73,13 +73,19 @@ const Location = styled("div")<{
 });
 
 function ArticleList({ articles }: { articles: Article[] }) {
-  const { searchMatches, keywordMatches } = useStore();
+  const { searchMatches, keywordMatches, semanticMatches } = useStore();
+  const sm = useMemo(
+    () => semanticMatches.map((s) => `${s.id}`),
+    [semanticMatches],
+  );
+
   return (
     <>
       {articles.map((article, idx) => (
         <div
           key={`${idx}--${article.id}`}
           style={
+            sm.includes(`${article.id}`) ||
             keywordMatches.includes(`${article.id}`)
               ? { borderLeft: "7px solid yellow" }
               : searchMatches.includes(`${article.id}`)
@@ -89,19 +95,41 @@ function ArticleList({ articles }: { articles: Article[] }) {
         >
           <Accordion
             sx={
-              keywordMatches.includes(`${article.id}`)
-                ? { borderLeft: "5px solid orange" }
-                : searchMatches.includes(`${article.id}`)
-                  ? { borderLeft: "1px solid #bbb" }
-                  : undefined
+              sm.includes(`${article.id}`)
+                ? { borderLeft: "5px solid red", paddingLeft: "10px" }
+                : keywordMatches.includes(`${article.id}`)
+                  ? { borderLeft: "5px solid orange" }
+                  : searchMatches.includes(`${article.id}`)
+                    ? { borderLeft: "1px solid #bbb" }
+                    : undefined
             }
           >
             <AccordionSummary
               expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
             >
-              <Typography variant="h5" fontSize={16}>
-                <HighlightSearchTerms text={article.title} />
-              </Typography>
+              <div>
+                {sm.includes(`${article.id}`) && (
+                  <div className="flex space-x-2">
+                    <span>
+                      Position:
+                      {semanticMatches.findIndex(
+                        (s) => `${s.id}` === `${article.id}`,
+                      ) + 1}
+                    </span>
+                    <span>
+                      Score:
+                      {
+                        semanticMatches.find(
+                          (s) => `${s.id}` === `${article.id}`,
+                        )?.score
+                      }
+                    </span>
+                  </div>
+                )}
+                <Typography variant="h5" fontSize={16}>
+                  <HighlightSearchTerms text={article.title} />
+                </Typography>
+              </div>
             </AccordionSummary>
             <AccordionDetails>
               <ArticleComponent article={article} />
@@ -213,8 +241,14 @@ export function ClusterView(
     feature_GroupArticleBy,
     searchMatches,
     keywordMatches,
+    semanticMatches,
     persona,
   } = useStore();
+
+  const sm = useMemo(
+    () => semanticMatches.map((s) => `${s.id}`),
+    [semanticMatches],
+  );
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [subClusters, setSubClusters] = useState<Cluster[]>([]);
@@ -280,6 +314,14 @@ export function ClusterView(
             .map((n) => getRawNodeData<Article>(n))
             .sort(
               (a, b) =>
+                d3.descending(
+                  sm.includes(`${a.id}`) ? 1 : 0,
+                  sm.includes(`${b.id}`) ? 1 : 0,
+                ) ||
+                d3.ascending(
+                  semanticMatches.findIndex((s) => `${s.id}` === `${a.id}`),
+                  semanticMatches.findIndex((s) => `${s.id}` === `${b.id}`),
+                ) ||
                 d3.descending(
                   keywordMatches.includes(`${a.id}`) ? 1 : 0,
                   keywordMatches.includes(`${b.id}`) ? 1 : 0,

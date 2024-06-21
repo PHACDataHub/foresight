@@ -96,15 +96,18 @@ const Styles = () => {
     (n: OgmaNode | null) => {
       if (!n) return false;
       const id = `${n.getData("id")}`;
+      const m = semanticMatches.map((s) => `${s.id}`);
       if (n.isVirtual()) {
         const subNodes = n.getSubNodes();
         if (subNodes)
           for (let idx = 0; idx < (subNodes?.size ?? 0); idx += 1) {
-            if (semanticMatches.includes(`${subNodes.get(idx).getData("id")}`))
+            if (
+              m.includes(`${subNodes.get(idx).getData("id")}`)
+            )
               return true;
           }
       }
-      return semanticMatches.includes(id);
+      return m.includes(id);
     },
     [semanticMatches],
   );
@@ -154,6 +157,31 @@ const Styles = () => {
           },
         }}
       />
+      <NodeStyleRule selector={isSemanticMatch} attributes={{
+        radius: (n) => {
+          const m = semanticMatches.find((s) => s.id === n.getData("id"));
+          if (m) return 10 * m.score;
+        },
+        text: {
+          secondary: {
+            size: 14,
+            backgroundColor: "yellow",
+            content: (n) => {
+              const m = semanticMatches.find((s) => s.id === n.getData("id"));
+              if (m) return `Semantic search score: ${m.score}`;
+    
+            }
+          }
+        },
+        badges: {
+          topRight: {
+            text: (n) => {
+              const m = semanticMatches.findIndex((s) => s.id === n.getData("id"));
+              return `${m + 1}`;
+            }
+          }
+        }
+      }} />
       {/* Node Styling for geoclustered nodes on the map */}
       <NodeStyleRule
         selector={(n) =>

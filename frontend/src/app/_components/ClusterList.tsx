@@ -12,13 +12,23 @@ export default function ClusterList({
   clusters: Cluster[];
   ogma?: OgmaLib;
 }) {
-  const { searchMatches, keywordMatches } = useStore();
+  const { searchMatches, keywordMatches, semanticMatches } = useStore();
 
   const ordered = useMemo(() => {
-    if (searchMatches.length === 0) return clusters;
+    if (
+      searchMatches.length + keywordMatches.length + semanticMatches.length ===
+      0
+    )
+      return clusters;
+    const sm = semanticMatches.map((s) => `${s.id}`);
     return clusters
       .map((a) => a)
       .sort((a, b) => {
+        const sac = sm.findIndex((i) => i === getDataId(a));
+        const sbc = sm.findIndex((i) => i === getDataId(b));
+        if (sac >= 0 && sbc >= 0) return sac - sbc;
+        if (sac >= 0 && sbc === -1) return -1;
+        if (sbc >= 0 && sac === -1) return 1;
         const kac = keywordMatches.includes(getDataId(a));
         const kbc = keywordMatches.includes(getDataId(b));
         if (kac && !kbc) return -1;
@@ -34,36 +44,58 @@ export default function ClusterList({
         if (ad.nr_articles < bd.nr_articles) return 1;
         return 0;
       });
-  }, [clusters, searchMatches, keywordMatches]);
+  }, [clusters, searchMatches, keywordMatches, semanticMatches]);
+
+  const sm = useMemo(
+    () => semanticMatches.map((s) => `${s.id}`),
+    [semanticMatches],
+  );
 
   return (
     <div className="h-0 flex-auto space-y-[14px] overflow-auto pr-[12px] pt-[10px]">
-      {ordered.map((c, i) => (
-        <div
-          key={`clusterList_${i}`}
-          style={
-            c &&
-            (keywordMatches.includes(getDataId(c))
-              ? { borderLeft: "7px solid yellow" }
-              : searchMatches.includes(getDataId(c))
-                ? { borderLeft: "12px solid yellow" }
-                : {})
-          }
-        >
+      {ordered.map((c, i) => {
+        const c_id = getDataId(c);
+        return (
           <div
+            key={`clusterList_${i}`}
             style={
               c &&
-              (keywordMatches.includes(getDataId(c))
-                ? { borderLeft: "5px solid orange", paddingLeft: "10px" }
-                : searchMatches.includes(getDataId(c))
-                  ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
+              (sm.includes(c_id) || keywordMatches.includes(c_id)
+                ? { borderLeft: "7px solid yellow" }
+                : searchMatches.includes(c_id)
+                  ? { borderLeft: "12px solid yellow" }
                   : {})
             }
           >
-            <ClusterView cluster={c} ogma={ogma} />
+            <div
+              style={
+                c &&
+                (sm.includes(c_id)
+                  ? { borderLeft: "5px solid red", paddingLeft: "10px" }
+                  : keywordMatches.includes(c_id)
+                    ? { borderLeft: "5px solid orange", paddingLeft: "10px" }
+                    : searchMatches.includes(c_id)
+                      ? { borderLeft: "1px solid #bbb", paddingLeft: "10px" }
+                      : {})
+              }
+            >
+              {sm.includes(c_id) && (
+                <div className="flex space-x-2">
+                  <span>
+                    Position:{" "}
+                    {semanticMatches.findIndex((s) => `${s.id}` === c_id) + 1}
+                  </span>
+                  <span>
+                    Score:{" "}
+                    {semanticMatches.find((s) => `${s.id}` === c_id)?.score}
+                  </span>
+                </div>
+              )}
+              <ClusterView cluster={c} ogma={ogma} />
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

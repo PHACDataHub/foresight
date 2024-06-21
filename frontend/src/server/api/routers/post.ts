@@ -606,7 +606,7 @@ export const postRouter = createTRPCRouter({
           WITH embedding, score
             WHERE embedding.uid <> "28" AND score >= TOFLOAT($threshold)
             MATCH (embedding)-[:EMBBEDINGS_OF]->(cluster:Cluster)
-            RETURN ID(cluster) as nodeid ORDER BY score DESC
+            RETURN ID(cluster) as id, score ORDER BY score DESC
           UNION
           CALL apoc.load.jsonParams(
               "http://34.118.173.82:8000/create_embeddings",
@@ -621,17 +621,18 @@ export const postRouter = createTRPCRouter({
           WITH embedding, score
             WHERE embedding.uid <> "28" AND score >= TOFLOAT($threshold)
             MATCH (embedding)-[:EMBBEDINGS_OF]->(article:Article)
-          RETURN ID(article) as nodeid ORDER BY score DESC
+          RETURN ID(article) as id, score ORDER BY score DESC
           `,
           { search: input.search, threshold, topK },
         );
         return result.records.map(
           (r) => {
-            const id = r.get("nodeid") as unknown;
-            if (neo4j.isInt(id)) return id.toString();
-            return "";
+            const n_id = r.get("id") as unknown;
+            const id = (neo4j.isInt(n_id) && n_id.toNumber()) || -1;
+            const score = r.get("score") as number;
+            return { id, score };
           }
-        );
+        ).sort((a, b) => b.score - a.score);
       } finally {
         await session.close();
       }

@@ -29,8 +29,9 @@ export default function PrimarySearch({
       setFetching(true);
       try {
         const data = await apiSemanticSearch.mutateAsync({ search });
+        console.log(data);
         setSemanticSearch(search);
-        setSemanticMatches(data.map((d) => `${d}`));
+        setSemanticMatches(data);
       } finally {
         setFetching(false);
       }
