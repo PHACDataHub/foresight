@@ -193,7 +193,7 @@
         "mapView": "Toggle between map and graph view",
         "fullScreen": "Toggle Full Screen View",
         "SidePanel": {
-            "panelTitle": "{type, select, cluster {Selected Cluster} article {Selected Article} hierarchicalcluster {Clusters in hierarchy} threat {Clusters related to threat} other {Article Clusters}}",
+            "panelTitle": "{type, select, cluster {Selected Cluster} article {Selected Article} hierarchicalcluster {Clusters in hierarchy} threat {Clusters related to threat} semantic {Semantic search results} other {Article Clusters}}",
             "id": "ID:",
             "clusters": "Clusters:",
             "title": "Title:",

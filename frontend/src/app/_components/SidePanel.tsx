@@ -33,6 +33,7 @@ import { api } from "~/trpc/react";
 import ArticleComponent from "./graph/Article";
 import { ClusterView } from "./ClusterView";
 import PersonaAvatar from "./PersonaAvatar";
+import SemanticResultList from "./SemanticResultList";
 
 export default function SidePanel({
   clusters,
@@ -48,6 +49,8 @@ export default function SidePanel({
     setShowWorkbenchPanel,
     selectedNode,
     persona,
+    semanticSearch,
+    semanticMatches,
     feature_workbench,
   } = useStore();
 
@@ -153,6 +156,8 @@ export default function SidePanel({
   }, [clusters, selectedData, selectedNode?.node]);
 
   const panelBadge = useMemo(() => {
+    if (semanticSearch !== "" && persona === "tom")
+      return semanticMatches.length;
     if (
       !selectedData ||
       selectedData.type === "threat" ||
@@ -160,7 +165,13 @@ export default function SidePanel({
     )
       return filteredClusters.length;
     return 0;
-  }, [filteredClusters.length, selectedData]);
+  }, [
+    filteredClusters.length,
+    persona,
+    selectedData,
+    semanticMatches.length,
+    semanticSearch,
+  ]);
 
   const headerClassNames = useMemo(() => {
     let base = [
@@ -248,7 +259,12 @@ export default function SidePanel({
           <>
             {/* <Badge max={10000} badgeContent={panelBadge} color="info"> */}
             <Typography variant="h5" fontWeight="bold" fontSize={20}>
-              {t("panelTitle", { type: selectedData?.type })}
+              {t("panelTitle", {
+                type:
+                  persona === "tom" && semanticSearch !== ""
+                    ? "semantic"
+                    : selectedData?.type,
+              })}
               {Boolean(panelBadge && panelBadge > 0) && (
                 <Chip
                   label={panelBadge}
@@ -386,7 +402,12 @@ export default function SidePanel({
             </div>
           </div>
         )}
-        <ClusterList clusters={filteredClusters} ogma={ogma ?? undefined} />
+        {(persona !== "tom" || semanticSearch === "") && (
+          <ClusterList clusters={filteredClusters} ogma={ogma ?? undefined} />
+        )}
+        {persona === "tom" && semanticSearch !== "" && (
+          <SemanticResultList ogma={ogma ?? undefined} />
+        )}
       </div>
       {showClusterNode && selectedCluster && selectedNode && (
         <div className={clusterNodeClassNames}>

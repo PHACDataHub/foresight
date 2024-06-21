@@ -190,7 +190,7 @@
         "mapView": "Basculer entre la vue cartographique et graphique",
         "fullScreen": "Basculer l'affichage plein écran",
         "SidePanel": {
-            "panelTitle": "{type, select, cluster {Cluster sélectionné} article {Article sélectionné} hierarchicalcluster {Clusters dans la hiérarchie} threat {Clusters liés à la menace} other {Clusters d'Article}}",
+            "panelTitle": "{type, select, cluster {Cluster sélectionné} article {Article sélectionné} hierarchicalcluster {Clusters dans la hiérarchie} threat {Clusters liés à la menace} semantic {Résultats de la recherche sémantique} other {Clusters d'Article}}",
             "id": "IDENTIFIANT:",
             "clusters": "Clusters:",
             "title": "Titre:",

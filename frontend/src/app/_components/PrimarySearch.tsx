@@ -29,7 +29,6 @@ export default function PrimarySearch({
       setFetching(true);
       try {
         const data = await apiSemanticSearch.mutateAsync({ search });
-        console.log(data);
         setSemanticSearch(search);
         setSemanticMatches(data);
       } finally {
@@ -48,7 +47,10 @@ export default function PrimarySearch({
       setSearch(s);
       if (s.length >= 3) { 
         void queueSearch(s);
-      } else setSemanticMatches([]);
+      } else {
+        setSemanticSearch("");
+        setSemanticMatches([]);
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [queueSearch],
