@@ -176,6 +176,13 @@
         "resetToDefault": "Reset to default",
         "selected": "{count, plural, =1 {one} other {#}} selected"
     },
+    "HighlightSource": {
+        "selectall": "Select All",
+        "selectnone": "Select None",
+        "highlightSources": "Highlights",
+        "resetToDefault": "Reset to default",
+        "selected": "{count, plural, =1 {one} other {#}} highlighted"
+    },
     "Graph": {
         "resetLayout": "Reset Layout",
         "expandArticles": "Expand {type, select, hierarchicalcluster {articles along path} other {all articles}}",
@@ -186,7 +193,7 @@
         "mapView": "Toggle between map and graph view",
         "fullScreen": "Toggle Full Screen View",
         "SidePanel": {
-            "panelTitle": "{type, select, cluster {Selected Cluster} article {Selected Article} hierarchicalcluster {Clusters in hierarchy} threat {Clusters related to threat} other {Article Clusters}}",
+            "panelTitle": "{type, select, cluster {Selected Cluster} article {Selected Article} hierarchicalcluster {Clusters in hierarchy} threat {Clusters related to threat} semantic {Semantic search results} other {Article Clusters}}",
             "id": "ID:",
             "clusters": "Clusters:",
             "title": "Title:",
@@ -203,6 +210,7 @@
         "ClusterView": {
             "summary": "Summary",
             "articles": "Articles",
+            "subclusters": "Sub-clusters",
             "questions": "Questions about this cluster",
             "chat": {
                 "label": "Chat Console",

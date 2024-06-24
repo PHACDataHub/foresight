@@ -31,7 +31,7 @@ export default function SignOut() {
     refetchOnWindowFocus: false,
   });
 
-  const { persona, setPersona } = useStore();
+  const { persona, setPersona, setSelectedNode } = useStore();
 
   const updateUserPersona = api.post.updateUserPersona.useMutation();
 
@@ -50,11 +50,13 @@ export default function SignOut() {
       setAnchorEl(null);
       const p = evt.currentTarget.getAttribute("data-value") ?? "alice";
       setPersona(p);
+      setSelectedNode(null);
       updateUserPersona.mutate({ persona: p });
-      if (p === "tom" && typeof locale === "string") router.push(`/${locale}/1`);
+      if ((p === "tom" || p === "rachel") && typeof locale === "string")
+        router.push(`/${locale}/1`);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setPersona, locale],
+    [setPersona, locale, setSelectedNode],
   );
 
   if (session.status !== "authenticated") return;

@@ -70,6 +70,7 @@ export default function Controls() {
     setIncludeArticles,
     feature_workbench,
     setFeature_Workbench,
+    persona,
   } = useStore();
 
   const { day, locale } = useParams();
@@ -154,7 +155,8 @@ export default function Controls() {
     const get_articles = async () => {
       if (typeof day !== "string") return;
       const articles = await getArticles.mutateAsync({
-        clusters: clusters.map((c) => c.getData("id") as string),
+        clusters: clusters.map((c) => `${c.getData("id")}`),
+        persona,
       });
       const batchSize = articles.nodes.length < 1e5 ? 5e3 : 1e4;
       await ogma.addGraph(articles, { batchSize });
@@ -171,7 +173,15 @@ export default function Controls() {
       });
     };
     void get_articles();
-  }, [selectedNode, ogma, day, getArticles, onLayoutStart, onLayoutEnd]);
+  }, [
+    selectedNode,
+    ogma,
+    day,
+    persona,
+    getArticles,
+    onLayoutStart,
+    onLayoutEnd,
+  ]);
 
   const handleTimeSeriesClick = useCallback(() => {
     if (!selectedNode) return;
@@ -278,7 +288,6 @@ export default function Controls() {
         minZoomLevel: 2,
         maxZoomLevel: 10,
         sizeRatio: 0.8,
-        
       });
     } else {
       await ogma.geo.disable();

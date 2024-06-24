@@ -170,6 +170,7 @@ export default function ProductTour() {
     selectedNode,
     setSelectedNode,
     setSearchTerms,
+    setSemanticSearch,
     setShowInfoPanel,
     persona,
   } = useStore();
@@ -204,13 +205,15 @@ export default function ProductTour() {
     setShowInfoPanel(true);
     router.push(`/${l}/1`);
     setSearchTerms([]);
+    setSemanticSearch("");
+    
     const el = document.querySelector<HTMLButtonElement>(
       "button[property=geoActive]",
     );
     if (el) {
       el.click();
     }
-  }, [locale, router, setSearchTerms, setSelectedNode, setShowInfoPanel]);
+  }, [locale, router, setSemanticSearch, setSearchTerms, setSelectedNode, setShowInfoPanel]);
 
   const handleTourClick = useCallback(
     (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -317,7 +320,7 @@ export default function ProductTour() {
                   expandedClusters,
                   toggleExpandedCluster,
                   async (id) => {
-                    return await cluster.mutateAsync({ id, persona });
+                    return await cluster.mutateAsync({ id: `${id}`, persona });
                   },
                   setLayoutBusy,
                   setLayoutNotBusy,

@@ -14,7 +14,14 @@ import {
 } from "~/app/_utils/graph";
 
 const Styles = () => {
-  const { searchMatches, selectedNode, persona } = useStore();
+  const {
+    searchMatches,
+    keywordMatches,
+    semanticMatches,
+    selectedNode,
+    persona,
+    sourceHighlight,
+  } = useStore();
   const ogma = useOgma();
 
   const radiusFunction = useCallback((n: OgmaNode) => {
@@ -68,19 +75,113 @@ const Styles = () => {
     [searchMatches],
   );
 
+  const isKeywordMatched = useCallback(
+    (n: OgmaNode | null) => {
+      if (!n) return false;
+      const id = `${n.getData("id")}`;
+      if (n.isVirtual()) {
+        const subNodes = n.getSubNodes();
+        if (subNodes)
+          for (let idx = 0; idx < (subNodes?.size ?? 0); idx += 1) {
+            if (keywordMatches.includes(`${subNodes.get(idx).getData("id")}`))
+              return true;
+          }
+      }
+      return keywordMatches.includes(id);
+    },
+    [keywordMatches],
+  );
+
+  const isSemanticMatch = useCallback(
+    (n: OgmaNode | null) => {
+      if (!n) return false;
+      const id = `${n.getData("id")}`;
+      const m = semanticMatches.map((s) => `${s.id}`);
+      if (n.isVirtual()) {
+        const subNodes = n.getSubNodes();
+        if (subNodes)
+          for (let idx = 0; idx < (subNodes?.size ?? 0); idx += 1) {
+            if (
+              m.includes(`${subNodes.get(idx).getData("id")}`)
+            )
+              return true;
+          }
+      }
+      return m.includes(id);
+    },
+    [semanticMatches],
+  );
+
+  const isSourceHighlighted = useCallback(
+    (n: OgmaNode | null) => {
+      if (!n) return false;
+      const source = `${n.getData("source")}`;
+      return sourceHighlight.includes(source);
+    },
+    [sourceHighlight],
+  );
+
   return (
     <>
+      {/* Node Styling for highlighting sources */}
+      <NodeStyleRule
+        selector={isSourceHighlighted}
+        attributes={{
+          pulse: {
+            enabled: true,
+            startColor: "#2e7d32",
+            endColor: "#2e7d32",
+
+            duration: 0,
+            width: 1,
+          },
+        }}
+      />
       {/* Node Styling for highlighted terms */}
       <NodeStyleRule
-        selector={isHaloed}
+        selector={(n) =>
+          isSemanticMatch(n) || isHaloed(n) || isKeywordMatched(n)
+        }
         attributes={{
           halo: {
             color: "yellow",
-            strokeColor: "#ccc",
+            strokeColor: (n) =>
+              isSemanticMatch(n)
+                ? "red"
+                : isKeywordMatched(n)
+                  ? "orange"
+                  : "#ccc",
+            strokeWidth: (n) =>
+              isSemanticMatch(n) ? 5 : isKeywordMatched(n) ? 3 : 1,
             width: 10,
           },
         }}
       />
+      <NodeStyleRule selector={isSemanticMatch} attributes={{
+        radius: (n) => {
+          const m = semanticMatches.find((s) => s.id === n.getData("id"));
+          if (m) return 10 * m.score;
+        },
+        text: {
+          secondary: {
+            size: 14,
+            backgroundColor: "yellow",
+            content: (n) => {
+              const m = semanticMatches.find((s) => s.id === n.getData("id"));
+              if (m) return `Semantic search score: ${m.score}`;
+    
+            }
+          }
+        },
+        badges: {
+          topRight: {
+            text: (n) => {
+              const m = semanticMatches.findIndex((s) => s.id === n.getData("id"));
+              return `${m + 1}`;
+            }
+          }
+        }
+      }} />
       {/* Node Styling for geoclustered nodes on the map */}
       <NodeStyleRule
         selector={(n) =>
@@ -194,21 +295,27 @@ const Styles = () => {
       />
       {/* Edge Styles */}
       {persona === "tom" && (
-        <EdgeStyleRule
-          selector={(e) =>
-            e.getData("neo4jType") === "REPRESENTS"
-          }
-          attributes={{
-            color: "rgba(0,0,255,0.1)",
-            stroke: {
-              width: 2,
-            },
-            shape: {
-              head: "circle-hole-arrow",
-              // tail: "circle-hole-arrow",
-            },
-          }}
-        />
+        <>
+          <EdgeStyleRule
+            selector={(e) => e.getData("neo4jType") === "REPRESENTS"}
+            attributes={{
+              color: "rgba(0,0,255,0.1)",
+              stroke: {
+                width: 2,
+              },
+              shape: {
+                head: "circle-hole-arrow",
+                // tail: "circle-hole-arrow",
+              },
+            }}
+          />
+          <EdgeStyleRule
+            selector={(e) => e.getSource().getData("type") === "source"}
+            attributes={{
+              color: "rgba(128, 128, 128, 0.1)",
+            }}
+          />
+        </>
       )}
       <EdgeStyleRule
         attributes={{

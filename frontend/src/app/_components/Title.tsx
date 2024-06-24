@@ -14,7 +14,12 @@ import { HighlightSearchTerms } from "./HighlightTerms";
 
 export function Title(
   opts:
-    | { data: AllDataTypes; showLocate?: boolean; ogma?: OgmaLib }
+    | {
+        data: AllDataTypes;
+        showLocate?: boolean;
+        ogma?: OgmaLib;
+        hideArticles?: boolean;
+      }
     | { title: string; ogma?: OgmaLib },
 ) {
   const { setSelectedNode, selectedNode } = useStore();
@@ -22,6 +27,7 @@ export function Title(
 
   const data = "data" in opts ? opts.data : null;
   const showLocate = "showLocate" in opts ? opts.showLocate : false;
+  const hideArticles = "hideArticles" in opts ? opts.hideArticles : false;
   const ogma = opts.ogma;
 
   const handleOpen = useCallback(() => {
@@ -74,7 +80,7 @@ export function Title(
     if ("title" in opts) return opts.title;
     if (!data) return "";
     if (data.type === "hierarchicalcluster") return data.name ?? "";
-    if ("label" in data) return data.label as string ?? "";
+    if ("label" in data) return (data.label as string) ?? "";
     return data.title ?? "";
   }, [data, opts]);
 
@@ -98,14 +104,16 @@ export function Title(
       </div>
       {data && (
         <div className="flex space-x-2">
-          <IconButton
-            className="foresight-graph-btn sdp-select-node-btn"
-            style={{ width: 32, height: 32 }}
-            onClick={handleOpen}
-            title={t("openTitle", { clear: !isSelected })}
-          >
-            {!isSelected ? <Newspaper size={22} /> : <Undo2 size={22} />}
-          </IconButton>
+          {!hideArticles && (
+            <IconButton
+              className="foresight-graph-btn sdp-select-node-btn"
+              style={{ width: 32, height: 32 }}
+              onClick={handleOpen}
+              title={t("openTitle", { clear: !isSelected })}
+            >
+              {!isSelected ? <Newspaper size={22} /> : <Undo2 size={22} />}
+            </IconButton>
+          )}
           {showLocate && (
             <IconButton
               className="foresight-graph-btn sdp-locate-btn"

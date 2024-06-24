@@ -16,7 +16,6 @@ import Typography from "@mui/material/Typography";
 import React from "react";
 import AppWrapper from "~/app/_components/AppWrapper";
 import PanelInterface from "~/app/_components/PanelInterface";
-import HighlightTerms from "~/app/_components/HighlightTerms";
 import HistoryChooser from "~/app/_components/HistoryChooser";
 import TimeTravel from "~/app/_components/TimeTravel";
 
@@ -27,11 +26,13 @@ import "@fontsource/roboto/700.css";
 import TodayIs from "~/app/_components/TodayIs";
 import ThreatSelector from "~/app/_components/ThreatSelector";
 import WorkingWith from "~/app/_components/WorkingWith";
+import Session from "~/app/_components/Session";
+import HighlightSource from "~/app/_components/HighlightSource";
+import PrimarySearch from "~/app/_components/PrimarySearch";
 
 import "~/styles/globals.css";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import Session from "./_components/Session";
 
 // Can be imported from a shared config
 const locales = ["en-CA", "fr-CA"];
@@ -63,7 +64,9 @@ export default async function RootLayout({
   return (
     <TRPCReactProvider>
       <html className="no-js h-full">
-        <head><title>{t("title")}</title></head>
+        <head>
+          <title>{t("title")}</title>
+        </head>
         <body className="h-full">
           <NextIntlClientProvider
             messages={
@@ -86,7 +89,7 @@ export default async function RootLayout({
                   <div className="sdp-search-filter flex flex-[3] items-center justify-between">
                     <div className="flex items-center space-x-[16px]">
                       <div className="sdp-hightlight-terms flex-1">
-                        <HighlightTerms
+                        <PrimarySearch
                           messages={{
                             label: msgHighlightTerms("label"),
                             placeholder: msgHighlightTerms("placeholder"),
@@ -129,6 +132,12 @@ export default async function RootLayout({
                         }
                       >
                         <ThreatSelector />
+                      </NextIntlClientProvider>
+
+                      <NextIntlClientProvider
+                        messages={typeof messages === "object" ? messages : {}}
+                      >
+                        <HighlightSource />
                       </NextIntlClientProvider>
                     </div>
                   </div>

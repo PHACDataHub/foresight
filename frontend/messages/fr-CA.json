@@ -172,6 +172,14 @@
         "resetToDefault": "Réinitialiser",
         "selected": "{count, plural, =1 {un sélectionné} other {# sélectionnés}}"
     },
+    "HighlightSource": {
+        "selectall": "Tout Sélectionner",
+        "selectnone": "Ne Rien Sélectionner",
+        "highlightSources": "Mettre en évidence",
+        "filterView": "Filtrer",
+        "resetToDefault": "Réinitialiser",
+        "selected": "{count, plural, =1 {un mis en évidence} other {# mis en évidence}}"
+    },
     "Graph": {
         "resetLayout": "Réinitialiser",
         "expandArticles": "Développer {type, select, hierarchicalcluster {les articles le long du chemin} other {tous les articles}}",
@@ -182,7 +190,7 @@
         "mapView": "Basculer entre la vue cartographique et graphique",
         "fullScreen": "Basculer l'affichage plein écran",
         "SidePanel": {
-            "panelTitle": "{type, select, cluster {Cluster sélectionné} article {Article sélectionné} hierarchicalcluster {Clusters dans la hiérarchie} threat {Clusters liés à la menace} other {Clusters d'Article}}",
+            "panelTitle": "{type, select, cluster {Cluster sélectionné} article {Article sélectionné} hierarchicalcluster {Clusters dans la hiérarchie} threat {Clusters liés à la menace} semantic {Résultats de la recherche sémantique} other {Clusters d'Article}}",
             "id": "IDENTIFIANT:",
             "clusters": "Clusters:",
             "title": "Titre:",
@@ -199,6 +207,7 @@
         "ClusterView": {
             "summary": "Résumé",
             "articles": "Articles",
+            "subclusters": "Sous-groupes",
             "questions": "Questions sur ce cluster",
             "chat": {
                 "label": "Console de discussion",

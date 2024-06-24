@@ -45,6 +45,7 @@ import { api } from "~/trpc/react";
 import ArticleComponent from "./graph/Article";
 import { HighlightSearchTerms } from "./HighlightTerms";
 import { Title } from "./Title";
+import ClusterKeywordGroup from "./ClusterKeywordGroup";
 
 const Location = styled("div")<{
   status?: "missing" | "invalid";
@@ -72,31 +73,63 @@ const Location = styled("div")<{
 });
 
 function ArticleList({ articles }: { articles: Article[] }) {
-  const { searchMatches } = useStore();
+  const { searchMatches, keywordMatches, semanticMatches } = useStore();
+  const sm = useMemo(
+    () => semanticMatches.map((s) => `${s.id}`),
+    [semanticMatches],
+  );
+
   return (
     <>
       {articles.map((article, idx) => (
         <div
           key={`${idx}--${article.id}`}
           style={
-            searchMatches.includes(`${article.id}`)
-              ? { borderLeft: "12px solid yellow" }
-              : undefined
+            sm.includes(`${article.id}`) ||
+            keywordMatches.includes(`${article.id}`)
+              ? { borderLeft: "7px solid yellow" }
+              : searchMatches.includes(`${article.id}`)
+                ? { borderLeft: "12px solid yellow" }
+                : undefined
           }
         >
           <Accordion
             sx={
-              searchMatches.includes(`${article.id}`)
-                ? { borderLeft: "1px solid #bbb" }
-                : undefined
+              sm.includes(`${article.id}`)
+                ? { borderLeft: "5px solid red", paddingLeft: "10px" }
+                : keywordMatches.includes(`${article.id}`)
+                  ? { borderLeft: "5px solid orange" }
+                  : searchMatches.includes(`${article.id}`)
+                    ? { borderLeft: "1px solid #bbb" }
+                    : undefined
             }
           >
             <AccordionSummary
               expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
             >
-              <Typography variant="h5" fontSize={16}>
-                <HighlightSearchTerms text={article.title} />
-              </Typography>
+              <div>
+                {sm.includes(`${article.id}`) && (
+                  <div className="flex space-x-2">
+                    <span>
+                      Position:
+                      {semanticMatches.findIndex(
+                        (s) => `${s.id}` === `${article.id}`,
+                      ) + 1}
+                    </span>
+                    <span>
+                      Score:
+                      {
+                        semanticMatches.find(
+                          (s) => `${s.id}` === `${article.id}`,
+                        )?.score
+                      }
+                    </span>
+                  </div>
+                )}
+                <Typography variant="h5" fontSize={16}>
+                  <HighlightSearchTerms text={article.title} />
+                </Typography>
+              </div>
             </AccordionSummary>
             <AccordionDetails>
               <ArticleComponent article={article} />
@@ -137,47 +170,32 @@ function ClusterLocations({ cluster }: { cluster: Cluster }) {
 
 function ClusterKeywords({ cluster }: { cluster: Cluster }) {
   const t = useTranslations("ClusterKeywords");
-  const rep =
-    "rep_keywords" in cluster ? (cluster.rep_keywords as string[]) : [];
-  const kbi =
-    "kbi_keywords" in cluster ? (cluster.kbi_keywords as string[]) : [];
-  const mmr =
-    "mmr_keywords" in cluster ? (cluster.mmr_keywords as string[]) : [];
-  if (kbi.length + mmr.length === 0) return;
+  // const rep =
+  //   "rep_keywords" in cluster
+  //     ? (cluster.rep_keywords as string[]).filter((l) => Boolean(l))
+  //     : [];
+  // const kbi =
+  //   "kbi_keywords" in cluster
+  //     ? (cluster.kbi_keywords as string[]).filter((l) => Boolean(l))
+  //     : [];
+  // const mmr =
+  //   "mmr_keywords" in cluster
+  //     ? (cluster.mmr_keywords as string[]).filter((l) => Boolean(l))
+  //     : [];
+  // if (kbi.length + mmr.length + rep.length === 0) return;
+  // if (kbi.length + mmr.length + rep.length === 0) return;
+
+  const keywords =
+    "keywords" in cluster ? cluster.keywords!.filter((l) => Boolean(l)) : [];
+
+  if (keywords.length === 0) return;
+
   return (
-    <section className="mt-2">
-      <Typography variant="h3" fontSize={15}>
+    <section className="mb-4 mt-2 border-b border-gray-300 pb-4">
+      <Typography variant="h3" fontSize={16} fontWeight={800}>
         {t("keywords")}
       </Typography>
-      <ul className="mb-[10px] mt-[10px] flex list-none flex-wrap border-t">
-        {rep.map((l, i) => (
-          <li key={`loc_${i}`} className="m-[2px] border border-black p-[1px]">
-            <Typography variant="body1" fontSize={12}>
-              {l}
-            </Typography>
-          </li>
-        ))}
-        {kbi.map((l, i) => (
-          <li
-            key={`loc_${i}`}
-            className="m-[2px] border-dashed  border-black bg-gray-200 p-[1px]"
-          >
-            <Typography variant="body1" fontSize={12}>
-              {l}
-            </Typography>
-          </li>
-        ))}
-        {mmr.map((l, i) => (
-          <li
-            key={`loc_${i}`}
-            className="m-[2px] border border-gray-300 bg-gray-100 p-[1px]"
-          >
-            <Typography variant="body1" fontSize={12}>
-              {l}
-            </Typography>
-          </li>
-        ))}
-      </ul>
+      <ClusterKeywordGroup title="" keywords={keywords} color="primary" />
     </section>
   );
 }
@@ -217,10 +235,23 @@ export function ClusterView(
 
   const t = useTranslations("ClusterView");
 
-  const { qa, addQA, feature_GroupArticleBy, searchMatches, persona } =
-    useStore();
+  const {
+    qa,
+    addQA,
+    feature_GroupArticleBy,
+    searchMatches,
+    keywordMatches,
+    semanticMatches,
+    persona,
+  } = useStore();
+
+  const sm = useMemo(
+    () => semanticMatches.map((s) => `${s.id}`),
+    [semanticMatches],
+  );
 
   const [articles, setArticles] = useState<Article[]>([]);
+  const [subClusters, setSubClusters] = useState<Cluster[]>([]);
   const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
@@ -255,10 +286,22 @@ export function ClusterView(
     const fetchCluster = async () => {
       if (cluster && details) {
         setIsFetching(true);
+        const id = getDataId(cluster);
         const d = await clusterQuery.mutateAsync({
-          id: getDataId(cluster),
+          id,
           persona,
         });
+        setSubClusters(
+          d.nodes
+            .filter(
+              (n: RawNode<AllDataTypes>) =>
+                getRawNodeData(n)?.type === "cluster" && id !== n.id,
+            )
+            .filter((n, i, arr) => {
+              return i === arr.findIndex((b) => b.id === n.id);
+            })
+            .map((n) => getRawNodeData<Cluster>(n)),
+        );
         setArticles(
           d.nodes
             .filter(
@@ -272,9 +315,22 @@ export function ClusterView(
             .sort(
               (a, b) =>
                 d3.descending(
+                  sm.includes(`${a.id}`) ? 1 : 0,
+                  sm.includes(`${b.id}`) ? 1 : 0,
+                ) ||
+                d3.ascending(
+                  semanticMatches.findIndex((s) => `${s.id}` === `${a.id}`),
+                  semanticMatches.findIndex((s) => `${s.id}` === `${b.id}`),
+                ) ||
+                d3.descending(
+                  keywordMatches.includes(`${a.id}`) ? 1 : 0,
+                  keywordMatches.includes(`${b.id}`) ? 1 : 0,
+                ) ||
+                d3.descending(
                   searchMatches.includes(`${a.id}`) ? 1 : 0,
                   searchMatches.includes(`${b.id}`) ? 1 : 0,
-                ) || d3.descending(a.gphin_score, b.gphin_score),
+                ) ||
+                d3.descending(a.gphin_score, b.gphin_score),
             ),
         );
         setIsFetching(false);
@@ -282,7 +338,7 @@ export function ClusterView(
     };
     void fetchCluster();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cluster, details, persona]);
+  }, [cluster, details, persona, searchMatches, searchMatches]);
 
   const handleGroupArticleByChange = useCallback(
     (evt: SelectChangeEvent<string>) => {
@@ -405,6 +461,26 @@ export function ClusterView(
               </div>
             }
           />
+          {persona === "tom" && (
+            <Tab
+              sx={{ fontSize: 14 }}
+              label={
+                <div className="flex items-center space-x-2 text-nowrap">
+                  <span>{t("subclusters")}</span>
+                  <Chip
+                    sx={{ fontSize: 14 }}
+                    label={
+                      isFetching ? (
+                        <FontAwesomeIcon icon={faSpinner} spin />
+                      ) : (
+                        subClusters.length
+                      )
+                    }
+                  />
+                </div>
+              }
+            />
+          )}
         </Tabs>
         {tab === 0 && (
           <>
@@ -601,6 +677,15 @@ export function ClusterView(
                   </section>
                 );
               })}
+          </div>
+        )}
+        {tab === 2 && (
+          <div className="h-0 flex-auto flex-col space-y-[8px] overflow-y-scroll pl-[30px] pr-[12px] pt-[12px]">
+            {subClusters.map((sc, idx) => (
+              <section key={`group_${idx}`}>
+                <Title data={sc} showLocate ogma={ogma} hideArticles />
+              </section>
+            ))}
           </div>
         )}
       </>

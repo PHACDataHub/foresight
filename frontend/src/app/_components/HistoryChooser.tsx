@@ -44,7 +44,7 @@ export default function HistoryChooser({
     [day],
   );
 
-  if (persona === "tom") return <></>;
+  if (persona === "tom" || persona === "rachel") return <></>;
 
   return (
     <FormControl

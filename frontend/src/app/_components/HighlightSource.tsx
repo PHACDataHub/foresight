@@ -14,22 +14,26 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Chip from "@mui/material/Chip";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import { useTranslations } from "next-intl";
 import { useStore } from "~/app/_store";
 import { api } from "~/trpc/react";
+import HighlightTerms from "./HighlightTerms";
 
-function ThreatSelectorComponent() {
+function HighlightSourceComponent() {
   const [open, setOpen] = useState(false);
-  const { threats: selected, setThreats, persona } = useStore();
+  const {
+    sourceHighlight: selected,
+    addSourceToHighlight,
+    removeSourceToHighlight,
+    persona,
+  } = useStore();
   const t = useTranslations();
-  const { data: threats } = api.post.threats.useQuery(
+
+  const { data: sources } = api.post.sources.useQuery(
     { persona },
-    {
-      refetchOnWindowFocus: false,
-    },
+    { enabled: persona === "tom" },
   );
 
   useEffect(() => {
@@ -54,11 +58,11 @@ function ThreatSelectorComponent() {
 
   const handleCheckClick = useCallback(
     (evt: ChangeEvent<HTMLInputElement>) => {
-      const items = selected.filter((s) => s !== evt.target.value);
-      if (evt.target.checked) items.push(evt.target.value);
-      setThreats(items);
+      (evt.target.checked ? addSourceToHighlight : removeSourceToHighlight)(
+        evt.target.value,
+      );
     },
-    [selected, setThreats],
+    [addSourceToHighlight, removeSourceToHighlight],
   );
 
   const preventPropagation = useCallback(
@@ -68,23 +72,22 @@ function ThreatSelectorComponent() {
     [],
   );
 
-  const handleResetClick = useCallback(() => {
-    setThreats(null);
-  }, [setThreats]);
-
   const handleGroupSelect = useCallback(() => {
-    if (!threats) return;
-    const items =
-      selected.length === threats.length ? [] : threats.map((t) => t.text);
-    setThreats(items);
-  }, [selected.length, setThreats, threats]);
+    if (!sources) return;
+    const m =
+      selected.length === sources.length
+        ? removeSourceToHighlight
+        : addSourceToHighlight;
+    sources.forEach((s) => m(s));
+  }, [addSourceToHighlight, removeSourceToHighlight, selected.length, sources]);
 
   const groupSelectText = useMemo(() => {
-    if (!threats || threats.length !== selected.length) return t("selectall");
-    return t("selectnone");
-  }, [t, selected.length, threats]);
+    if (!sources || sources.length !== selected.length)
+      return t("HighlightSource.selectall");
+    return t("HighlightSource.selectnone");
+  }, [sources, selected.length, t]);
 
-  if (persona === "tom" || persona === "rachel") return <></>;
+  if (persona !== "tom") return <></>;
 
   return (
     <div className="sdp-threat-sel relative" onClick={preventPropagation}>
@@ -95,30 +98,27 @@ function ThreatSelectorComponent() {
         endIcon={<FontAwesomeIcon icon={faAngleDown} />}
         onClick={handleOpenClick}
       >
-        {t("filterView")}
+        {t("HighlightSource.highlightSources")}
       </Button>
       {open && (
-        <div className="sdp-threat-sel-list absolute right-0 z-[1402] flex w-[600px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
-          <div className="flex h-[52px] items-center justify-between pb-[20px] pt-[22px]">
-            <Chip
-              label={t("selected", { count: selected.length })}
-              sx={{ fontSize: 14 }}
-            />
-            <div className="space-x-[10px]">
+        <div className="sdp-threat-sel-list absolute right-0 z-[1402] flex w-[650px] flex-col rounded-lg  border-[2px] border-gray-200 bg-white pl-[10px] pr-[10px] text-2xl shadow-lg">
+          <div className="flex h-[72px] items-center justify-between space-x-2 pb-[20px] pt-[22px]">
+            <div>
+              <HighlightTerms
+                messages={{
+                  includeAll: t("HighlightTerms.includeAll"),
+                  label: t("HighlightTerms.label"),
+                  placeholder: t("HighlightTerms.placeholder"),
+                }}
+              />
+            </div>
+            <div className="text-nowrap">
               <Button
                 variant="contained"
                 onClick={handleGroupSelect}
                 sx={{ fontSize: 14 }}
               >
                 {groupSelectText}
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleResetClick}
-                color="error"
-                sx={{ fontSize: 14 }}
-              >
-                {t("resetToDefault")}
               </Button>
             </div>
           </div>
@@ -127,7 +127,7 @@ function ThreatSelectorComponent() {
             style={{ maxHeight: "calc(100vh - 286px)" }}
           >
             <FormGroup>
-              {threats?.map((threat, idx) => (
+              {sources?.map((source, idx) => (
                 <FormControlLabel
                   className="pb-[4px] pl-[9px] pt-[4px]"
                   style={{ marginRight: 0 }}
@@ -135,15 +135,15 @@ function ThreatSelectorComponent() {
                   key={`threat_${idx}`}
                   label={
                     <span style={{ fontSize: 16, paddingLeft: 9 }}>
-                      {threat.text}
+                      {source}
                     </span>
                   }
                   control={
                     <Checkbox
                       style={{ padding: 0 }}
                       sx={{ "& .MuiSvgIcon-root": { fontSize: 24 } }}
-                      value={threat.text}
-                      checked={selected.includes(threat.text)}
+                      value={source}
+                      checked={selected.includes(source)}
                       onChange={handleCheckClick}
                     />
                   }
@@ -168,10 +168,10 @@ function fallbackRender({ error }: FallbackProps) {
   );
 }
 
-export default function ThreatSelector() {
+export default function HighlightSource() {
   return (
     <ErrorBoundary fallbackRender={fallbackRender}>
-      <ThreatSelectorComponent />
+      <HighlightSourceComponent />
     </ErrorBoundary>
   );
 }

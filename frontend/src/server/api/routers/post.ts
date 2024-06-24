@@ -6,10 +6,10 @@ import neo4j, {
 import { type RawEdge, type RawNode } from "@linkurious/ogma";
 import { z } from "zod";
 
+import { type User } from "next-auth";
 import { env } from "~/env";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { User } from "next-auth";
 
 const debug = false;
 
@@ -134,6 +134,16 @@ const parseData = (
       obj._articles.forEach((articles) =>
         parseData(articles, rawGraph, include_articles, cb),
       );
+    if ("_subclusters" in obj && Array.isArray(obj._subclusters)) {
+      obj._subclusters.forEach((subclusters) =>
+        parseData(
+          subclusters as Neo4JTransferRecord,
+          rawGraph,
+          include_articles,
+          cb,
+        ),
+      );
+    }
   } else if (obj.type === "article") {
     addEdges(obj._similar, rawGraph);
   }
@@ -470,10 +480,47 @@ const driver_dfo = neo4j.driver(
   neo4j.auth.basic(env.NEO4J_USERNAME, env.NEO4J_PASSWORD),
 );
 
-const getArticles = async (opts: { clusters: string[] }) => {
-  const session = driver.session();
+const getArticles = async (opts: {
+  clusters: string[];
+  user: User;
+  persona?: string;
+}) => {
+  const session =
+    opts.persona === "tom" ? driver_dfo.session() : driver.session();
   try {
-    const t = funcTimer("getArticles", opts);
+    const t = funcTimer("getArticles", {
+      clusters: opts.clusters,
+      persona: opts.persona,
+    });
+
+    if (opts.persona === "tom") {
+      const result = await session.run(
+        `MATCH (c:Cluster)-[r]-(article:Article)
+        RETURN article {
+            nodeid: id(article),
+            id: id(article),
+            cluster_id: ID(c),
+            type: "article",
+            .keywords,
+            .link,
+            .pub_name,
+            .summary,
+            .title,
+            _rels: r
+          }`,
+      );
+      const rawGraph = createGraph();
+      result.records.forEach((record) => {
+        const data = record.get("article") as Neo4JTransferRecord;
+        parseData(data, rawGraph, false);
+      });
+      t.measure("Graph translation complete.");
+      t.end();
+      return rawGraph.get();
+    }
+
+    if (isUserRestricted(opts.user)) throw new Error("403");
+
     const minmax = await session.run(
       `
     MATCH (c:Cluster)<-[r:IN_CLUSTER]-(article:Article)
@@ -536,6 +583,61 @@ const getArticles = async (opts: { clusters: string[] }) => {
 };
 
 export const postRouter = createTRPCRouter({
+  semanticSearch: protectedProcedure
+    .input(z.object({ search: z.string() }))
+    .mutation(async ({ input }) => {
+      const session = driver_dfo.session();
+      const threshold = 0.7;
+      const topK = 10;
+
+      try {
+        const result = await session.run(
+          `
+          CALL apoc.load.jsonParams(
+              "http://34.118.173.82:8000/create_embeddings",
+              {method: "POST", \`Content-Type\`: "application/json"},
+              apoc.convert.toJson({text: $search})
+          ) YIELD value AS chunk_vector_dict
+          WITH chunk_vector_dict['embeddings'] AS chunk_vector_list
+            UNWIND  chunk_vector_list AS chunk_vector
+          WITH chunk_vector[0] AS chunk, chunk_vector[1] AS vector
+              CALL db.index.vector.queryNodes("cluster-embeddings", TOINTEGER($topK), vector)
+            YIELD node AS embedding, score
+          WITH embedding, score
+            WHERE embedding.uid <> "28" AND score >= TOFLOAT($threshold)
+            MATCH (embedding)-[:EMBBEDINGS_OF]->(cluster:Cluster)
+            RETURN ID(cluster) as id, score ORDER BY score DESC
+          UNION
+          CALL apoc.load.jsonParams(
+              "http://34.118.173.82:8000/create_embeddings",
+              {method: "POST", \`Content-Type\`: "application/json"},
+              apoc.convert.toJson({text: $search})
+          ) YIELD value AS chunk_vector_dict
+          WITH chunk_vector_dict['embeddings'] AS chunk_vector_list
+            UNWIND  chunk_vector_list AS chunk_vector
+          WITH chunk_vector[0] AS chunk, chunk_vector[1] AS vector
+              CALL db.index.vector.queryNodes("article-embeddings", TOINTEGER($topK), vector)
+            YIELD node AS embedding, score
+          WITH embedding, score
+            WHERE embedding.uid <> "28" AND score >= TOFLOAT($threshold)
+            MATCH (embedding)-[:EMBBEDINGS_OF]->(article:Article)
+          RETURN ID(article) as id, score ORDER BY score DESC
+          `,
+          { search: input.search, threshold, topK },
+        );
+        return result.records.map(
+          (r) => {
+            const n_id = r.get("id") as unknown;
+            const id = (neo4j.isInt(n_id) && n_id.toNumber()) || -1;
+            const score = r.get("score") as number;
+            return { id, score };
+          }
+        ).sort((a, b) => b.score - a.score);
+      } finally {
+        await session.close();
+      }
+    }),
+
   personas: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.persona.findMany({
       where: isUserRestricted(ctx.session.user) ? { id: "tom" } : undefined,
@@ -550,6 +652,53 @@ export const postRouter = createTRPCRouter({
         where: { id: ctx.session.user.id },
         data: { persona: input.persona },
       });
+    }),
+
+  nodesWithKeywordTerms: protectedProcedure
+    .input(
+      z.object({
+        terms: z.array(z.string()),
+        and: z.boolean().optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      if (input.terms.length === 0) return [];
+
+      const session = driver_dfo.session();
+
+      try {
+        const t = funcTimer("nodesWithKeywordTerms", input);
+        const comp = input.and ? "all" : "any";
+
+        const result = await session.run(
+          `
+        MATCH (c:Cluster)
+          WHERE 
+            ${comp}(term in $terms WHERE term IN c.keywords)
+            OR EXISTS {
+              MATCH (c)<-[]-(a:Article)
+                WHERE ${comp}(term IN $terms WHERE term IN a.keywords)
+            }
+        return id(c) as id
+        UNION
+        MATCH (a:Article)
+          WHERE
+            ${comp}(term IN $terms WHERE term IN a.keywords)
+        return id(a) as id
+        `,
+          { terms: input.terms },
+        );
+        t.measure("Neo4J query completed", true);
+        const ret = result.records.map((record) => {
+          const id = record.get("id") as string;
+          return `${id}`;
+        });
+        t.measure("Mapping complete.");
+        t.end();
+        return ret;
+      } finally {
+        await session.close();
+      }
     }),
 
   nodesWithTerms: protectedProcedure
@@ -568,7 +717,9 @@ export const postRouter = createTRPCRouter({
       if (input.terms.length === 0) return [];
 
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
 
       try {
         const t = funcTimer("nodesWithTerms", input);
@@ -603,6 +754,31 @@ export const postRouter = createTRPCRouter({
           return ret;
         }
         if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
+        if (input.persona === "rachel") {
+          const result = await session.run(
+            `
+          MATCH (t:Threat)
+            WHERE 
+              ${comp}(term in $terms WHERE toLower(t.text) CONTAINS term)
+          return id(t) as id
+          UNION
+          MATCH (a:DON)
+            WHERE
+              ${comp}(term IN $terms WHERE toLower(a.content) CONTAINS term OR toLower(a.summary) CONTAINS term)
+          return id(a) as id
+          `,
+            { terms: input.terms },
+          );
+          t.measure("Neo4J query completed", true);
+          const ret = result.records.map((record) => {
+            const id = record.get("id") as string;
+            return `${id}`;
+          });
+          t.measure("Mapping complete.");
+          t.end();
+          return ret;
+        }
         const period = getPeriod({ day: input.day, history: input.history });
         const result = await session.run(
           `
@@ -641,11 +817,44 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+  sources: protectedProcedure
+    .input(z.object({ persona: z.string() }))
+    .query(async ({ input }) => {
+      // const rawGraph = createGraph();
+      if (input.persona !== "tom") return []; //rawGraph.get();
+      const session = driver_dfo.session();
+      try {
+        // const sources = await session.run(
+        //   `
+        //     MATCH (source:Source)-[r]-(article: Article)-[]-(:Cluster)
+        //     RETURN source {
+        //       type: "source",
+        //       nodeid: id(source),
+        //       id: id(source),
+        //       title: source.id,
+        //       _rels: r
+        //     } `,
+        // );
+        // sources.records.forEach((record) => {
+        //   const data = record.get("source") as Neo4JTransferRecord;
+        //   parseData(data, rawGraph, false);
+        // });
+        const sources = await session.run(
+          "MATCH (source:Source) RETURN source.id AS id",
+        );
+        return sources.records.map((record) => record.get("id") as string);
+      } finally {
+        await session.close();
+      }
+    }),
+
   threats: protectedProcedure
     .input(z.object({ persona: z.string() }))
     .query(async ({ input, ctx }) => {
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
       try {
         if (input.persona === "tom") {
           const result = await session.run(
@@ -944,10 +1153,26 @@ export const postRouter = createTRPCRouter({
               .name,
               .summary,
               .all_label,
+              .keywords,
               .rep_keywords,
               .kbi_keywords,
               .mmr_keywords,
               _rels: [(cluster)-[r]-(c:Cluster) | r],
+              _subclusters: [(cluster)<-[r]-(c:Cluster) | c {
+                type: "cluster",
+                nodeid: id(c),
+                id: id(c),
+                _articles: [],
+                .label,
+                .name,
+                .summary,
+                .all_label,
+                .keywords,
+                .rep_keywords,
+                .kbi_keywords,
+                .mmr_keywords,
+                _rels: r                
+              }],
               _articles: [(cluster)-[r]-(article:Article) | article {
                 id: id(article),
                 nodeid: id(article),
@@ -1111,10 +1336,15 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         clusters: z.array(z.string()),
+        persona: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
-      return await getArticles({ clusters: input.clusters });
+    .mutation(async ({ input, ctx }) => {
+      return await getArticles({
+        clusters: input.clusters,
+        user: ctx.session.user,
+        persona: input.persona,
+      });
     }),
 
   question: protectedProcedure
@@ -1162,7 +1392,9 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
@@ -1186,6 +1418,20 @@ export const postRouter = createTRPCRouter({
           return 0;
         }
         if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
+        if (input.persona === "rachel") {
+          const counter = await session.run(
+            `
+            MATCH (article: DON)
+            RETURN
+              COUNT(article) as count`,
+          );
+          for (const r of counter.records) {
+            const count = r.get("count") as Neo4jInteger;
+            return count.toNumber();
+          }
+          return 0;
+        }
         const counter = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -1219,7 +1465,9 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
       const period = getPeriod({ day: input.day, history: input.history });
 
       try {
@@ -1241,6 +1489,7 @@ export const postRouter = createTRPCRouter({
                 .name,
                 .summary,
                 .all_label,
+                .keywords,
                 .rep_keywords,
                 .kbi_keywords,
                 .mmr_keywords,
@@ -1252,10 +1501,11 @@ export const postRouter = createTRPCRouter({
                   //     (c)<-[*3]-(b:Cluster) WHERE b.label IN $threats
                   //   }
                   | r],
-                _articles: [(cluster)-[r]-(article:Article) | article {
+                _articles: [(cluster)-[r]-(article:Article)-[]-(source:Source) | article {
                   nodeid: id(article),
                   id: id(article),
                   type: "article",
+                  source: source.id,
                   .keywords,
                   .link,
                   .pub_name,
@@ -1272,11 +1522,59 @@ export const postRouter = createTRPCRouter({
             const data = record.get("cluster") as Neo4JTransferRecord;
             parseData(data, rawGraph, input.include_articles);
           });
+
           t.measure("Graph translation complete.");
           t.end();
           return rawGraph.get();
         }
         if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
+        if (input.persona === "rachel") {
+          const data = await session.run(
+            `
+              MATCH (t:Threat)-[r]-(article:DON)
+              RETURN article {
+                nodeid: id(article),
+                id: id(article),
+                type: "article",
+                _rels: r,
+                title: article.summary,
+                .content,
+                .url
+              }
+              `,
+            { threats: input.threats },
+          );
+
+          const threats = await session.run(
+            `
+              MATCH (threat:Threat)
+                OPTIONAL MATCH (threat)-[r]-(o:Threat)
+              RETURN threat {
+                nodeid: id(threat),
+                id: id(threat),
+                type: "threat",
+                title: threat.text,
+                _rels: r
+              }
+              `,
+            { threats: input.threats },
+          );
+
+          const rawGraph = createGraph();
+          data.records.forEach((record) => {
+            const data = record.get("article") as Neo4JTransferRecord;
+            parseData(data, rawGraph, input.include_articles);
+          });
+          threats.records.forEach((record) => {
+            const data = record.get("threat") as Neo4JTransferRecord;
+            parseData(data, rawGraph, input.everything);
+          });
+
+          t.measure("Graph translation complete.");
+          t.end();
+          return rawGraph.get();
+        }
 
         const threats = await session.run(
           `
@@ -1472,7 +1770,10 @@ export const postRouter = createTRPCRouter({
         t.measure("Graph translation complete.");
         t.end();
         if (!input.include_articles) return rawGraph.get();
-        const articles = await getArticles({ clusters });
+        const articles = await getArticles({
+          clusters,
+          user: ctx.session.user,
+        });
         return rawGraph.get(articles);
       } finally {
         await session.close();

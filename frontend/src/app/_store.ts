@@ -145,6 +145,12 @@ export interface ForesightStore {
   setSearchMatches: (searchMatches: string[]) => void;
   searchAnd: boolean;
   setSearchAnd: (searchAnd: boolean) => void;
+  keywordMatches: string[];
+  setKeywordMatches: (searchMatches: string[]) => void;
+  semanticSearch: string;
+  setSemanticSearch: (semanticSearch: string) => void;
+  semanticMatches: {id: number, score: number}[];
+  setSemanticMatches: (semanticMatches: {id: number, score: number}[]) => void;
   // TODO: refactor open node madness
   openNode?: string;
   setOpenNode: (locateNode?: string) => void;
@@ -155,6 +161,9 @@ export interface ForesightStore {
   setLayout: (layout: LayoutModes) => void;
   threats: string[];
   setThreats: (threats: string[] | null) => void;
+  sourceHighlight: string[];
+  addSourceToHighlight: (source: string) => void;
+  removeSourceToHighlight: (source: string) => void;
 }
 
 export const useStore = create<ForesightStore>((set) => ({
@@ -275,6 +284,12 @@ export const useStore = create<ForesightStore>((set) => ({
   setSearchTerms: (searchTerms: string[]) => set({ searchTerms }),
   searchMatches: [],
   setSearchMatches: (searchMatches) => set({ searchMatches }),
+  keywordMatches: [],
+  setKeywordMatches: (keywordMatches) => set({ keywordMatches }),
+  semanticSearch: "",
+  setSemanticSearch: (semanticSearch) => set({ semanticSearch }),
+  semanticMatches: [],
+  setSemanticMatches: (semanticMatches) => set({semanticMatches}),
   searchAnd: false,
   setSearchAnd: (searchAnd) => set({ searchAnd }),
   treeDirection: "BT",
@@ -325,4 +340,15 @@ export const useStore = create<ForesightStore>((set) => ({
 
       return { qa };
     }),
+  sourceHighlight: [],
+  addSourceToHighlight: (source) =>
+    set((state) => ({
+      sourceHighlight: state.sourceHighlight
+        .filter((s) => s !== source)
+        .concat(source),
+    })),
+  removeSourceToHighlight: (source) =>
+    set((state) => ({
+      sourceHighlight: state.sourceHighlight.filter((s) => s !== source),
+    })),
 }));
