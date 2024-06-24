@@ -1,9 +1,13 @@
 "use client";
 
-import { type Edge, type Node as OgmaNode } from "@linkurious/ogma";
+import {
+  type Edge,
+  type Node as OgmaNode,
+} from "@linkurious/ogma";
 
 import { EdgeStyleRule, NodeStyleRule, useOgma } from "@linkurious/ogma-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useStore } from "~/app/_store";
 import {
@@ -12,6 +16,7 @@ import {
   getNodeRadius,
   nodeColours,
 } from "~/app/_utils/graph";
+import Tooltip from "./Tooltip";
 
 const Styles = () => {
   const {
@@ -23,6 +28,22 @@ const Styles = () => {
     sourceHighlight,
   } = useStore();
   const ogma = useOgma();
+  const [tooltipContainer, setTooltipContainer] = useState<HTMLElement | null>(
+    null,
+  );
+  const [hoveredNode, setHoveredNode] = useState<OgmaNode | null>(null);
+  useEffect(() => {
+    ogma.tools.tooltip.onNodeHover((n) => {
+      if (n.getData("type") !== "article") return "";
+      setHoveredNode(n);
+      ogma.events.once("idle", () => {
+        setTooltipContainer(document.getElementById("rr_tooltip_p"));
+      });
+      return '<div id="rr_tooltip_p" style="width: 460px; height: 550px;"></div>';
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const radiusFunction = useCallback((n: OgmaNode) => {
     const data = getNodeData(n);
@@ -101,10 +122,7 @@ const Styles = () => {
         const subNodes = n.getSubNodes();
         if (subNodes)
           for (let idx = 0; idx < (subNodes?.size ?? 0); idx += 1) {
-            if (
-              m.includes(`${subNodes.get(idx).getData("id")}`)
-            )
-              return true;
+            if (m.includes(`${subNodes.get(idx).getData("id")}`)) return true;
           }
       }
       return m.includes(id);
@@ -123,6 +141,11 @@ const Styles = () => {
 
   return (
     <>
+      {tooltipContainer !== null &&
+        createPortal(
+          <Tooltip article_id={(hoveredNode?.getData("id") as number) ?? 0} />,
+          tooltipContainer,
+        )}
       {/* Node Styling for highlighting sources */}
       <NodeStyleRule
         selector={isSourceHighlighted}
@@ -157,31 +180,35 @@ const Styles = () => {
           },
         }}
       />
-      <NodeStyleRule selector={isSemanticMatch} attributes={{
-        radius: (n) => {
-          const m = semanticMatches.find((s) => s.id === n.getData("id"));
-          if (m) return 10 * m.score;
-        },
-        text: {
-          secondary: {
-            size: 14,
-            backgroundColor: "yellow",
-            content: (n) => {
-              const m = semanticMatches.find((s) => s.id === n.getData("id"));
-              if (m) return `Semantic search score: ${m.score}`;
-    
-            }
-          }
-        },
-        badges: {
-          topRight: {
-            text: (n) => {
-              const m = semanticMatches.findIndex((s) => s.id === n.getData("id"));
-              return `${m + 1}`;
-            }
-          }
-        }
-      }} />
+      <NodeStyleRule
+        selector={isSemanticMatch}
+        attributes={{
+          radius: (n) => {
+            const m = semanticMatches.find((s) => s.id === n.getData("id"));
+            if (m) return 10 * m.score;
+          },
+          text: {
+            secondary: {
+              size: 14,
+              backgroundColor: "yellow",
+              content: (n) => {
+                const m = semanticMatches.find((s) => s.id === n.getData("id"));
+                if (m) return `Semantic search score: ${m.score}`;
+              },
+            },
+          },
+          badges: {
+            topRight: {
+              text: (n) => {
+                const m = semanticMatches.findIndex(
+                  (s) => s.id === n.getData("id"),
+                );
+                return `${m + 1}`;
+              },
+            },
+          },
+        }}
+      />
       {/* Node Styling for geoclustered nodes on the map */}
       <NodeStyleRule
         selector={(n) =>
@@ -283,7 +310,7 @@ const Styles = () => {
           color: nodeColours.article_outlier,
         }}
       />
-      <NodeStyleRule
+      {/* <NodeStyleRule
         selector={(n) =>
           ogma.view.isFullScreen() && n.getData("type") === "article"
         }
@@ -292,7 +319,7 @@ const Styles = () => {
             content: (n) => `${n.getData("title")}`,
           },
         }}
-      />
+      /> */}
       {/* Edge Styles */}
       {persona === "tom" && (
         <>

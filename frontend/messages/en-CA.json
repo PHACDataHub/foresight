@@ -229,7 +229,8 @@
             "pubTime": "Pub Time:",
             "pubDate": "Pub Date:",
             "outlier": "Outlier",
-            "link": "Link"
+            "link": "Link",
+            "openArticle": "Open article"
         },
         "Title": {
             "openTitle": "{clear, select, true {Articles in this cluster} other {Clear selection}}"

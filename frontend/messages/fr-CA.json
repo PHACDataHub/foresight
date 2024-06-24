@@ -226,7 +226,8 @@
             "pubTime": "Heure de publication:",
             "pubDate": "Date de publication:",
             "outlier": "Valeur aberrante",
-            "link": "Lien"
+            "link": "Lien",
+            "openArticle": "Ouvrir l'article"
         },
         "Title": {
             "openTitle": "{clear, select, true {Articles dans ce cluster} other {Effacer la sélection}}"

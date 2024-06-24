@@ -13,6 +13,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 const debug = false;
 
+/** Define minimum and maximum size of nodes in pixels. by type. */
 const pixel = {
   article: { min: 2, max: 10 },
   cluster: { min: 10, max: 25 },
@@ -30,6 +31,10 @@ interface RawGraphInterface {
   };
 }
 
+/*
+  Change the text of the automatically answered questions.
+  (For grammar)
+*/
 const ans = `apoc.convert.fromJsonMap(
   apoc.text.replace(
     apoc.text.replace(
@@ -1281,6 +1286,54 @@ export const postRouter = createTRPCRouter({
         await session.close();
       }
     }),
+
+    getArticleQuery: protectedProcedure
+    .input(
+      z.object({
+        article_id: z.number(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const session = driver.session();
+      try {
+        const t = funcTimer("getArticleQuery", input);
+        const result2 = await session.run(
+          `
+        MATCH (article:Article { id: $article_id })
+        RETURN article {
+          nodeid: id(article),
+          type: "article",
+          .id,
+          outlier: article:Outlier,
+          .prob_size,
+          .title,
+          .content,
+          .factiva_file_name,
+          .factiva_folder,
+          .gphin_score,
+          .gphin_state,
+          .probability,
+          .pub_date,
+          .pub_name,
+          .pub_time
+        }
+      `,
+          { article_id: input.article_id },
+        );
+        t.measure("Neo4J query completed", true);
+
+        const rawGraph = createGraph();
+        result2.records.forEach((record) => {
+          const data = record.get("article") as Neo4JTransferRecord;
+          parseData(data, rawGraph, false);
+        });
+        t.measure("Graph translation complete.");
+        t.end();
+        return rawGraph.get();
+      } finally {
+        await session.close();
+      }
+    }),    
 
   getArticle: protectedProcedure
     .input(
