@@ -68,11 +68,12 @@ def load_data_file(file_name, sheet_name, category_dict):
             continue
         row_dict = {headers[j]: cell.value for j, cell in enumerate(row)}
 
-        categories = [e.strip().strip("'") for e in row_dict['ground_truth'].strip('[]').split(',') if e ]
+        # categories = [e.strip().strip("'") for e in row_dict['Ground Truth'].strip('[]').split(',') if e ]
+        categories = [e.strip().strip() for e in row_dict['Ground Truth'].split(',') if e]
         print(categories)
         truths = [match_category(category_dict, c) for c in categories]
         print(truths)
-        row_dict['ground_truth'] = truths
+        row_dict['Ground Truth'] = truths
 
         inputs.append(row_dict)
     return inputs
@@ -250,14 +251,14 @@ if __name__ == '__main__':
     outputs = []
     best_methods = dict()
     for input in inputs:
-        if not input['url']:
+        if not input['URL']:
             continue
 
         output = {
-            'url': input['url'],
-            'text': input['text'],
+            'url': input['URL'],
+            'text': input['Full-text'],
             'sum': '',
-            'ground_truth': input['ground_truth'],
+            'ground_truth': input['Ground Truth'],
             'full_text_top_down_threats': [],
             'full_text_bottom_up_threats': [],
             'summary_top_down_threats': [],
