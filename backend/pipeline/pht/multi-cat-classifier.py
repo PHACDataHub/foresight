@@ -32,8 +32,8 @@ def print_category_dict(category_dict):
         else:
             raise Exception(f"Unknown category type -- {v1}")
     return category_dict
-    
-    
+
+
 def load_categories(config):
     category_dict = eval(config['public_health_threats']['THREAT_CATEGORIES'])
     # print_category_dict(category_dict)
@@ -67,15 +67,13 @@ def load_data_file(file_name, sheet_name, category_dict):
             headers = [cell.value for cell in row]
             continue
         row_dict = {headers[j]: cell.value for j, cell in enumerate(row)}
-        
-        truths = []
-        for l in row_dict['Ground Truth'].split('\n'):
-            levels = [e.strip() for e in l.split('->') if e.strip()]
-            categories = [e.strip() for l in levels for e in l.split(',') if e ]
-            truths.extend(categories)
-        truths = [match_category(category_dict, t) for t in truths]
-        row_dict['Ground Truth'] = truths
-        
+
+        categories = [e.strip().strip("'") for e in row_dict['ground_truth'].strip('[]').split(',') if e ]
+        print(categories)
+        truths = [match_category(category_dict, c) for c in categories]
+        print(truths)
+        row_dict['ground_truth'] = truths
+
         inputs.append(row_dict)
     return inputs
 
@@ -94,8 +92,8 @@ def write_to_excel_file(file_name, sheet_name, outputs):
 
 def create_summarizer_prompt(format_instructions):
     MAP_PROMPT = """
-    Summarize the following article delimited by triple backquotes (```):
-    ```{article}```
+    Return a concise summary of the following article focusing on factors impacting public health risks, highlighting possible dangers and threats:
+    {article}
 
     {format_instructions}"""
     return PromptTemplate(
@@ -108,7 +106,7 @@ def summarize_text(model_name, llm_chain, output):
     result = llm_chain.invoke({"article": output['text']})
     if result and isinstance(result, list) and result[0]:
         output['sum'] = result[0]
-    
+
     print(f"[{model_name} SUMMARIZER] --- {output['url']} \n\t--- {output['sum']}\n")
     return output
 
@@ -162,7 +160,7 @@ def classify_threats(model_name, llm_chain, category_dict, output):
     for prp, hdr in zip(['text', 'sum'], ['full_text_bottom_up_threats', 'summary_bottom_up_threats']):
         text = output[prp]
         cls_threats = output[hdr]
-    
+
         threats = []
         for k1, v1 in category_dict.items():
             if isinstance(v1, dict):
@@ -170,7 +168,7 @@ def classify_threats(model_name, llm_chain, category_dict, output):
                     threats.extend(v2)
             else:
                 threats.extend(v1)
-    
+
         threat_list = classify_text(llm_chain, text, threats)
         threat_set = set(threat_list)
     
@@ -184,9 +182,9 @@ def classify_threats(model_name, llm_chain, category_dict, output):
                 i =  list(set(v1).intersection(threat_set))
                 if i:
                     cls_threats.extend([k1] + i)
-        
+
         print(f"\t[{model_name} {prp} {hdr}] --- {output['url']}\n\t--- {cls_threats}\n")
-        
+
     return output
 
 
@@ -248,18 +246,18 @@ if __name__ == '__main__':
 
     classifier_prompt = create_classifier_prompt(format_instructions)
     cls_llm_chain = classifier_prompt | llm_model | output_parser
-    
+
     outputs = []
     best_methods = dict()
     for input in inputs:
-        if not input['URL']:
+        if not input['url']:
             continue
 
         output = {
-            'url': input['URL'],
-            'text': input['Text'],
+            'url': input['url'],
+            'text': input['text'],
             'sum': '',
-            'ground_truth': input['Ground Truth'],
+            'ground_truth': input['ground_truth'],
             'full_text_top_down_threats': [],
             'full_text_bottom_up_threats': [],
             'summary_top_down_threats': [],
@@ -275,7 +273,7 @@ if __name__ == '__main__':
             'best_scores': [],
             'best_methods': dict(),
         }
-        
+
         output = summarize_text(llm_model_name, sum_llm_chain, output)
         output = classify_threats(llm_model_name, cls_llm_chain, categories, output)
         output = compute_scores(output)
