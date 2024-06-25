@@ -181,6 +181,7 @@
         "selected": "{count, plural, =1 {un mis en évidence} other {# mis en évidence}}"
     },
     "Graph": {
+        "toggleTooltip": "Activer l'info-bulle au survol",
         "resetLayout": "Réinitialiser",
         "expandArticles": "Développer {type, select, hierarchicalcluster {les articles le long du chemin} other {tous les articles}}",
         "collapseArticles": "Réduire les articles développés",

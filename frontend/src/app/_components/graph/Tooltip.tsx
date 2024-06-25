@@ -23,11 +23,15 @@ import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 import { useStore } from "~/app/_store";
 
 export default function Tooltip({ article_id }: { article_id: number }) {
-  const articleQuery = api.post.getArticleQuery.useQuery({ article_id });
   const t = useTranslations("ArticleComponent");
   const ogma = useOgma();
 
-  const { setSelectedNode } = useStore();
+  const { setSelectedNode, persona } = useStore();
+
+  const articleQuery = api.post.getArticleQuery.useQuery({
+    article_id,
+    persona,
+  });
 
   const article = useMemo(() => {
     if (!articleQuery.data) return null;
@@ -57,6 +61,11 @@ export default function Tooltip({ article_id }: { article_id: number }) {
     }
   }, [article, ogma, setSelectedNode]);
 
+  const link = useMemo(() => {
+    if (!article || !("link" in article)) return undefined;
+    return article.link as string;
+  }, [article]);
+
   return (
     <Card sx={{ width: 460 }}>
       <CardHeader
@@ -75,14 +84,19 @@ export default function Tooltip({ article_id }: { article_id: number }) {
             >
               <Newspaper size={22} />
             </IconButton>
+            <IconButton
+              style={{ width: 42, height: 42 }}
+              disabled={!Boolean(link)}
+              href={link ?? ""}
+              target="_blank"
+            >
+              <SquareArrowOutUpRight size={22} />
+            </IconButton>
             <IconButton style={{ width: 42, height: 42 }} disabled>
               <Pin size={22} />
             </IconButton>
             <IconButton style={{ width: 42, height: 42 }} disabled>
               <Flag size={22} />
-            </IconButton>
-            <IconButton style={{ width: 42, height: 42 }} disabled>
-              <SquareArrowOutUpRight size={22} />
             </IconButton>
             <IconButton style={{ width: 42, height: 42 }} disabled>
               <Send size={22} />

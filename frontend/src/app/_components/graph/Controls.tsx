@@ -27,6 +27,7 @@ import {
   Minimize2,
   RefreshCcw,
   Satellite,
+  ScanEye,
   ScanSearch,
   Waypoints,
   Workflow,
@@ -71,6 +72,8 @@ export default function Controls() {
     feature_workbench,
     setFeature_Workbench,
     persona,
+    showTooltip,
+    toggleShowTooltip,
   } = useStore();
 
   const { day, locale } = useParams();
@@ -476,6 +479,13 @@ export default function Controls() {
         )}
         {!geoMode && (
           <>
+            <IconButton
+              className={`sdp-toggletooptip foresight-graph-btn ${showTooltip ? "active" : ""}`}
+              title={t("toggleTooltip")}
+              onClick={toggleShowTooltip}
+            >
+              <ScanEye size={22} />
+            </IconButton>
             <IconButton
               className="sdp-refresh foresight-graph-btn"
               title={t("resetLayout")}

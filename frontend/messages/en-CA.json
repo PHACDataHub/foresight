@@ -184,6 +184,7 @@
         "selected": "{count, plural, =1 {one} other {#}} highlighted"
     },
     "Graph": {
+        "toggleTooltip": "Toggle tooltip on hover",
         "resetLayout": "Reset Layout",
         "expandArticles": "Expand {type, select, hierarchicalcluster {articles along path} other {all articles}}",
         "collapseArticles": "Collapse expanded articles",

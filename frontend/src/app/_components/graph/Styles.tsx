@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  type Edge,
-  type Node as OgmaNode,
-} from "@linkurious/ogma";
+import { type Edge, type Node as OgmaNode } from "@linkurious/ogma";
 
 import { EdgeStyleRule, NodeStyleRule, useOgma } from "@linkurious/ogma-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -26,6 +23,7 @@ const Styles = () => {
     selectedNode,
     persona,
     sourceHighlight,
+    showTooltip,
   } = useStore();
   const ogma = useOgma();
   const [tooltipContainer, setTooltipContainer] = useState<HTMLElement | null>(
@@ -141,7 +139,8 @@ const Styles = () => {
 
   return (
     <>
-      {tooltipContainer !== null &&
+      {showTooltip &&
+        tooltipContainer !== null &&
         createPortal(
           <Tooltip article_id={(hoveredNode?.getData("id") as number) ?? 0} />,
           tooltipContainer,
@@ -310,16 +309,18 @@ const Styles = () => {
           color: nodeColours.article_outlier,
         }}
       />
-      {/* <NodeStyleRule
+      <NodeStyleRule
         selector={(n) =>
-          ogma.view.isFullScreen() && n.getData("type") === "article"
+          !showTooltip &&
+          ogma.view.isFullScreen() &&
+          n.getData("type") === "article"
         }
         attributes={{
           text: {
             content: (n) => `${n.getData("title")}`,
           },
         }}
-      /> */}
+      />
       {/* Edge Styles */}
       {persona === "tom" && (
         <>

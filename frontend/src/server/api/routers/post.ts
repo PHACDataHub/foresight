@@ -630,14 +630,14 @@ export const postRouter = createTRPCRouter({
           `,
           { search: input.search, threshold, topK },
         );
-        return result.records.map(
-          (r) => {
+        return result.records
+          .map((r) => {
             const n_id = r.get("id") as unknown;
             const id = (neo4j.isInt(n_id) && n_id.toNumber()) || -1;
             const score = r.get("score") as number;
             return { id, score };
-          }
-        ).sort((a, b) => b.score - a.score);
+          })
+          .sort((a, b) => b.score - a.score);
       } finally {
         await session.close();
       }
@@ -1287,24 +1287,47 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-    getArticleQuery: protectedProcedure
+  getArticleQuery: protectedProcedure
     .input(
       z.object({
         article_id: z.number(),
+        persona: z.string(),
       }),
     )
     .query(async ({ input }) => {
-      const session = driver.session();
+      const session =
+        input.persona === "tom" ? driver_dfo.session() : driver.session();
+
       try {
         const t = funcTimer("getArticleQuery", input);
-        const result2 = await session.run(
-          `
-        MATCH (article:Article { id: $article_id })
+        const result2 =
+          input.persona === "tom"
+            ? await session.run(
+                `
+            MATCH (c:Cluster)-[r]-(article:Article)
+            WHERE ID(article) = $article_id
+            RETURN article {
+                nodeid: id(article),
+                id: id(article),
+                cluster_id: ID(c),
+                type: "article",
+                .keywords,
+                .link,
+                .pub_name,
+                content: article.summary,
+                .title
+              }`,
+                { article_id: input.article_id },
+              )
+            : await session.run(
+                `
+        MATCH (c:Cluster)-[r]-(article:Article { id: $article_id })
         RETURN article {
           nodeid: id(article),
           type: "article",
           .id,
           outlier: article:Outlier,
+          cluster_id: ID(c),
           .prob_size,
           .title,
           .content,
@@ -1318,8 +1341,8 @@ export const postRouter = createTRPCRouter({
           .pub_time
         }
       `,
-          { article_id: input.article_id },
-        );
+                { article_id: input.article_id },
+              );
         t.measure("Neo4J query completed", true);
 
         const rawGraph = createGraph();
@@ -1333,7 +1356,7 @@ export const postRouter = createTRPCRouter({
       } finally {
         await session.close();
       }
-    }),    
+    }),
 
   getArticle: protectedProcedure
     .input(
