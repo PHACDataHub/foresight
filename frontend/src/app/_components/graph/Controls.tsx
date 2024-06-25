@@ -73,6 +73,7 @@ export default function Controls() {
     setFeature_Workbench,
     persona,
     showTooltip,
+    setShowTooltip,
     toggleShowTooltip,
   } = useStore();
 
@@ -97,7 +98,9 @@ export default function Controls() {
   useEffect(() => {
     const auto_expand = localStorage.getItem("include_articles");
     setIncludeArticles(auto_expand === "true");
-  }, [setIncludeArticles]);
+    const stp = localStorage.getItem("showTooltip");
+    setShowTooltip(stp === "true");  
+  }, [setIncludeArticles, setShowTooltip]);
 
   useEffect(() => {
     const handleSelectNode = (evt: NodesEvent<unknown, unknown>) => {
@@ -303,6 +306,12 @@ export default function Controls() {
     refresh();
   }, [include_articles, refresh, setIncludeArticles]);
 
+  const handleToggleShowTooltip = useCallback(() => {
+    toggleShowTooltip();
+    localStorage.setItem("showTooltip", JSON.stringify(!showTooltip));
+
+  }, [showTooltip, toggleShowTooltip]);
+
   const handleCollapseAllClick = useCallback(async () => {
     await ogma.removeNodes(
       ogma.getNodes().filter((n) => n.getData("type") === "article"),
@@ -482,7 +491,7 @@ export default function Controls() {
             <IconButton
               className={`sdp-toggletooptip foresight-graph-btn ${showTooltip ? "active" : ""}`}
               title={t("toggleTooltip")}
-              onClick={toggleShowTooltip}
+              onClick={handleToggleShowTooltip}
             >
               <ScanEye size={22} />
             </IconButton>

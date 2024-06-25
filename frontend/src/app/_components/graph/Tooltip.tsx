@@ -62,8 +62,9 @@ export default function Tooltip({ article_id }: { article_id: number }) {
   }, [article, ogma, setSelectedNode]);
 
   const link = useMemo(() => {
-    if (!article || !("link" in article)) return undefined;
-    return article.link as string;
+    if (!article) return undefined;
+    if ("link" in article) return article.link as string;
+    return undefined;
   }, [article]);
 
   return (
@@ -110,67 +111,72 @@ export default function Tooltip({ article_id }: { article_id: number }) {
           <div
             className={`flex flex-col space-y-[8px]${loading ? " flex-1" : ""}`}
           >
-            <div className="flex space-x-2">
-              <Typography
-                variant="body1"
-                fontSize={14}
-                className={loading ? "flex-1" : ""}
-              >
-                {loading ? <Skeleton /> : t("publication")}
-              </Typography>
+            {persona !== "rachel" && (
+              <div className="flex space-x-2">
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? <Skeleton /> : t("publication")}
+                </Typography>
 
-              <Typography
-                variant="body1"
-                fontSize={14}
-                fontWeight={500}
-                className={loading ? "flex-1" : ""}
-              >
-                {loading ? <Skeleton /> : article?.pub_name}
-              </Typography>
-            </div>
-
-            <div className="flex space-x-1">
-              <Typography
-                variant="body1"
-                fontSize={14}
-                className={loading ? "flex-1" : ""}
-              >
-                {loading ? <Skeleton /> : t("pubTime")}
-              </Typography>
-              <Typography
-                variant="body1"
-                fontSize={14}
-                fontWeight={500}
-                className={loading ? "flex-1" : ""}
-              >
-                {loading ? (
-                  <Skeleton />
-                ) : (
-                  article?.pub_time?.toLocaleTimeString()
-                )}
-              </Typography>
-            </div>
-            <div className="flex space-x-1">
-              <Typography
-                variant="body1"
-                fontSize={14}
-                className={loading ? "flex-1" : ""}
-              >
-                {loading ? <Skeleton /> : t("pubDate")}
-              </Typography>
-              <Typography
-                variant="body1"
-                fontSize={14}
-                fontWeight={500}
-                className={loading ? "flex-1" : ""}
-              >
-                {loading ? (
-                  <Skeleton />
-                ) : (
-                  article?.pub_date?.toLocaleDateString()
-                )}
-              </Typography>
-            </div>
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  fontWeight={500}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? <Skeleton /> : article?.pub_name}
+                </Typography>
+              </div>
+            )}
+            {persona !== "tom" && persona !== "rachel" && (
+              <>
+                <div className="flex space-x-1">
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? <Skeleton /> : t("pubTime")}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    fontWeight={500}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? (
+                      <Skeleton />
+                    ) : (
+                      article?.pub_time?.toLocaleTimeString()
+                    )}
+                  </Typography>
+                </div>
+                <div className="flex space-x-1">
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? <Skeleton /> : t("pubDate")}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    fontSize={14}
+                    fontWeight={500}
+                    className={loading ? "flex-1" : ""}
+                  >
+                    {loading ? (
+                      <Skeleton />
+                    ) : (
+                      article?.pub_date?.toLocaleDateString()
+                    )}
+                  </Typography>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <Typography

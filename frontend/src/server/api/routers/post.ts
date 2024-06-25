@@ -1296,7 +1296,9 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const session =
-        input.persona === "tom" ? driver_dfo.session() : driver.session();
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
 
       try {
         const t = funcTimer("getArticleQuery", input);
@@ -1319,8 +1321,25 @@ export const postRouter = createTRPCRouter({
               }`,
                 { article_id: input.article_id },
               )
-            : await session.run(
-                `
+            : input.persona === "rachel"
+              ? await session.run(
+                  `
+              MATCH (article:DON)
+              WHERE ID(article) = $article_id
+              RETURN
+                article {
+                  nodeid: id(article),
+                  id: id(article),
+                  type: "article",
+                  title: article.summary,
+                  .content,
+                  .url
+                }                
+                `,
+                  { article_id: input.article_id },
+                )
+              : await session.run(
+                  `
         MATCH (c:Cluster)-[r]-(article:Article { id: $article_id })
         RETURN article {
           nodeid: id(article),
@@ -1341,8 +1360,8 @@ export const postRouter = createTRPCRouter({
           .pub_time
         }
       `,
-                { article_id: input.article_id },
-              );
+                  { article_id: input.article_id },
+                );
         t.measure("Neo4J query completed", true);
 
         const rawGraph = createGraph();
