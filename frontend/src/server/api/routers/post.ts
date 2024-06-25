@@ -645,7 +645,9 @@ export const postRouter = createTRPCRouter({
 
   personas: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.persona.findMany({
-      where: isUserRestricted(ctx.session.user) ? { id: "tom" } : undefined,
+      where: isUserRestricted(ctx.session.user)
+        ? { OR: [{ id: "rachel" }, { id: "tom" }] }
+        : undefined,
     });
     return result;
   }),
@@ -758,7 +760,6 @@ export const postRouter = createTRPCRouter({
           t.end();
           return ret;
         }
-        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         if (input.persona === "rachel") {
           const result = await session.run(
@@ -784,6 +785,8 @@ export const postRouter = createTRPCRouter({
           t.end();
           return ret;
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
         const period = getPeriod({ day: input.day, history: input.history });
         const result = await session.run(
           `
@@ -1294,12 +1297,19 @@ export const postRouter = createTRPCRouter({
         persona: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const session =
         input.persona === "tom" || input.persona === "rachel"
           ? driver_dfo.session()
           : driver.session();
 
+      if (
+        isUserRestricted(ctx.session.user) &&
+        input.persona !== "tom" &&
+        input.persona !== "rachel"
+      ) {
+        throw new Error("403");
+      }
       try {
         const t = funcTimer("getArticleQuery", input);
         const result2 =
@@ -1512,7 +1522,6 @@ export const postRouter = createTRPCRouter({
           }
           return 0;
         }
-        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         if (input.persona === "rachel") {
           const counter = await session.run(
@@ -1527,6 +1536,8 @@ export const postRouter = createTRPCRouter({
           }
           return 0;
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
         const counter = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -1622,7 +1633,6 @@ export const postRouter = createTRPCRouter({
           t.end();
           return rawGraph.get();
         }
-        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         if (input.persona === "rachel") {
           const data = await session.run(
@@ -1670,6 +1680,7 @@ export const postRouter = createTRPCRouter({
           t.end();
           return rawGraph.get();
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         const threats = await session.run(
           `
