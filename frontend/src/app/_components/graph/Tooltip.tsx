@@ -8,64 +8,91 @@ import {
 } from "@mui/material";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
+import { type Node as OgmaNode } from "@linkurious/ogma";
 import { useOgma } from "@linkurious/ogma-react";
 import {
+  Boxes,
   Flag,
   Newspaper,
   Pin,
   Send,
   SquareArrowOutUpRight,
 } from "lucide-react";
-import { getNodeData, getRawNodeData } from "~/app/_utils/graph";
-import { type Article } from "~/server/api/routers/post";
 import { api } from "~/trpc/react";
 import { HighlightSearchTerms } from "~/app/_components/HighlightTerms";
 import { useStore } from "~/app/_store";
 
-export default function Tooltip({ article_id }: { article_id: number }) {
+const hasProp = (obj: unknown, key: string | string[]) => {
+  if (!obj) return false;
+  if (Array.isArray(key)) {
+    for (const k of key) {
+      if (Object.hasOwn(obj, k)) return true;
+    }
+    return false;
+  }
+  return Object.hasOwn(obj, key);
+};
+
+function getProp<T = string>(obj: unknown, keys: string | string[]): T | null {
+  if (!obj || typeof obj !== "object") return null;
+  if (Array.isArray(keys)) {
+    for (const k of keys) {
+      if (k in obj) {
+        if (Object.hasOwn(obj, k)) {
+          return obj[k as keyof typeof obj] as T;
+        }
+      }
+    }
+    return null;
+  }
+  if (keys in obj) return obj[keys as keyof typeof obj] as T;
+  return null;
+}
+
+export default function Tooltip({ target }: { target: OgmaNode }) {
   const t = useTranslations("ArticleComponent");
   const ogma = useOgma();
 
   const { setSelectedNode, persona } = useStore();
 
-  const articleQuery = api.post.getArticleQuery.useQuery({
-    article_id,
+  const nodeid = useMemo(() => {
+    return Number(target.getId());
+  }, [target]);
+
+  const nodeQuery = api.post.getNode.useQuery({
+    nodeid,
     persona,
   });
 
-  const article = useMemo(() => {
-    if (!articleQuery.data) return null;
-    const a = articleQuery.data.nodes.at(0);
-    if (!a) return null;
-    return getRawNodeData<Article>(a);
-  }, [articleQuery.data]);
+  const data = useMemo(() => {
+    if (!nodeQuery.data) return null;
+    const a = nodeQuery.data.nodes.at(0);
+    if (!a?.data) return null;
+    return a.data as object;
+  }, [nodeQuery.data]);
 
-  const loading = useMemo(
-    () => articleQuery.isFetching,
-    [articleQuery.isFetching],
-  );
+  const loading = useMemo(() => nodeQuery.isFetching, [nodeQuery.isFetching]);
 
   const handleOpenClick = useCallback(() => {
-    if (!article) return;
-    const n = ogma
-      ?.getNodes()
-      .filter(
-        (n) =>
-          n.getData("type") === "article" &&
-          getNodeData<Article>(n)?.id === article.id,
-      );
+    if (!data) return;
+    const n = ogma?.getNodes().filter((n) => n.getId() === target.getId());
     if (n?.size === 1 && ogma) {
       const dataNode = n.get(0);
-      setSelectedNode({ node: dataNode, activeTab: "articles", ogma });
+      setSelectedNode({
+        node: dataNode,
+        activeTab:
+          target.getData("type") === "article" ? "articles" : "summary",
+        ogma,
+      });
       dataNode.setSelected(true);
     }
-  }, [article, ogma, setSelectedNode]);
+  }, [data, ogma, setSelectedNode, target]);
 
   const link = useMemo(() => {
-    if (!article) return undefined;
-    if ("link" in article) return article.link as string;
+    if (!data) return undefined;
+    if ("link" in data) return data.link as string;
     return undefined;
-  }, [article]);
+  }, [data]);
 
   return (
     <Card sx={{ width: 460 }}>
@@ -79,11 +106,15 @@ export default function Tooltip({ article_id }: { article_id: number }) {
         title={
           <>
             <IconButton
-              style={{ width: 42, height: 42, color: "#000" }}
+              style={{ width: 42, height: 42, color: "#666" }}
               onClick={handleOpenClick}
-              title={t("openArticle")}
+              title={t("open")}
             >
-              <Newspaper size={22} />
+              {target.getData("type") === "article" ? (
+                <Newspaper size={22} />
+              ) : (
+                <Boxes size={22} />
+              )}
             </IconButton>
             <IconButton
               style={{ width: 42, height: 42 }}
@@ -111,7 +142,7 @@ export default function Tooltip({ article_id }: { article_id: number }) {
           <div
             className={`flex flex-col space-y-[8px]${loading ? " flex-1" : ""}`}
           >
-            {persona !== "rachel" && (
+            {hasProp(data, "pub_name") && (
               <div className="flex space-x-2">
                 <Typography
                   variant="body1"
@@ -127,55 +158,55 @@ export default function Tooltip({ article_id }: { article_id: number }) {
                   fontWeight={500}
                   className={loading ? "flex-1" : ""}
                 >
-                  {loading ? <Skeleton /> : article?.pub_name}
+                  {loading ? <Skeleton /> : getProp(data, ["pub_name"])}
                 </Typography>
               </div>
             )}
-            {persona !== "tom" && persona !== "rachel" && (
-              <>
-                <div className="flex space-x-1">
-                  <Typography
-                    variant="body1"
-                    fontSize={14}
-                    className={loading ? "flex-1" : ""}
-                  >
-                    {loading ? <Skeleton /> : t("pubTime")}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    fontSize={14}
-                    fontWeight={500}
-                    className={loading ? "flex-1" : ""}
-                  >
-                    {loading ? (
-                      <Skeleton />
-                    ) : (
-                      article?.pub_time?.toLocaleTimeString()
-                    )}
-                  </Typography>
-                </div>
-                <div className="flex space-x-1">
-                  <Typography
-                    variant="body1"
-                    fontSize={14}
-                    className={loading ? "flex-1" : ""}
-                  >
-                    {loading ? <Skeleton /> : t("pubDate")}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    fontSize={14}
-                    fontWeight={500}
-                    className={loading ? "flex-1" : ""}
-                  >
-                    {loading ? (
-                      <Skeleton />
-                    ) : (
-                      article?.pub_date?.toLocaleDateString()
-                    )}
-                  </Typography>
-                </div>
-              </>
+            {hasProp(data, "pub_time") && (
+              <div className="flex space-x-1">
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? <Skeleton /> : t("pubTime")}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  fontWeight={500}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? (
+                    <Skeleton />
+                  ) : (
+                    getProp<Date>(data, ["pub_time"])?.toLocaleTimeString()
+                  )}
+                </Typography>
+              </div>
+            )}
+            {hasProp(data, "pub_date") && (
+              <div className="flex space-x-1">
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? <Skeleton /> : t("pubDate")}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  fontSize={14}
+                  fontWeight={500}
+                  className={loading ? "flex-1" : ""}
+                >
+                  {loading ? (
+                    <Skeleton />
+                  ) : (
+                    getProp<Date>(data, ["pub_date"])?.toLocaleDateString()
+                  )}
+                </Typography>
+              </div>
             )}
           </div>
         </div>
@@ -187,7 +218,9 @@ export default function Tooltip({ article_id }: { article_id: number }) {
           {loading ? (
             <Skeleton />
           ) : (
-            <span className="font-bold">{article?.title}</span>
+            <span className="font-bold">
+              {data && "title" in data ? (data.title as string) : ""}
+            </span>
           )}
         </Typography>
 
@@ -232,18 +265,20 @@ export default function Tooltip({ article_id }: { article_id: number }) {
               </Typography>
             </>
           ) : (
-            article?.content?.split("\n").map((content, i) => (
-              <Typography
-                key={i}
-                variant="body1"
-                fontSize={14}
-                lineHeight={1.4}
-                mt={1}
-                className="whitespace-pre-wrap"
-              >
-                <HighlightSearchTerms text={content} />
-              </Typography>
-            ))
+            (getProp(data, ["summary", "content"]) ?? "")
+              .split("\n")
+              .map((content, i) => (
+                <Typography
+                  key={i}
+                  variant="body1"
+                  fontSize={14}
+                  lineHeight={1.4}
+                  mt={1}
+                  className="whitespace-pre-wrap"
+                >
+                  <HighlightSearchTerms text={content} />
+                </Typography>
+              ))
           )}
         </div>
       </CardContent>

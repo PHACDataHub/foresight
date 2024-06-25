@@ -32,13 +32,14 @@ const Styles = () => {
   const [hoveredNode, setHoveredNode] = useState<OgmaNode | null>(null);
   useEffect(() => {
     ogma.tools.tooltip.onNodeHover((n) => {
-      if (n.getData("type") !== "article") return "";
+      if (!["article", "cluster"].includes(n.getData("type") as string))
+        return "";
       setHoveredNode(n);
       ogma.events.once("idle", () => {
         setTooltipContainer(document.getElementById("rr_tooltip_p"));
       });
       return '<div id="rr_tooltip_p" style="width: 460px; height: 550px;"></div>';
-    });
+    }, { autoAdjust: true});
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -141,8 +142,9 @@ const Styles = () => {
     <>
       {showTooltip &&
         tooltipContainer !== null &&
+        hoveredNode &&
         createPortal(
-          <Tooltip article_id={(hoveredNode?.getData("id") as number) ?? 0} />,
+          <Tooltip target={hoveredNode} />,
           tooltipContainer,
         )}
       {/* Node Styling for highlighting sources */}

@@ -1290,6 +1290,54 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+  getNode: protectedProcedure
+    .input(
+      z.object({
+        nodeid: z.number(),
+        persona: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const session =
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
+
+      if (
+        isUserRestricted(ctx.session.user) &&
+        input.persona !== "tom" &&
+        input.persona !== "rachel"
+      ) {
+        throw new Error("403");
+      }
+
+      try {
+        const t = funcTimer("getNode", input);
+        const result = await session.run(
+          `
+            MATCH (n)
+            WHERE ID(n) = $id
+            RETURN n {
+                nodeid: id(n),
+                .*
+              }`,
+          { id: input.nodeid },
+        );
+        t.measure("Neo4J query completed", true);
+
+        const rawGraph = createGraph();
+        result.records.forEach((record) => {
+          const data = record.get("n") as Neo4JTransferRecord;
+          parseData(data, rawGraph, false);
+        });
+        t.measure("Graph translation complete.");
+        t.end();
+        return rawGraph.get();
+      } finally {
+        await session.close();
+      }
+    }),
+
   getArticleQuery: protectedProcedure
     .input(
       z.object({

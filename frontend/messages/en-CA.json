@@ -231,7 +231,7 @@
             "pubDate": "Pub Date:",
             "outlier": "Outlier",
             "link": "Link",
-            "openArticle": "Open article"
+            "open": "Open"
         },
         "Title": {
             "openTitle": "{clear, select, true {Articles in this cluster} other {Clear selection}}"
