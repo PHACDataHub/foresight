@@ -13,6 +13,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 const debug = false;
 
+/** Define minimum and maximum size of nodes in pixels. by type. */
 const pixel = {
   article: { min: 2, max: 10 },
   cluster: { min: 10, max: 25 },
@@ -30,6 +31,10 @@ interface RawGraphInterface {
   };
 }
 
+/*
+  Change the text of the automatically answered questions.
+  (For grammar)
+*/
 const ans = `apoc.convert.fromJsonMap(
   apoc.text.replace(
     apoc.text.replace(
@@ -625,14 +630,14 @@ export const postRouter = createTRPCRouter({
           `,
           { search: input.search, threshold, topK },
         );
-        return result.records.map(
-          (r) => {
+        return result.records
+          .map((r) => {
             const n_id = r.get("id") as unknown;
             const id = (neo4j.isInt(n_id) && n_id.toNumber()) || -1;
             const score = r.get("score") as number;
             return { id, score };
-          }
-        ).sort((a, b) => b.score - a.score);
+          })
+          .sort((a, b) => b.score - a.score);
       } finally {
         await session.close();
       }
@@ -640,7 +645,9 @@ export const postRouter = createTRPCRouter({
 
   personas: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.persona.findMany({
-      where: isUserRestricted(ctx.session.user) ? { id: "tom" } : undefined,
+      where: isUserRestricted(ctx.session.user)
+        ? { OR: [{ id: "rachel" }, { id: "tom" }] }
+        : undefined,
     });
     return result;
   }),
@@ -753,7 +760,6 @@ export const postRouter = createTRPCRouter({
           t.end();
           return ret;
         }
-        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         if (input.persona === "rachel") {
           const result = await session.run(
@@ -779,6 +785,8 @@ export const postRouter = createTRPCRouter({
           t.end();
           return ret;
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
         const period = getPeriod({ day: input.day, history: input.history });
         const result = await session.run(
           `
@@ -1282,6 +1290,151 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+  getNode: protectedProcedure
+    .input(
+      z.object({
+        nodeid: z.number(),
+        persona: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const session =
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
+
+      if (
+        isUserRestricted(ctx.session.user) &&
+        input.persona !== "tom" &&
+        input.persona !== "rachel"
+      ) {
+        throw new Error("403");
+      }
+
+      try {
+        const t = funcTimer("getNode", input);
+        const result = await session.run(
+          `
+            MATCH (n)
+            WHERE ID(n) = $id
+            RETURN n {
+                nodeid: id(n),
+                .*
+              }`,
+          { id: input.nodeid },
+        );
+        t.measure("Neo4J query completed", true);
+
+        const rawGraph = createGraph();
+        result.records.forEach((record) => {
+          const data = record.get("n") as Neo4JTransferRecord;
+          parseData(data, rawGraph, false);
+        });
+        t.measure("Graph translation complete.");
+        t.end();
+        return rawGraph.get();
+      } finally {
+        await session.close();
+      }
+    }),
+
+  getArticleQuery: protectedProcedure
+    .input(
+      z.object({
+        article_id: z.number(),
+        persona: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const session =
+        input.persona === "tom" || input.persona === "rachel"
+          ? driver_dfo.session()
+          : driver.session();
+
+      if (
+        isUserRestricted(ctx.session.user) &&
+        input.persona !== "tom" &&
+        input.persona !== "rachel"
+      ) {
+        throw new Error("403");
+      }
+      try {
+        const t = funcTimer("getArticleQuery", input);
+        const result2 =
+          input.persona === "tom"
+            ? await session.run(
+                `
+            MATCH (c:Cluster)-[r]-(article:Article)
+            WHERE ID(article) = $article_id
+            RETURN article {
+                nodeid: id(article),
+                id: id(article),
+                cluster_id: ID(c),
+                type: "article",
+                .keywords,
+                .link,
+                .pub_name,
+                content: article.summary,
+                .title
+              }`,
+                { article_id: input.article_id },
+              )
+            : input.persona === "rachel"
+              ? await session.run(
+                  `
+              MATCH (article:DON)
+              WHERE ID(article) = $article_id
+              RETURN
+                article {
+                  nodeid: id(article),
+                  id: id(article),
+                  type: "article",
+                  title: article.summary,
+                  .content,
+                  .url
+                }                
+                `,
+                  { article_id: input.article_id },
+                )
+              : await session.run(
+                  `
+        MATCH (c:Cluster)-[r]-(article:Article { id: $article_id })
+        RETURN article {
+          nodeid: id(article),
+          type: "article",
+          .id,
+          outlier: article:Outlier,
+          cluster_id: ID(c),
+          .prob_size,
+          .title,
+          .content,
+          .factiva_file_name,
+          .factiva_folder,
+          .gphin_score,
+          .gphin_state,
+          .probability,
+          .pub_date,
+          .pub_name,
+          .pub_time
+        }
+      `,
+                  { article_id: input.article_id },
+                );
+        t.measure("Neo4J query completed", true);
+
+        const rawGraph = createGraph();
+        result2.records.forEach((record) => {
+          const data = record.get("article") as Neo4JTransferRecord;
+          parseData(data, rawGraph, false);
+        });
+        t.measure("Graph translation complete.");
+        t.end();
+        return rawGraph.get();
+      } finally {
+        await session.close();
+      }
+    }),
+
   getArticle: protectedProcedure
     .input(
       z.object({
@@ -1417,7 +1570,6 @@ export const postRouter = createTRPCRouter({
           }
           return 0;
         }
-        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         if (input.persona === "rachel") {
           const counter = await session.run(
@@ -1432,6 +1584,8 @@ export const postRouter = createTRPCRouter({
           }
           return 0;
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
+
         const counter = await session.run(
           `
         WITH $period + '-\\d+' AS id_pattern
@@ -1527,7 +1681,6 @@ export const postRouter = createTRPCRouter({
           t.end();
           return rawGraph.get();
         }
-        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         if (input.persona === "rachel") {
           const data = await session.run(
@@ -1575,6 +1728,7 @@ export const postRouter = createTRPCRouter({
           t.end();
           return rawGraph.get();
         }
+        if (isUserRestricted(ctx.session.user)) throw new Error("403");
 
         const threats = await session.run(
           `

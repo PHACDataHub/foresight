@@ -57,6 +57,10 @@ export interface ForesightStore {
   persona: string;
   setPersona: (persona: string) => void;
 
+  showTooltip: boolean;
+  setShowTooltip: (showTooltip: boolean) => void;
+  toggleShowTooltip: () => void;
+
   layoutBusy: LayoutModes[];
   setLayoutBusy: (layout: LayoutModes) => void;
   setLayoutNotBusy: (layout: LayoutModes) => void;
@@ -149,8 +153,10 @@ export interface ForesightStore {
   setKeywordMatches: (searchMatches: string[]) => void;
   semanticSearch: string;
   setSemanticSearch: (semanticSearch: string) => void;
-  semanticMatches: {id: number, score: number}[];
-  setSemanticMatches: (semanticMatches: {id: number, score: number}[]) => void;
+  semanticMatches: { id: number; score: number }[];
+  setSemanticMatches: (
+    semanticMatches: { id: number; score: number }[],
+  ) => void;
   // TODO: refactor open node madness
   openNode?: string;
   setOpenNode: (locateNode?: string) => void;
@@ -171,8 +177,13 @@ export const useStore = create<ForesightStore>((set) => ({
   setPersona: (persona) =>
     set({
       persona,
-      threats: persona === "tom" ? defaultDfoThreats : defaultThreats,
+      // threats: persona === "tom" ? defaultDfoThreats : defaultThreats,
     }),
+  showTooltip: true,
+  setShowTooltip: (showTooltip) => set({ showTooltip }),
+  toggleShowTooltip: () =>
+    set((state) => ({ showTooltip: !state.showTooltip })),
+
   layoutBusy: [],
   setLayoutBusy: (layout) =>
     set({
@@ -289,7 +300,7 @@ export const useStore = create<ForesightStore>((set) => ({
   semanticSearch: "",
   setSemanticSearch: (semanticSearch) => set({ semanticSearch }),
   semanticMatches: [],
-  setSemanticMatches: (semanticMatches) => set({semanticMatches}),
+  setSemanticMatches: (semanticMatches) => set({ semanticMatches }),
   searchAnd: false,
   setSearchAnd: (searchAnd) => set({ searchAnd }),
   treeDirection: "BT",

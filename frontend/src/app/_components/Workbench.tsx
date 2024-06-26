@@ -27,7 +27,7 @@ export default function Workbench() {
     data: events,
     isFetched,
     refetch,
-  } = api.post.listEvents.useQuery(undefined);
+  } = api.post.listEvents.useQuery(undefined, { refetchOnWindowFocus: false });
   const deleteEvent = api.post.deleteEvent.useMutation();
   const unlinkEvent = api.post.unlinkNodeFromEvent.useMutation();
 
@@ -142,7 +142,13 @@ export default function Workbench() {
                       className="ml-4 flex items-center space-x-3"
                     >
                       <PersonaAvatar size="small" persona={c.persona} />
-                      <Avatar sx={{ bgcolor:nodeColours[c.type], width: 10, height: 10 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: nodeColours[c.type],
+                          width: 10,
+                          height: 10,
+                        }}
+                      >
                         {" "}
                       </Avatar>
                       <span className="flex-1">{c.title}</span>
