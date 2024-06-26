@@ -275,9 +275,7 @@ export default function Tooltip({ target }: { target: OgmaNode }) {
                   lineHeight={1.4}
                   mt={1}
                   className="whitespace-pre-wrap"
-                >
-                  <HighlightSearchTerms text={content} />
-                </Typography>
+                ><HighlightSearchTerms text={content.trim()} /></Typography>
               ))
           )}
         </div>
