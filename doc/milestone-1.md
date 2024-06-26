@@ -312,35 +312,6 @@ The differences highlighted as below.
 
 Instead of only seeing the location of each articles, the `World map of clusters with detected threats` view provides a view of recognized locations of the detected clusters.
 
-*Note that some location detection are not correct, for now.*
-
-<table cellspacing="0" cellpadding="0" border="0">
-    <tr>
-        <td style="text-align: center; vertical-align: top;">
-            <img src="./img/2019-12-31-worldmap-view-1.png" alt="Viral Pneumonia Outbreak in Wuhan" />
-            <figcaption>Viral Pneumonia Outbreak in Wuhan</figcaption>
-            <br />
-        </td>
-        <td style="text-align: center;  vertical-align: top;">
-            <img src="./img/2019-12-31-worldmap-view-2.png" alt="Dengue Fever Crisis in the Caribbean" />
-            <figcaption>Dengue Fever Crisis in the Caribbean</figcaption>
-            <br />
-        </td>
-    </tr>
-    <tr>
-        <td style="text-align: center;  vertical-align: top;">
-            <img src="./img/2019-12-31-worldmap-view-3.png" alt="Measles epidemic in Samoa" />
-            <figcaption>Measles epidemic in Samoa</figcaption>
-            <br />
-        </td>
-        <td style="text-align: center;  vertical-align: top;">
-            <img src="./img/2019-12-31-worldmap-view-4.png" alt="Measles Outbreaks and Vaccination Rates" />
-            <figcaption>Measles Outbreaks and Vaccination Rates</figcaption>
-            <br />
-        </td>
-    </tr>
-</table>
-
 The maps can be zoomed, inspected, etc.
 
 #### F.1.5. Undetected clusters
