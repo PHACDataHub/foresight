@@ -219,7 +219,7 @@ export default function Tooltip({ target }: { target: OgmaNode }) {
             <Skeleton />
           ) : (
             <span className="font-bold">
-              {data && "title" in data ? (data.title as string) : ""}
+              {getProp(data, ["title", "name"])}
             </span>
           )}
         </Typography>
