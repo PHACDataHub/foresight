@@ -72,6 +72,7 @@ export default function SidePanel({
   const addToEvent = api.post.addToEvent.useMutation();
   const eventQuery = api.post.listEvents.useQuery(undefined, {
     enabled: false,
+    refetchOnWindowFocus: false,
   });
 
   const handleAddToExistingEventClick = (

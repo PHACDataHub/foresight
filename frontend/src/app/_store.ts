@@ -177,7 +177,7 @@ export const useStore = create<ForesightStore>((set) => ({
   setPersona: (persona) =>
     set({
       persona,
-      threats: persona === "tom" ? defaultDfoThreats : defaultThreats,
+      // threats: persona === "tom" ? defaultDfoThreats : defaultThreats,
     }),
   showTooltip: true,
   setShowTooltip: (showTooltip) => set({ showTooltip }),

@@ -33,7 +33,7 @@ function HighlightSourceComponent() {
 
   const { data: sources } = api.post.sources.useQuery(
     { persona },
-    { enabled: persona === "tom" },
+    { enabled: persona === "tom", refetchOnWindowFocus: false },
   );
 
   useEffect(() => {
