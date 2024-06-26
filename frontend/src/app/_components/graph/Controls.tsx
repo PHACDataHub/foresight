@@ -99,7 +99,7 @@ export default function Controls() {
     const auto_expand = localStorage.getItem("include_articles");
     setIncludeArticles(auto_expand === "true");
     const stp = localStorage.getItem("showTooltip");
-    setShowTooltip(stp === "true");  
+    setShowTooltip(stp === null || stp === "true");  
   }, [setIncludeArticles, setShowTooltip]);
 
   useEffect(() => {
