@@ -219,7 +219,10 @@ export default function Tooltip({ target }: { target: OgmaNode }) {
             <Skeleton />
           ) : (
             <span className="font-bold">
-              {getProp(data, ["title", "name"])}
+              {getProp(data, [
+                "title",
+                persona === "rachel" ? "summary" : "name",
+              ])}
             </span>
           )}
         </Typography>
@@ -275,7 +278,9 @@ export default function Tooltip({ target }: { target: OgmaNode }) {
                   lineHeight={1.4}
                   mt={1}
                   className="whitespace-pre-wrap"
-                ><HighlightSearchTerms text={content.trim()} /></Typography>
+                >
+                  <HighlightSearchTerms text={content.trim()} />
+                </Typography>
               ))
           )}
         </div>
