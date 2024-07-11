@@ -1,7 +1,6 @@
 import * as dotenv from "dotenv";
-import pkg from "./package.json" assert { type: "json" };
 import { execSync } from "child_process";
-import { renameSync, unlinkSync } from "fs";
+import pkg from "./package.json" assert { type: "json" };
 
 dotenv.config();
 
